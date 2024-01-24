@@ -3,16 +3,16 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "astrotemplate-scripts"
+name = "astrodb-scripts"
 
 authors = [
     {name = "Arjun Savel", email = "asavel@umd.edu"},
     {name= "Kelle Cruz"},
     {name= "David Rodriguez"}
 ]
-description = "astrotemplate-db: a template for astronomocal databases"
+description = "astrodb_scripts: scripts for interacting with the astrodb database"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 keywords = ["databases", "astronomy"]
 license = {text = "BSD-3-Clause"}
 classifiers = [
