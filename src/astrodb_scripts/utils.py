@@ -17,7 +17,7 @@ from sqlalchemy import or_, and_
 import sqlalchemy.exc
 from astroquery.simbad import Simbad
 import socket
-from scripts import REFERENCE_TABLES
+# from scripts import REFERENCE_TABLES
 
 __all__ = [
     "AstroDBError",
@@ -66,6 +66,16 @@ class AstroDBError(Exception):
 #     yield
 #     sys.tracebacklimit = default_value  # revert changes
 
+#TODO:  Where should these live? 
+REFERENCE_TABLES = [
+    "Publications",
+    "Telescopes",
+    "Instruments",
+    "Modes",
+    "PhotometryFilters",
+    "Versions",
+    "Parameters",
+]
 
 def load_astrodb(db_file, recreatedb=True, reference_tables=REFERENCE_TABLES):
     # Utility function to load the database
