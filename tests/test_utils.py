@@ -1,6 +1,7 @@
 import pytest
 import math
 import os
+import sys
 from astrodbkit2.astrodb import create_database, Database
 from astropy.table import Table
 from sqlalchemy import and_
@@ -13,14 +14,16 @@ from src.astrodb_scripts.utils import (
     ingest_instrument,
 )
 import logging
+sys.path.append('./tests/astrotemplate-db/')
+from schema.schema import * # import the schema of the template database
 
 
 logger = logging.getLogger("AstroDB")
 logger.setLevel(logging.DEBUG)
 
 
-DB_NAME = "temp.sqlite"
-DB_PATH = "data"
+DB_NAME = "tests/testdb.sqlite"
+DB_PATH = "tests/astrotemplate-db/data"
 
 
 # Load the database for use in individual tests
@@ -65,8 +68,6 @@ def test_setup_db(db):
         conn.execute(db.Publications.insert().values(ref_data))
         conn.execute(db.Sources.insert().values(source_data))
         conn.commit()
-
-    return db
 
 
 @pytest.mark.filterwarnings(
