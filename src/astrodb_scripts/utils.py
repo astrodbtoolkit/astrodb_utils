@@ -7,6 +7,7 @@ import sys
 import re
 import warnings
 from pathlib import Path
+import requests
 from astrodbkit2.astrodb import create_database, Database
 import numpy.ma as ma
 import ads
@@ -76,6 +77,7 @@ REFERENCE_TABLES = [
     "Versions",
     "Parameters",
 ]
+
 
 def load_astrodb(db_file, recreatedb=True, reference_tables=REFERENCE_TABLES):
     # Utility function to load the database
@@ -584,6 +586,28 @@ def check_internet_connection():
         return False, ipaddress
     else:
         return True, ipaddress
+
+
+def check_url_valid(url):
+    """
+    Check that the URLs in the spectra table are valid.
+
+    :return:
+    """
+
+    request_response = requests.head(url)
+    status_code = request_response.status_code  # The website is up if the status code is 200
+    if status_code != 200:
+        status = 'skipped' # instead of incrememnting n_skipped, just skip this one
+        msg = "The spectrum location does not appear to be valid: \n" \
+              f'spectrum: {url} \n' \
+              f'status code: {status_code}'
+        logger.error(msg)
+    else:
+        msg = f"The spectrum location appears up: {url}"
+        logger.debug(msg)
+        status = 'added'
+    return status
 
 
 # NAMES
