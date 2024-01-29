@@ -15,7 +15,7 @@ from src.astrodb_scripts.utils import (
 )
 import logging
 sys.path.append('./tests/astrotemplate-db/')
-from schema.schema import * # import the schema of the template database
+from schema.schema_template import * # import the schema of the template database
 
 
 logger = logging.getLogger("AstroDB")
