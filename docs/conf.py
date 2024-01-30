@@ -41,7 +41,9 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
-    "nbsphinx"]
+    "nbsphinx",
+    "pydata_sphinx_theme",
+]
 
 
 nbsphinx_prolog = """
