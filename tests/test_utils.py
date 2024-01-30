@@ -5,7 +5,7 @@ import sys
 from astrodbkit2.astrodb import create_database, Database
 from astropy.table import Table
 from sqlalchemy import and_
-from src.astrodb_scripts.utils import (
+from astrodb_scripts import (
     AstroDBError,
     find_publication,
     ingest_publication,
