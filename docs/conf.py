@@ -42,7 +42,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.mathjax",
     "nbsphinx",
-    "sphinx_book_theme",
+    "pydata-sphinx-theme",
 ]
 
 
