@@ -111,7 +111,7 @@ todo_include_todos = False
 # a list of builtin themes.
 #
 # html_theme = "sphinx_book_theme"
-html_theme = "pydata-sphinx-theme"
+html_theme = "pydata_sphinx_theme"
 # html_favicon = "_static/favicon.png"
 
 # Theme options are theme-specific and customize the look and feel of a theme
