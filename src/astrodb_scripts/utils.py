@@ -30,6 +30,7 @@ __all__ = [
     "ingest_names",
     "ingest_source",
     "ingest_sources",
+    "ingest_instrument",
 ]
 
 warnings.filterwarnings("ignore", module="astroquery.simbad")
