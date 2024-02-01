@@ -3,7 +3,8 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "astrodb-scripts"
+name = "astrodb_scripts"
+version = "0.0.1"
 
 authors = [
     {name = "Arjun Savel", email = "asavel@umd.edu"},
@@ -32,3 +33,8 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 test = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/astrodbtoolkit/astrodb_scripts"
+Issues = "https://github.com/astrodbtoolkit/astrodb_scripts/issues"
+Documentation = "https://astrodb-scripts.readthedocs.io/en/latest/"
