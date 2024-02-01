@@ -29,7 +29,6 @@ dependencies = [
     "tqdm==4.64.1",
     "ads",
 ]
-dynamic = ["version"]
 
 [project.optional-dependencies]
 test = ["pytest"]
