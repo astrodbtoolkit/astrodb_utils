@@ -1,0 +1,5 @@
+tqdm
+markupsafe==2.0.1
+nbsphinx
+pydata-sphinx-theme
+mock
