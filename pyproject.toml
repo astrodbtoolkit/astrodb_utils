@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "astrodb_scripts"
@@ -23,7 +23,7 @@ dependencies = [
     "numpy",
     "astroquery",
     "astropy",
-    "AstrodbKit2@git+https://github.com/dr-rodriguez/AstrodbKit2",
+    "astrodbkit2",
     "pandas",
     "sqlalchemy==2.0.3",
     "tqdm==4.64.1",
@@ -37,3 +37,6 @@ test = ["pytest"]
 Homepage = "https://github.com/astrodbtoolkit/astrodb_scripts"
 Issues = "https://github.com/astrodbtoolkit/astrodb_scripts/issues"
 Documentation = "https://astrodb-scripts.readthedocs.io/en/latest/"
+
+[tool.hatch.metadata]
+allow-direct-references = true
