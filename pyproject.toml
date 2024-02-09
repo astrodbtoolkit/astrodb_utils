@@ -26,7 +26,7 @@ dependencies = [
     "astrodbkit2",
     "pandas",
     "sqlalchemy==2.0.3",
-    "tqdm==4.64.1",
+    "tqdm",
     "ads",
 ]
 
