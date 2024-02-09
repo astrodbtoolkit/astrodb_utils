@@ -4,7 +4,6 @@ build-backend = "hatchling.build"
 
 [project]
 name = "astrodb_scripts"
-version = "0.0.1"
 
 authors = [
     {name = "Arjun Savel", email = "asavel@umd.edu"},
@@ -29,6 +28,7 @@ dependencies = [
     "tqdm",
     "ads",
 ]
+dynamic = ["version"]
 
 [project.optional-dependencies]
 test = ["pytest"]
