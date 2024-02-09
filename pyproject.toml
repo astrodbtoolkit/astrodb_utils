@@ -38,5 +38,5 @@ Homepage = "https://github.com/astrodbtoolkit/astrodb_scripts"
 Issues = "https://github.com/astrodbtoolkit/astrodb_scripts/issues"
 Documentation = "https://astrodb-scripts.readthedocs.io/en/latest/"
 
-[tool.hatch.metadata]
-allow-direct-references = true
+[tool.setuptools_scm]
+root = '.'
