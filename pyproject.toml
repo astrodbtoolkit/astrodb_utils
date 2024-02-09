@@ -1,9 +1,9 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
+requires = ["setuptools>=64", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "astrodb-scripts"
+name = "astrodb_scripts"
 
 authors = [
     {name = "Arjun Savel", email = "asavel@umd.edu"},
@@ -19,16 +19,24 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "numpy",
+    "numpy<2.0",
     "astroquery",
     "astropy",
-    "AstrodbKit2@git+https://github.com/dr-rodriguez/AstrodbKit2",
+    "astrodbkit2",
     "pandas",
     "sqlalchemy==2.0.3",
-    "tqdm==4.64.1",
+    "tqdm",
     "ads",
 ]
 dynamic = ["version"]
 
 [project.optional-dependencies]
 test = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/astrodbtoolkit/astrodb_scripts"
+Issues = "https://github.com/astrodbtoolkit/astrodb_scripts/issues"
+Documentation = "https://astrodb-scripts.readthedocs.io/en/latest/"
+
+[tool.setuptools_scm]
+root = '.'
