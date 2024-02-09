@@ -20,7 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "numpy",
+    "numpy<2.0",
     "astroquery",
     "astropy",
     "astrodbkit2",
