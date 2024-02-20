@@ -10,8 +10,7 @@ DB_NAME = "tests/testdb.sqlite"
 DB_PATH = "tests/astrodb-template-db/data"
 
 
-@pytest.fixture(scope="module"))
-def db():
+def create_db():
     # Create a fresh temporary database and assert it exists
     if os.path.exists(DB_NAME):
         os.remove(DB_NAME)
@@ -63,8 +62,13 @@ def db():
         conn.execute(db.Sources.insert().values(source_data))
         conn.commit()
 
+    return db
 
-@pytest.fixture(scope="module")
+
+@pytest.fixture(scope="session", autouse=True)
 def db():
-    db = load_astrodb(DB_NAME, recreatedb=False)
+    if os.path.exists(DB_NAME):
+        db = load_astrodb(DB_NAME, recreatedb=False)
+    else:
+        db = create_db()
     return db
