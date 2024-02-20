@@ -37,4 +37,5 @@ jobs:
         pip install .[test]
     - name: Test with pytest
       run: |
-        pytest
+        pytest tests/test_xcreate_db.py
+        pytest 
