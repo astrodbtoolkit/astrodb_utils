@@ -14,7 +14,7 @@ from astrodb_scripts import (
     ingest_instrument,
 )
 import logging
-sys.path.append('./tests/astrotemplate-db/')
+sys.path.append('./tests/astrodb-template-db')
 from schema.schema_template import * # import the schema of the template database
 
 
@@ -59,9 +59,9 @@ def test_setup_db(db):
     ]
 
     source_data = [
-        {"source": "Fake 1", "ra": 9.0673755, "dec": 18.352889, "reference": "Ref 1"},
-        {"source": "Fake 2", "ra": 9.0673755, "dec": 18.352889, "reference": "Ref 1"},
-        {"source": "Fake 3", "ra": 9.0673755, "dec": 18.352889, "reference": "Ref 2"},
+        {"source": "Fake 1", "ra_deg": 9.0673755, "dec_deg": 18.352889, "reference": "Ref 1"},
+        {"source": "Fake 2", "ra_deg": 9.0673755, "dec_deg": 18.352889, "reference": "Ref 1"},
+        {"source": "Fake 3", "ra_deg": 9.0673755, "dec_deg": 18.352889, "reference": "Ref 2"},
     ]
 
     with db.engine.connect() as conn:
@@ -121,8 +121,8 @@ def test_ingest_source(db):
         db.query(db.Sources).filter(db.Sources.c.source == "Barnard Star").astropy()
     )
     assert len(Barnard_star) == 1
-    assert math.isclose(Barnard_star["ra"][0], 269.452, abs_tol=0.001)
-    assert math.isclose(Barnard_star["dec"][0], 4.6933, abs_tol=0.001)
+    assert math.isclose(Barnard_star["ra_deg"][0], 269.452, abs_tol=0.001)
+    assert math.isclose(Barnard_star["dec_deg"][0], 4.6933, abs_tol=0.001)
 
     source_data8 = {
         "source": "Fake 8",
