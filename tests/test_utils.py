@@ -1,73 +1,29 @@
 import pytest
 import math
-import os
-import sys
-from astrodbkit2.astrodb import create_database, Database
+import logging
 from astropy.table import Table
 from sqlalchemy import and_
 from astrodb_scripts import (
     AstroDBError,
+    load_astrodb,
     find_publication,
     ingest_publication,
     ingest_source,
     ingest_sources,
     ingest_instrument,
 )
-import logging
-sys.path.append('./tests/astrodb-template-db')
-from schema.schema_template import * # import the schema of the template database
 
 
 logger = logging.getLogger("AstroDB")
 logger.setLevel(logging.DEBUG)
 
 
-DB_NAME = "tests/testdb.sqlite"
-DB_PATH = "tests/astrotemplate-db/data"
-
-
-# Load the database for use in individual tests
+# load the database created by test_1_create_db.py
 @pytest.fixture(scope="module")
 def db():
-    # Create a fresh temporary database and assert it exists
-    # Because we've imported simple.schema, we will be using that schema for the database
-
-    if os.path.exists(DB_NAME):
-        os.remove(DB_NAME)
-    connection_string = "sqlite:///" + DB_NAME
-    create_database(connection_string)
-    assert os.path.exists(DB_NAME)
-
-    # Connect to the new database and confirm it has the Sources table
-    db = Database(connection_string)
-    assert db
-    assert "source" in [c.name for c in db.Sources.columns]
-
+    DB_NAME = "tests/testdb.sqlite"
+    db = load_astrodb(DB_NAME, recreatedb=False)
     return db
-
-
-def test_setup_db(db):
-    # Some setup tasks to ensure some data exists in the database first
-    ref_data = [
-        {
-            "reference": "Ref 1",
-            "doi": "10.1093/mnras/staa1522",
-            "bibcode": "2020MNRAS.496.1922B",
-        },
-        {"reference": "Ref 2", "doi": "Doi2", "bibcode": "2012yCat.2311....0C"},
-        {"reference": "Burn08", "doi": "Doi3", "bibcode": "2008MNRAS.391..320B"},
-    ]
-
-    source_data = [
-        {"source": "Fake 1", "ra_deg": 9.0673755, "dec_deg": 18.352889, "reference": "Ref 1"},
-        {"source": "Fake 2", "ra_deg": 9.0673755, "dec_deg": 18.352889, "reference": "Ref 1"},
-        {"source": "Fake 3", "ra_deg": 9.0673755, "dec_deg": 18.352889, "reference": "Ref 2"},
-    ]
-
-    with db.engine.connect() as conn:
-        conn.execute(db.Publications.insert().values(ref_data))
-        conn.execute(db.Sources.insert().values(source_data))
-        conn.commit()
 
 
 @pytest.mark.filterwarnings(
