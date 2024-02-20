@@ -14,7 +14,7 @@ from astrodb_scripts import (
     ingest_instrument,
 )
 import logging
-sys.path.append('./tests/astrotemplate-db/')
+sys.path.append('./tests/astrodb-template-db')
 from schema.schema_template import * # import the schema of the template database
 
 
