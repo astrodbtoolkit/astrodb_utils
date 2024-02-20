@@ -31,7 +31,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-test = ["pytest","pytest-order"]
+test = ["pytest"]
 
 [project.urls]
 Homepage = "https://github.com/astrodbtoolkit/astrodb_scripts"

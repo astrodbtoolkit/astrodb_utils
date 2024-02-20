@@ -1,6 +1,6 @@
 import pytest
 import logging
-from astrodb_scripts import AstroDBError, load_astrodb
+from astrodb_scripts import AstroDBError
 from astrodb_scripts.photometry import (
     ingest_photometry,
     ingest_photometry_filter,
@@ -14,11 +14,6 @@ from astrodb_scripts.photometry import (
 
 logger = logging.getLogger("SIMPLE")
 logger.setLevel(logging.DEBUG)
-
-
-# load the database created by test_1_create_db.py
-DB_NAME = "tests/testdb.sqlite"
-db = load_astrodb(DB_NAME, recreatedb=False)
 
 
 @pytest.mark.parametrize(

@@ -19,11 +19,6 @@ logger.setLevel(logging.DEBUG)
 
 
 # load the database created by test_1_create_db.py
-@pytest.fixture(scope="module")
-def db():
-    DB_NAME = "tests/testdb.sqlite"
-    db = load_astrodb(DB_NAME, recreatedb=False)
-    return db
 
 
 @pytest.mark.filterwarnings(
