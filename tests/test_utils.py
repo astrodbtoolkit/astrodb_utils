@@ -5,7 +5,6 @@ from astropy.table import Table
 from sqlalchemy import and_
 from astrodb_scripts import (
     AstroDBError,
-    load_astrodb,
     find_publication,
     ingest_publication,
     ingest_source,
