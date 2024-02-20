@@ -4,7 +4,7 @@ import sys
 from astrodbkit2.astrodb import create_database, Database
 
 sys.path.append('./tests/astrodb-template-db/')
-from schema.schema_template import * # import the schema of the template database
+from schema.schema_template import *  # import the schema of the template database
 
 DB_NAME = "tests/testdb.sqlite"
 DB_PATH = "tests/astrodb-template-db/data"
@@ -43,9 +43,24 @@ def test_setup_db(db):
     ]
 
     source_data = [
-        {"source": "Fake 1", "ra_deg": 9.0673755, "dec_deg": 18.352889, "reference": "Ref 1"},
-        {"source": "Fake 2", "ra_deg": 9.0673755, "dec_deg": 18.352889, "reference": "Ref 1"},
-        {"source": "Fake 3", "ra_deg": 9.0673755, "dec_deg": 18.352889, "reference": "Ref 2"},
+        {
+            "source": "Fake 1",
+            "ra_deg": 9.0673755,
+            "dec_deg": 18.352889,
+            "reference": "Ref 1",
+        },
+        {
+            "source": "Fake 2",
+            "ra_deg": 9.0673755,
+            "dec_deg": 18.352889,
+            "reference": "Ref 1",
+        },
+        {
+            "source": "Fake 3",
+            "ra_deg": 9.0673755,
+            "dec_deg": 18.352889,
+            "reference": "Ref 2",
+        },
     ]
 
     with db.engine.connect() as conn:
