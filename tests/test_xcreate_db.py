@@ -3,7 +3,7 @@ import os
 import sys
 from astrodbkit2.astrodb import create_database, Database
 
-sys.path.append('./tests/astrodb-template-db/')
+sys.path.append("./tests/astrodb-template-db/")
 from schema.schema_template import *  # import the schema of the template database
 
 DB_NAME = "tests/testdb.sqlite"
@@ -30,6 +30,7 @@ def db():
     return db
 
 
+@pytest.mark.order(1)
 def test_setup_db(db):
     # Add some data to the database
     ref_data = [
