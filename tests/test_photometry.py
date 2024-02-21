@@ -16,8 +16,22 @@ logger = logging.getLogger("SIMPLE")
 logger.setLevel(logging.DEBUG)
 
 
+# These tests will fail until the Photometry table is added to the template database
+@pytest.mark.xfail
+def test_ingest_photometry(db):
+    ingest_photometry(db, source="Fake 1", band="V", magnitude=10, reference="refr12")
+    ingest_photometry(
+        db,
+        source="Fake 1",
+        band="V",
+        magnitude=10,
+        reference="refr12",
+        telescope="test4",
+    )
+
+
 @pytest.mark.filterwarnings("ignore::UserWarning")
-def test_ingest_photometry_fail(db):
+def test_ingest_photometry_fails(db):
     with pytest.raises(AstroDBError) as error_message:
         ingest_photometry(db, source="test")
     assert "are required" in str(error_message.value)
@@ -51,6 +65,27 @@ def test_ingest_photometry_fail(db):
     assert "not found in Publications table" in str(error_message.value)
     result = ingest_photometry(
         db, source="Fake 1", band="V", magnitude=10, reference="ref", raise_error=False
+    )
+    assert result["added"] is False
+
+    with pytest.raises(AstroDBError) as error_message:
+        ingest_photometry(
+            db,
+            source="Fake 1",
+            band="V",
+            magnitude=10,
+            reference="Refr12",
+            telescope="HST",
+        )
+    assert "not found in Telescopes table" in str(error_message.value)
+    result = ingest_photometry(
+        db,
+        source="Fake 1",
+        band="V",
+        magnitude=10,
+        reference="refr12",
+        telescope="HST",
+        raise_error=False,
     )
     assert result["added"] is False
 

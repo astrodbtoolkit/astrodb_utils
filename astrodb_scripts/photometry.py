@@ -56,6 +56,7 @@ def ingest_photometry(
     """
     flags = {"added": False}
 
+    # Make sure required fields are provided
     if source is None or band is None or magnitude is None or reference is None:
         msg = (
             "source, band, magnitude, and reference are required. \n"
@@ -94,6 +95,22 @@ def ingest_photometry(
         else:
             logger.warning(msg)
             return flags
+
+    # If telescope is provided, make sure it exists in the Telescopes table
+    if telescope is not None:
+        telescope_match = (
+            db.query(db.Telescopes)
+            .filter(db.Telescopes.c.telescope == telescope)
+            .table()
+        )
+        if len(telescope_match) == 0:
+            msg = f"Telescope {telescope} not found in Telescopes table."
+            if raise_error:
+                logger.error(msg)
+                raise AstroDBError(msg)
+            else:
+                logger.warning(msg)
+                return flags
 
     # if the uncertainty is masked, don't ingest anything
     if isinstance(magnitude_error, np.ma.core.MaskedConstant):
