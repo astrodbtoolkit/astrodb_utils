@@ -26,7 +26,7 @@ __all__ = [
     "find_source_in_db",
     "find_publication",
     "ingest_publication",
-    "check_internet_connection",
+    "internet_connection",
     "ingest_names",
     "ingest_source",
     "ingest_sources",
@@ -68,7 +68,7 @@ class AstroDBError(Exception):
 #     yield
 #     sys.tracebacklimit = default_value  # revert changes
 
-#TODO:  Where should these live? 
+# TODO:  Where should these live?
 REFERENCE_TABLES = [
     "Publications",
     "Telescopes",
@@ -578,7 +578,7 @@ def ingest_publication(
     return
 
 
-def check_internet_connection():
+def internet_connection():
     # get current IP address of  system
     ipaddress = socket.gethostbyname(socket.gethostname())
 

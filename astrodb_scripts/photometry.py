@@ -6,6 +6,7 @@ import sqlalchemy.exc
 from typing import Optional
 import astropy.units as u
 from astropy.io.votable import parse
+from astrodb_scripts import internet_connection
 
 from astrodb_scripts import AstroDBError, find_source_in_db
 
@@ -207,6 +208,12 @@ def fetch_svo(telescope: str = None, instrument: str = None, filter_name: str = 
     KeyError
         If the filter information is not found in the VOTable
     """
+
+    if internet_connection() == False:
+        msg = "No internet connection. Cannot fetch photometry filter information from the SVO website."
+        logger.error(msg)
+        raise AstroDBError(msg)
+
     url = (
         f"http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID="
         f"{telescope}/{instrument}.{filter_name}"
