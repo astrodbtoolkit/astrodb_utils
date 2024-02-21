@@ -120,7 +120,7 @@ def load_astrodb(db_file, recreatedb=True, reference_tables=REFERENCE_TABLES):
     return db
 
 
-def find_source_in_db(db, source, ra=None, dec=None, search_radius=60.0):
+def find_source_in_db(db, source, *, ra=None, dec=None, search_radius=60.0):
     """
     Find a source in the database given a source name and optional coordinates.
 
@@ -222,7 +222,9 @@ def find_source_in_db(db, source, ra=None, dec=None, search_radius=60.0):
     return db_names
 
 
-def find_publication(db, name: str = None, doi: str = None, bibcode: str = None):
+def find_publication(
+    db, *, reference: str = None, doi: str = None, bibcode: str = None
+):
     """
     Find publications in the database by matching
     on the publication name,  doi, or bibcode
@@ -231,7 +233,7 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
     ----------
     db
         Variable referencing the database to search
-    name: str
+    reference: str
         Name of publication to search
     doi: str
         DOI of publication to search
@@ -246,10 +248,10 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
 
     Examples
     -------
-    >>> test = search_publication(db, name='Cruz')
+    >>> test = search_publication(db, reference='Cruz')
     Found 8 matching publications for Cruz or None or None
 
-    >>> test = search_publication(db, name='Kirk19')
+    >>> test = search_publication(db, reference='Kirk19')
     Found 1 matching publications for Kirk19 or None or None
      name        bibcode                 doi
     ------ ------------------- ------------------------
@@ -259,7 +261,7 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
     Preliminary Trigonometric Parallaxes of 184 Late-T and Y Dwarfs and an
     Analysis of the Field Substellar Mass Function into the Planetary Mass Regime
 
-    >>> test = search_publication(db, name='Smith')
+    >>> test = search_publication(db, reference='Smith')
     No matching publications for Smith, Trying Smit
     No matching publications for Smit
     Use add_publication() to add it to the database.
@@ -271,14 +273,14 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
     """
 
     # Make sure a search term is provided
-    if name is None and doi is None and bibcode is None:
+    if reference is None and doi is None and bibcode is None:
         logger.error("Name, Bibcode, or DOI must be provided")
         return False, 0
 
     not_null_pub_filters = []
-    if name:
+    if reference:
         # fuzzy_query_name = '%' + name + '%'
-        not_null_pub_filters.append(db.Publications.c.reference.ilike(name))
+        not_null_pub_filters.append(db.Publications.c.reference.ilike(reference))
     if doi:
         not_null_pub_filters.append(db.Publications.c.doi.ilike(doi))
     if bibcode:
@@ -294,7 +296,7 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
     if n_pubs_found == 1:
         logger.info(
             f"Found {n_pubs_found} matching publications for "
-            f"{name} or {doi} or {bibcode}: {pub_search_table['reference'].data}"
+            f"{reference} or {doi} or {bibcode}: {pub_search_table['reference'].data}"
         )
         if logger.level <= 10:  # debug
             pub_search_table.pprint_all()
@@ -302,16 +304,18 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
 
     if n_pubs_found > 1:
         logger.warning(
-            f"Found {n_pubs_found} matching publications for {name} or {doi} or {bibcode}"
+            f"Found {n_pubs_found} matching publications for {reference} or {doi} or {bibcode}"
         )
         if logger.level <= 30:  # warning
             pub_search_table.pprint_all()
         return False, n_pubs_found
 
     # If no matches found, search using first four characters of input name
-    if n_pubs_found == 0 and name:
-        shorter_name = name[:4]
-        logger.debug(f"No matching publications for {name}, Trying {shorter_name}.")
+    if n_pubs_found == 0 and reference:
+        shorter_name = reference[:4]
+        logger.debug(
+            f"No matching publications for {reference}, Trying {shorter_name}."
+        )
         fuzzy_query_shorter_name = "%" + shorter_name + "%"
         pub_search_table = (
             db.query(db.Publications)
@@ -320,7 +324,9 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
         )
         n_pubs_found_short = len(pub_search_table)
         if n_pubs_found_short == 0:
-            logger.warning(f"No matching publications for {name} or {shorter_name}")
+            logger.warning(
+                f"No matching publications for {reference} or {shorter_name}"
+            )
             logger.warning("Use add_publication() to add it to the database.")
             return False, 0
 
@@ -332,10 +338,10 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
                 pub_search_table.pprint_all()
 
             #  Try to find numbers in the reference which might be a date
-            dates = re.findall(r"\d+", name)
+            dates = re.findall(r"\d+", reference)
             # try to find a two digit date
             if len(dates) == 0:
-                logger.debug(f"Could not find a date in {name}")
+                logger.debug(f"Could not find a date in {reference}")
                 two_digit_date = None
             elif len(dates) == 1:
                 if len(dates[0]) == 4:
@@ -360,14 +366,14 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
                 if n_pubs_found_short_date == 1:
                     logger.debug(
                         f"Found {n_pubs_found_short_date} matching publications for "
-                        f"{name} using {shorter_name} and {two_digit_date}"
+                        f"{reference} using {shorter_name} and {two_digit_date}"
                     )
                     logger.debug(f"{pubs_found_short_date}")
                     return True, pubs_found_short_date[0]
                 else:
                     logger.warning(
                         f"Found {n_pubs_found_short_date} matching publications for "
-                        f"{name} using {shorter_name} and {two_digit_date}"
+                        f"{reference} using {shorter_name} and {two_digit_date}"
                     )
                     logger.warning(f"{pubs_found_short_date}")
                     return False, n_pubs_found_short_date
@@ -646,6 +652,7 @@ def ingest_names(db, source, other_name):
 def ingest_source(
     db,
     source,
+    *,
     reference: str = None,
     ra: float = None,
     dec: float = None,
@@ -766,12 +773,12 @@ def ingest_source(
             else:
                 return
 
-        ref_check = find_publication(db, name=reference)
+        ref_check = find_publication(db, reference=reference)
         logger.debug(f"ref_check: {ref_check}")
 
-        if ref_check is False:
+        if ref_check[0] is False:
             msg = (
-                f"Skipping: {source}. Discovery reference {reference}"
+                f"Skipping: {source}. Discovery reference {reference} "
                 "is not in Publications table. \n"
                 f"(Add it with ingest_publication function.)"
             )
@@ -882,6 +889,7 @@ def ingest_source(
 def ingest_sources(
     db,
     sources,
+    *,
     references=None,
     ras=None,
     decs=None,

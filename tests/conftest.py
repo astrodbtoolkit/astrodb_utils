@@ -27,32 +27,32 @@ assert "source" in [c.name for c in db.Sources.columns]
 # Add some data to the database
 ref_data = [
     {
-        "reference": "Ref 1",
+        "reference": "Refr20",
         "doi": "10.1093/mnras/staa1522",
         "bibcode": "2020MNRAS.496.1922B",
     },
-    {"reference": "Ref 2", "doi": "Doi2", "bibcode": "2012yCat.2311....0C"},
+    {"reference": "Refr12", "doi": "Doi2", "bibcode": "2012yCat.2311....0C"},
     {"reference": "Burn08", "doi": "Doi3", "bibcode": "2008MNRAS.391..320B"},
 ]
 
 source_data = [
     {
         "source": "Fake 1",
-        "ra_deg": 9.0673755,
+        "ra_deg": 19.0673755,
         "dec_deg": 18.352889,
-        "reference": "Ref 1",
+        "reference": "Refr12",
     },
     {
         "source": "Fake 2",
         "ra_deg": 9.0673755,
-        "dec_deg": 18.352889,
-        "reference": "Ref 1",
+        "dec_deg": 50.352889,
+        "reference": "Refr20",
     },
     {
         "source": "Fake 3",
-        "ra_deg": 9.0673755,
-        "dec_deg": 18.352889,
-        "reference": "Ref 2",
+        "ra_deg": 125.0673755,
+        "dec_deg": 80.352889,
+        "reference": "Burn08",
     },
 ]
 

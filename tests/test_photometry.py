@@ -16,6 +16,45 @@ logger = logging.getLogger("SIMPLE")
 logger.setLevel(logging.DEBUG)
 
 
+@pytest.mark.filterwarnings("ignore::UserWarning")
+def test_ingest_photometry_fail(db):
+    with pytest.raises(AstroDBError) as error_message:
+        ingest_photometry(db, source="test")
+    assert "are required" in str(error_message.value)
+    result = ingest_photometry(db, source="test", raise_error=False)
+    assert result["added"] is False
+
+    with pytest.raises(AstroDBError) as error_message:
+        ingest_photometry(db, source="test", band="V")
+    assert "are required" in str(error_message.value)
+    result = ingest_photometry(db, source="test", band="V", raise_error=False)
+    assert result["added"] is False
+
+    with pytest.raises(AstroDBError) as error_message:
+        ingest_photometry(db, source="test", band="V", magnitude=10)
+    assert "are required" in str(error_message.value)
+    result = ingest_photometry(
+        db, source="test", band="V", magnitude=10, raise_error=False
+    )
+    assert result["added"] is False
+
+    with pytest.raises(AstroDBError) as error_message:
+        ingest_photometry(db, source="test", band="V", magnitude=10, reference="ref")
+    assert "No unique source match" in str(error_message.value)
+    result = ingest_photometry(
+        db, source="test", band="V", magnitude=10, reference="ref", raise_error=False
+    )
+    assert result["added"] is False
+
+    with pytest.raises(AstroDBError) as error_message:
+        ingest_photometry(db, source="Fake 1", band="V", magnitude=10, reference="ref")
+    assert "not found in Publications table" in str(error_message.value)
+    result = ingest_photometry(
+        db, source="Fake 1", band="V", magnitude=10, reference="ref", raise_error=False
+    )
+    assert result["added"] is False
+
+
 @pytest.mark.parametrize(
     "telescope, instrument, filter_name, wavelength",
     [("HST", "WFC3_IR", "F140W", 13734.66)],
@@ -30,6 +69,8 @@ def test_fetch_svo_fail():
     with pytest.raises(AstroDBError) as error_message:
         fetch_svo("HST", "WFC3", "F140W")
     assert "not found in SVO" in str(error_message.value)
+
+    # TODO: Simulate no internet connection with pytest-socket
 
 
 @pytest.mark.parametrize(

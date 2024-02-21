@@ -8,7 +8,7 @@ import astropy.units as u
 from astropy.io.votable import parse
 from astrodb_scripts import internet_connection
 
-from astrodb_scripts import AstroDBError, find_source_in_db
+from astrodb_scripts import AstroDBError, find_source_in_db, find_publication
 
 logger = logging.getLogger("AstroDB")
 
@@ -29,36 +29,71 @@ def ingest_photometry(
     raise_error: bool = True,
 ):
     """
-    TODO: Write Docstring
+    Add a photometry measurement to the database
 
     Parameters
     ----------
     db: astrodbkit2.astrodb.Database
-    sources: list[str]
-    bands: str or list[str]
-    magnitudes: list[float]
-    magnitude_errors: list[float]
-    reference: str or list[str]
-    telescope: str or list[str]
-    epoch: list[float], optional
-    comments: list[str], optional
+    source: str
+    band: str
+    magnitude: float
+    magnitude_error: float
+    reference: str
+    telescope: str, optional
+    epoch: float, optional
+    comments: str, optional
     raise_error: bool, optional
         True (default): Raise an error if a source cannot be ingested
-        False: Log a warning but skip sources which cannot be ingested
+        False: Logs a warning but does not raise an error
 
     Returns
     -------
+    flags: dict
+        added: bool
+            True if the measurement was added to the database
+            False if the measurement was not added to the database
 
     """
     flags = {"added": False}
 
-    db_name = find_source_in_db(db, source)
+    if source is None or band is None or magnitude is None or reference is None:
+        msg = (
+            "source, band, magnitude, and reference are required. \n"
+            f"Provided: source={source}, band={band}, magnitude={magnitude}, reference={reference}"
+        )
+        if raise_error:
+            logger.error(msg)
+            raise AstroDBError(msg)
+        else:
+            logger.warning(msg)
+            return flags
 
+    # Make sure source exists in the database
+    db_name = find_source_in_db(db, source)
     if len(db_name) != 1:
         msg = f"No unique source match for {source} in the database"
-        raise AstroDBError(msg)
+        if raise_error:
+            logger.error(msg)
+            raise AstroDBError(msg)
+        else:
+            logger.warning(msg)
+            return flags
     else:
         db_name = db_name[0]
+
+    # Make sure the reference exists in the Publications table
+    pub_check = find_publication(db, reference=reference)
+    if pub_check[0]:
+        msg = f"Reference found: {pub_check[1]}."
+        logger.info(msg)
+    if not pub_check[0]:
+        msg = f"Reference {reference} not found in Publications table."
+        if raise_error:
+            logger.error(msg)
+            raise AstroDBError(msg)
+        else:
+            logger.warning(msg)
+            return flags
 
     # if the uncertainty is masked, don't ingest anything
     if isinstance(magnitude_error, np.ma.core.MaskedConstant):
@@ -74,7 +109,7 @@ def ingest_photometry(
             "magnitude": str(
                 magnitude
             ),  # Convert to string to maintain significant digits
-            "magnitude_error": mag_error,
+            "magnitude_error": str(mag_error),
             "telescope": telescope,
             "epoch": epoch,
             "comments": comments,

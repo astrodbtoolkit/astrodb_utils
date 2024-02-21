@@ -31,19 +31,19 @@ def test_ingest_sources(db):
                 "source": "Apple",
                 "ra": 10.0673755,
                 "dec": 17.352889,
-                "reference": "Ref 1",
+                "reference": "Refr12",
             },
             {
                 "source": "Orange",
                 "ra": 12.0673755,
                 "dec": -15.352889,
-                "reference": "Ref 2",
+                "reference": "Refr20",
             },
             {
                 "source": "Banana",
                 "ra": 119.0673755,
                 "dec": -28.352889,
-                "reference": "Ref 1",
+                "reference": "Refr12",
             },
         ]
     )
@@ -65,7 +65,7 @@ def test_ingest_sources(db):
     "ignore::UserWarning"
 )  # suppress astroquery SIMBAD warnings
 def test_ingest_source(db):
-    ingest_source(db, "Barnard Star", reference="Ref 2", raise_error=True)
+    ingest_source(db, "Barnard Star", reference="Refr20", raise_error=True)
 
     Barnard_star = (
         db.query(db.Sources).filter(db.Sources.c.source == "Barnard Star").astropy()
@@ -126,30 +126,32 @@ def test_ingest_source(db):
 
 def test_find_publication(db):
     assert not find_publication(db)[0]  # False
-    assert find_publication(db, name="Ref 1")[0]  # True
-    assert find_publication(db, name="Ref 1", doi="10.1093/mnras/staa1522")[0]  # True
+    assert find_publication(db, reference="Refr12")[0]  # True
+    assert find_publication(db, reference="Refr20", doi="10.1093/mnras/staa1522")[
+        0
+    ]  # True
     doi_search = find_publication(db, doi="10.1093/mnras/staa1522")
     assert doi_search[0]  # True
-    assert doi_search[1] == "Ref 1"
+    assert doi_search[1] == "Refr20"
     bibcode_search = find_publication(db, bibcode="2020MNRAS.496.1922B")
     assert bibcode_search[0]  # True
-    assert bibcode_search[1] == "Ref 1"
-    multiple_matches = find_publication(db, name="Ref")
+    assert bibcode_search[1] == "Refr20"
+    multiple_matches = find_publication(db, reference="Ref")
     assert not multiple_matches[0]  # False, multiple matches
     assert multiple_matches[1] == 2  # multiple matches
-    assert not find_publication(db, name="Ref 2", doi="10.1093/mnras/staa1522")[
+    assert not find_publication(db, reference="Refr12", doi="10.1093/mnras/staa1522")[
         0
     ]  # False
-    assert not find_publication(db, name="Ref 2", bibcode="2020MNRAS.496.1922B")[
+    assert not find_publication(db, reference="Refr12", bibcode="2020MNRAS.496.1922B")[
         0
     ]  # False
-    assert find_publication(db, name="Burningham_2008") == (1, "Burn08")
+    assert find_publication(db, reference="Burningham_2008") == (1, "Burn08")
 
 
 def test_ingest_publication(db):
     # should fail if trying to add a duplicate record
     with pytest.raises(AstroDBError) as error_message:
-        ingest_publication(db, publication="Ref 1", bibcode="2020MNRAS.496.1922B")
+        ingest_publication(db, publication="Refr20", bibcode="2020MNRAS.496.1922B")
     assert " similar publication already exists" in str(error_message.value)
     # TODO - Mock environment  where ADS_TOKEN is not set. #117
 
