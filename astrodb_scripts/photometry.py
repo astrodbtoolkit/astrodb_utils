@@ -96,6 +96,21 @@ def ingest_photometry(
             logger.warning(msg)
             return flags
 
+    # TODO: Make sure band exists in the PhotometryFilters table
+    band_match = (
+        db.query(db.PhotometryFilters)
+        .filter(db.PhotometryFilters.c.band == band)
+        .table()
+    )
+    if len(band_match) == 0:
+        msg = f"Band {band} not found in PhotometryFilters table."
+        if raise_error:
+            logger.error(msg)
+            raise AstroDBError(msg)
+        else:
+            logger.warning(msg)
+            return flags
+
     # If telescope is provided, make sure it exists in the Telescopes table
     if telescope is not None:
         telescope_match = (
@@ -112,8 +127,11 @@ def ingest_photometry(
                 logger.warning(msg)
                 return flags
 
-    # if the uncertainty is masked, don't ingest anything
+    # if the uncertainty is masked, set it to None,
+    #        otherwise convert to a string
     if isinstance(magnitude_error, np.ma.core.MaskedConstant):
+        mag_error = None
+    elif magnitude_error is None:
         mag_error = None
     else:
         mag_error = str(magnitude_error)
@@ -126,7 +144,7 @@ def ingest_photometry(
             "magnitude": str(
                 magnitude
             ),  # Convert to string to maintain significant digits
-            "magnitude_error": str(mag_error),
+            "magnitude_error": mag_error,
             "telescope": telescope,
             "epoch": epoch,
             "comments": comments,

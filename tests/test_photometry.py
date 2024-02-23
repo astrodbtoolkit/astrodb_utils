@@ -17,7 +17,6 @@ logger.setLevel(logging.DEBUG)
 
 
 # These tests will fail until the Photometry table is added to the template database
-@pytest.mark.xfail
 def test_ingest_photometry(db):
     ingest_photometry(db, source="Fake 1", band="V", magnitude=10, reference="refr12")
     ingest_photometry(
