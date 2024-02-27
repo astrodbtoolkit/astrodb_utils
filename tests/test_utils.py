@@ -1,6 +1,5 @@
 import pytest
 import math
-import logging
 from astropy.table import Table
 from sqlalchemy import and_
 from astrodb_scripts import (

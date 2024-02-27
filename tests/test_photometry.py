@@ -1,4 +1,5 @@
 import pytest
+import astropy.units as u
 from astrodb_scripts import AstroDBError
 from astrodb_scripts.photometry import (
     ingest_photometry,
@@ -7,11 +8,7 @@ from astrodb_scripts.photometry import (
     assign_ucd,
 )
 
-# TODO: Write tests for ingest_photometry
-# TODO: Write tests for ingest_photometry_filter
 
-
-# These tests will fail until the Photometry table is added to the template database
 def test_ingest_photometry(db):
     ingest_photometry(
         db,
@@ -106,9 +103,11 @@ def test_ingest_photometry_fails(db):
     [("HST", "WFC3_IR", "F140W", 13734.66)],
 )
 def test_fetch_svo(telescope, instrument, filter_name, wavelength):
-    filter_id, wave, fwhm = fetch_svo(telescope, instrument, filter_name)
+    filter_id, wave, fwhm, width = fetch_svo(telescope, instrument, filter_name)
     assert wave.unit == "Angstrom"
     assert wave.value == pytest.approx(wavelength)
+    assert filter_id == "HST/WFC3_IR.F140W"
+    assert width.unit == u.Angstrom
 
 
 def test_fetch_svo_fail():
@@ -140,4 +139,16 @@ def test_fetch_svo_fail():
     ],
 )
 def test_assign_ucd(wave, ucd):
-    assert assign_ucd(wave) == ucd
+    assert assign_ucd(wave * u.Angstrom) == ucd
+
+
+def test_ingest_photometry_filter(db):
+    ingest_photometry_filter(
+        db, telescope="SLOAN", instrument="SDSS", filter_name="zprime_filter"
+    )
+    assert (
+        db.query(db.PhotometryFilters)
+        .filter(db.PhotometryFilters.c.band == "SLOAN/SDSS.zprime_filter")
+        .count()
+        == 1
+    )

@@ -6,9 +6,12 @@ import sqlalchemy.exc
 from typing import Optional
 import astropy.units as u
 from astropy.io.votable import parse
-from astrodb_scripts import internet_connection
-
-from astrodb_scripts import AstroDBError, find_source_in_db, find_publication
+from astrodb_scripts import (
+    AstroDBError,
+    find_source_in_db,
+    find_publication,
+    internet_connection,
+)
 
 logger = logging.getLogger("AstroDB")
 
@@ -60,7 +63,9 @@ def ingest_photometry(
     if source is None or band is None or magnitude is None or reference is None:
         msg = (
             "source, band, magnitude, and reference are required. \n"
-            f"Provided: source={source}, band={band}, magnitude={magnitude}, reference={reference}"
+            f"Provided: source={source}, band={band}, "
+            f"magnitude={magnitude}, "
+            f"reference={reference}"
         )
         if raise_error:
             logger.error(msg)
@@ -197,6 +202,9 @@ def ingest_photometry_filter(
         with db.engine.connect() as conn:
             conn.execute(db.Telescopes.insert().values({"telescope": telescope}))
             conn.commit()
+        logger.info(f"Added telescope {telescope}.")
+    else:
+        logger.info(f"Telescope {telescope} already exists.")
 
     # Fetch existing instruments, add if missing
     existing = (
@@ -208,12 +216,22 @@ def ingest_photometry_filter(
         with db.engine.connect() as conn:
             conn.execute(db.Instruments.insert().values({"instrument": instrument}))
             conn.commit()
+        logger.info(f"Added instrument {instrument}.")
+    else:
+        logger.info(f"Instrument {instrument} already exists.")
 
     # Get data from SVO
-    filter_id, eff_wave, fwhm = fetch_svo(telescope, instrument, filter_name)
+    filter_id, wave_eff, fwhm, width_effective = fetch_svo(
+        telescope, instrument, filter_name
+    )
+    logger.info(
+        f"From SVO: Filter {filter_id} has effective wavelength {wave_eff} "
+        f"and FWHM {fwhm} and width_effective {width_effective}."
+    )
 
     if ucd is None:
-        ucd = assign_ucd(eff_wave)
+        ucd = assign_ucd(wave_eff)
+    logger.info(f"UCD for filter {filter_id} is {ucd}")
 
     # Add the filter
     try:
@@ -223,15 +241,15 @@ def ingest_photometry_filter(
                     {
                         "band": filter_id,
                         "ucd": ucd,
-                        "effective_wavelength": eff_wave,
-                        "width": fwhm,
+                        "effective_wavelength_angstroms": wave_eff.to(u.Angstrom).value,
+                        "width_angstroms": width_effective.to(u.Angstrom).value,
                     }
                 )
             )
             conn.commit()
         logger.info(
-            f"Added filter {filter_id} with effective wavelength {eff_wave}, "
-            f"FWHM {fwhm}, and UCD {ucd}."
+            f"Added filter {filter_id} with effective wavelength {wave_eff}, "
+            f"width {width_effective}, and UCD {ucd}."
         )
     except sqlalchemy.exc.IntegrityError as e:
         if "UNIQUE constraint failed:" in str(e):
@@ -265,11 +283,12 @@ def fetch_svo(telescope: str = None, instrument: str = None, filter_name: str = 
     -------
     filter_id: str
         Filter ID
-    eff_wave: Quantity
+    wave_eff: Quantity
         Effective wavelength
     fwhm: Quantity
         Full width at half maximum (FWHM)
-
+    width_effective: Quantity
+        Effective width of the filter
 
     Raises
     ------
@@ -279,8 +298,11 @@ def fetch_svo(telescope: str = None, instrument: str = None, filter_name: str = 
         If the filter information is not found in the VOTable
     """
 
-    if internet_connection() == False:
-        msg = "No internet connection. Cannot fetch photometry filter information from the SVO website."
+    if internet_connection() is False:
+        msg = (
+            "No internet connection. "
+            "Cannot fetch photometry filter information from the SVO website."
+        )
         logger.error(msg)
         raise AstroDBError(msg)
 
@@ -307,26 +329,31 @@ def fetch_svo(telescope: str = None, instrument: str = None, filter_name: str = 
         raise AstroDBError(msg)
 
     # Get effective wavelength and FWHM
-    eff_wave = votable.get_field_by_id("WavelengthEff")
+    wave_eff = votable.get_field_by_id("WavelengthEff")
     fwhm = votable.get_field_by_id("FWHM")
+    width_effective = votable.get_field_by_id("WidthEff")
 
-    if eff_wave.unit == "AA" and fwhm.unit == "AA":
-        eff_wave = eff_wave.value * u.Angstrom
+    if wave_eff.unit == "AA" and fwhm.unit == "AA" and width_effective.unit == "AA":
+        wave_eff = wave_eff.value * u.Angstrom
         fwhm = fwhm.value * u.Angstrom
+        width_effective = width_effective.value * u.Angstrom
     else:
-        msg = f"Wavelengths from SVO may not be Angstroms as expected: {eff_wave.unit}"
+        msg = (
+            f"Wavelengths from SVO may not be Angstroms as expected: {wave_eff.unit},"
+            f"{fwhm.unit}, {width_effective.unit}."
+        )
         raise AstroDBError(msg)
 
     logger.debug(
         f"Found in SVO: "
-        f"Filter {filter_id} has effective wavelength {eff_wave} and "
-        f"FWHM {fwhm}."
+        f"Filter {filter_id} has effective wavelength {wave_eff} and "
+        f"FWHM {fwhm} and effective width {width_effective}."
     )
 
-    return filter_id, eff_wave, fwhm
+    return filter_id, wave_eff, fwhm, width_effective
 
 
-def assign_ucd(eff_wave):
+def assign_ucd(wave_eff_quantity: u.Quantity):
     """
     Assign a Unified Content Descriptors (UCD) to a photometry filter
     based on its effective wavelength
@@ -335,8 +362,8 @@ def assign_ucd(eff_wave):
 
     Parameters
     ----------
-    eff_wave: float
-        Effective wavelength in Angstroms
+    wave_eff: Quantity
+        Effective wavelength
 
     Returns
     -------
@@ -344,29 +371,32 @@ def assign_ucd(eff_wave):
         UCD string
 
     """
-    if 3000 < eff_wave <= 4000:
+    wave_eff_quantity.to(u.Angstrom)
+    wave_eff = wave_eff_quantity.value
+
+    if 3000 < wave_eff <= 4000:
         ucd = "em.opt.U"
-    elif 4000 < eff_wave <= 5000:
+    elif 4000 < wave_eff <= 5000:
         ucd = "em.opt.B"
-    elif 5000 < eff_wave <= 6000:
+    elif 5000 < wave_eff <= 6000:
         ucd = "em.opt.V"
-    elif 6000 < eff_wave <= 7500:
+    elif 6000 < wave_eff <= 7500:
         ucd = "em.opt.R"
-    elif 7500 < eff_wave <= 10000:
+    elif 7500 < wave_eff <= 10000:
         ucd = "em.opt.I"
-    elif 10000 < eff_wave <= 15000:
+    elif 10000 < wave_eff <= 15000:
         ucd = "em.IR.J"
-    elif 15000 < eff_wave <= 20000:
+    elif 15000 < wave_eff <= 20000:
         ucd = "em.IR.H"
-    elif 20000 < eff_wave <= 30000:
+    elif 20000 < wave_eff <= 30000:
         ucd = "em.IR.K"
-    elif 30000 < eff_wave <= 40000:
+    elif 30000 < wave_eff <= 40000:
         ucd = "em.IR.3-4um"
-    elif 40000 < eff_wave <= 80000:
+    elif 40000 < wave_eff <= 80000:
         ucd = "em.IR.4-8um"
-    elif 80000 < eff_wave <= 150000:
+    elif 80000 < wave_eff <= 150000:
         ucd = "em.IR.8-15um"
-    elif 150000 < eff_wave <= 300000:
+    elif 150000 < wave_eff <= 300000:
         ucd = "em.IR.15-30um"
     else:
         ucd = None
