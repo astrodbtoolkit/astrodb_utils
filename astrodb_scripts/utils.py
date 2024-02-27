@@ -184,7 +184,9 @@ def find_source_in_db(db, source, *, ra=None, dec=None, search_radius=60.0):
             f"{source}: No Simbad match, trying coord search around"
             f"{location.ra.degree}, {location.dec}"
         )
-        db_name_matches = db.query_region(location, radius=radius, ra_col='ra_deg', dec_col='dec_deg')
+        db_name_matches = db.query_region(
+            location, radius=radius, ra_col="ra_deg", dec_col="dec_deg"
+        )
 
     # If still no matches, try to get the coords from SIMBAD
     if len(db_name_matches) == 0:
@@ -204,7 +206,9 @@ def find_source_in_db(db, source, *, ra=None, dec=None, search_radius=60.0):
                 f"Finding SIMBAD matches around {simbad_skycoord} with radius {radius}"
             )
             logger.debug(msg2)
-            db_name_matches = db.query_region(simbad_skycoord, radius=radius,ra_col="ra_deg", dec_col="dec_deg")
+            db_name_matches = db.query_region(
+                simbad_skycoord, radius=radius, ra_col="ra_deg", dec_col="dec_deg"
+            )
 
     if len(db_name_matches) == 1:
         db_names = db_name_matches["source"].tolist()
@@ -605,9 +609,9 @@ def check_url_valid(url):
     """
 
     request_response = requests.head(url)
-    status_code = request_response.status_code  # The website is up if the status code is 200
-    if status_code != 200:
-        status = 'skipped' # instead of incrememnting n_skipped, just skip this one
+    status_code = request_response.status_code
+    if status_code != 200:  # The website is up if the status code is 200
+        status = "skipped"  # instead of incrememnting n_skipped, just skip this one
         msg = "The spectrum location does not appear to be valid: \n" \
               f'spectrum: {url} \n' \
               f'status code: {status_code}'
@@ -1128,7 +1132,7 @@ def find_survey_name_in_simbad(sources, desig_prefix, source_id_index=None):
     return result_table
 
 
-def ingest_instrument(db, telescope=None, instrument=None, mode=None):
+def ingest_instrument(db, *, telescope=None, instrument=None, mode=None):
     """
     Script to ingest instrumentation
     TODO: Add option to ingest references for the telescope and instruments
