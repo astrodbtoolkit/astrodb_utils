@@ -152,3 +152,19 @@ def test_ingest_photometry_filter(db):
         .count()
         == 1
     )
+
+
+def test_ingest_photometry_filter_errors(db):
+    # Filter already ingested
+    with pytest.raises(AstroDBError) as error_message:
+        ingest_photometry_filter(
+            db, telescope="SLOAN", instrument="SDSS", filter_name="u"
+        )
+    assert "already exists" in str(error_message.value)
+
+    # Telescope not in the SVO
+    with pytest.raises(AstroDBError) as error_message:
+        ingest_photometry_filter(
+            db, telescope="Rainbow", instrument="Pony", filter_name="BVRI"
+        )
+    assert "not found in SVO" in str(error_message.value)

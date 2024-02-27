@@ -11,6 +11,7 @@ from astrodb_scripts import (
     find_source_in_db,
     find_publication,
     internet_connection,
+    ingest_instrument,
 )
 
 logger = logging.getLogger("AstroDB")
@@ -213,9 +214,9 @@ def ingest_photometry_filter(
         .table()
     )
     if len(existing) == 0:
-        with db.engine.connect() as conn:
-            conn.execute(db.Instruments.insert().values({"instrument": instrument}))
-            conn.commit()
+        ingest_instrument(
+            db, telescope=telescope, instrument=instrument, mode="Imaging"
+        )
         logger.info(f"Added instrument {instrument}.")
     else:
         logger.info(f"Instrument {instrument} already exists.")
