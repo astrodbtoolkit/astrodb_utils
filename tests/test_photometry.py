@@ -1,5 +1,4 @@
 import pytest
-import logging
 from astrodb_scripts import AstroDBError
 from astrodb_scripts.photometry import (
     ingest_photometry,
@@ -12,20 +11,22 @@ from astrodb_scripts.photometry import (
 # TODO: Write tests for ingest_photometry_filter
 
 
-logger = logging.getLogger("SIMPLE")
-logger.setLevel(logging.DEBUG)
-
-
 # These tests will fail until the Photometry table is added to the template database
 def test_ingest_photometry(db):
-    ingest_photometry(db, source="Fake 1", band="V", magnitude=10, reference="refr12")
     ingest_photometry(
         db,
-        source="Fake 1",
-        band="V",
+        source="Dark energy source 1",
+        band="Generic/Johnson.V",
         magnitude=10,
-        reference="refr12",
-        telescope="test4",
+        reference="Rubin80",
+    )
+    ingest_photometry(
+        db,
+        source="Dark energy source 2",
+        band="Generic/Cousins.R",
+        magnitude=10,
+        reference="Riess98",
+        telescope="Generic",
     )
 
 
@@ -60,29 +61,40 @@ def test_ingest_photometry_fails(db):
     assert result["added"] is False
 
     with pytest.raises(AstroDBError) as error_message:
-        ingest_photometry(db, source="Fake 1", band="V", magnitude=10, reference="ref")
+        ingest_photometry(
+            db,
+            source="Dark energy source 1",
+            band="2MASS/2MASS.J",
+            magnitude=10,
+            reference="ref",
+        )
     assert "not found in Publications table" in str(error_message.value)
     result = ingest_photometry(
-        db, source="Fake 1", band="V", magnitude=10, reference="ref", raise_error=False
+        db,
+        source="Dark energy source 1",
+        band="2MASS/2MASS.J",
+        magnitude=10,
+        reference="ref",
+        raise_error=False,
     )
     assert result["added"] is False
 
     with pytest.raises(AstroDBError) as error_message:
         ingest_photometry(
             db,
-            source="Fake 1",
-            band="V",
+            source="Dark energy source 1",
+            band="Generic/Cousins.R",
             magnitude=10,
-            reference="Refr12",
+            reference="Rubin80",
             telescope="HST",
         )
     assert "not found in Telescopes table" in str(error_message.value)
     result = ingest_photometry(
         db,
-        source="Fake 1",
-        band="V",
+        source="Dark energy source 1",
+        band="Generic/Cousins.R",
         magnitude=10,
-        reference="refr12",
+        reference="Rubin80",
         telescope="HST",
         raise_error=False,
     )

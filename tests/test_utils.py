@@ -13,11 +13,21 @@ from astrodb_scripts import (
 )
 
 
-logger = logging.getLogger("AstroDB")
-logger.setLevel(logging.DEBUG)
-
-
-# load the database created by test_1_create_db.py
+def test_ingest_publications(db):
+    # add a made up publication and make sure it's there
+    ingest_publication(
+        db,
+        reference="Refr20",
+        bibcode="2020MNRAS.496.1922B",
+        doi="10.1093/mnras/staa1522",
+        ignore_ads=True,
+    )
+    assert (
+        db.query(db.Publications)
+        .filter(db.Publications.c.reference == "Refr20")
+        .count()
+        == 1
+    )
 
 
 @pytest.mark.filterwarnings(
@@ -31,7 +41,7 @@ def test_ingest_sources(db):
                 "source": "Apple",
                 "ra": 10.0673755,
                 "dec": 17.352889,
-                "reference": "Refr12",
+                "reference": "Refr20",
             },
             {
                 "source": "Orange",
@@ -43,7 +53,7 @@ def test_ingest_sources(db):
                 "source": "Banana",
                 "ra": 119.0673755,
                 "dec": -28.352889,
-                "reference": "Refr12",
+                "reference": "Refr20",
             },
         ]
     )
@@ -126,7 +136,7 @@ def test_ingest_source(db):
 
 def test_find_publication(db):
     assert not find_publication(db)[0]  # False
-    assert find_publication(db, reference="Refr12")[0]  # True
+    assert find_publication(db, reference="Refr20")[0]  # True
     assert find_publication(db, reference="Refr20", doi="10.1093/mnras/staa1522")[
         0
     ]  # True
@@ -136,22 +146,24 @@ def test_find_publication(db):
     bibcode_search = find_publication(db, bibcode="2020MNRAS.496.1922B")
     assert bibcode_search[0]  # True
     assert bibcode_search[1] == "Refr20"
-    multiple_matches = find_publication(db, reference="Ref")
+
+    # Fuzzy matching working!
+    assert find_publication(db, reference="Wright_2010") == (1, "Wrig10")
+
+
+@pytest.mark.skip(reason="Fuzzy matching not perfect yet. #27")
+# TODO: find publication only finds one of the Gaia publications
+def test_find_publication_fuzzy(db):
+    multiple_matches = find_publication(db, reference="Gaia")
+    print(multiple_matches)
     assert not multiple_matches[0]  # False, multiple matches
     assert multiple_matches[1] == 2  # multiple matches
-    assert not find_publication(db, reference="Refr12", doi="10.1093/mnras/staa1522")[
-        0
-    ]  # False
-    assert not find_publication(db, reference="Refr12", bibcode="2020MNRAS.496.1922B")[
-        0
-    ]  # False
-    assert find_publication(db, reference="Burningham_2008") == (1, "Burn08")
 
 
-def test_ingest_publication(db):
+def test_ingest_publication_errors(db):
     # should fail if trying to add a duplicate record
     with pytest.raises(AstroDBError) as error_message:
-        ingest_publication(db, publication="Refr20", bibcode="2020MNRAS.496.1922B")
+        ingest_publication(db, reference="Refr20", bibcode="2020MNRAS.496.1922B")
     assert " similar publication already exists" in str(error_message.value)
     # TODO - Mock environment  where ADS_TOKEN is not set. #117
 

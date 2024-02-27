@@ -304,7 +304,8 @@ def find_publication(
 
     if n_pubs_found > 1:
         logger.warning(
-            f"Found {n_pubs_found} matching publications for {reference} or {doi} or {bibcode}"
+            f"Found {n_pubs_found} matching publications"
+            f"for {reference} or {doi} or {bibcode}"
         )
         if logger.level <= 30:  # warning
             pub_search_table.pprint_all()
@@ -389,7 +390,7 @@ def ingest_publication(
     db,
     doi: str = None,
     bibcode: str = None,
-    publication: str = None,
+    reference: str = None,
     description: str = None,
     ignore_ads: bool = False,
 ):
@@ -422,13 +423,13 @@ def ingest_publication(
 
     """
 
-    if not (publication or doi or bibcode):
+    if not (reference or doi or bibcode):
         logger.error("Publication, DOI, or Bibcode is required input")
         return
 
     ads.config.token = os.getenv("ADS_TOKEN")
 
-    if not ads.config.token and (not publication and (not doi or not bibcode)):
+    if not ads.config.token and (not reference and (not doi or not bibcode)):
         logger.error(
             "An ADS_TOKEN environment variable must be set"
             "in order to auto-populate the fields.\n"
@@ -469,17 +470,17 @@ def ingest_publication(
                 f"{article.first_author}, {article.year},"
                 "{article.bibcode}, {article.title}"
             )
-            if not publication:  # generate the name if it was not provided
+            if not reference:  # generate the name if it was not provided
                 name_stub = article.first_author.replace(",", "").replace(" ", "")
                 name_add = name_stub[0:4] + article.year[-2:]
             else:
-                name_add = publication
+                name_add = reference
             description = article.title[0]
             bibcode_add = article.bibcode
             doi_add = article.doi[0]
 
     elif arxiv_id:
-        name_add = publication
+        name_add = reference
         bibcode_add = arxiv_id
         doi_add = doi
 
@@ -501,16 +502,16 @@ def ingest_publication(
                 f"{article.first_author}, {article.year},"
                 "{article.bibcode}, {article.title}"
             )
-            if not publication:  # generate the name if it was not provided
+            if not reference:  # generate the name if it was not provided
                 name_stub = article.first_author.replace(",", "").replace(" ", "")
                 name_add = name_stub[0:4] + article.year[-2:]
             else:
-                name_add = publication
+                name_add = reference
             description = article.title[0]
             bibcode_add = article.bibcode
             doi_add = article.doi[0]
     elif doi:
-        name_add = publication
+        name_add = reference
         bibcode_add = bibcode
         doi_add = doi
 
@@ -538,11 +539,11 @@ def ingest_publication(
                 f"{article.first_author}, {article.year}, "
                 "{article.bibcode}, {article.doi}, {article.title}"
             )
-            if not publication:  # generate the name if it was not provided
+            if not reference:  # generate the name if it was not provided
                 name_stub = article.first_author.replace(",", "").replace(" ", "")
                 name_add = name_stub[0:4] + article.year[-2:]
             else:
-                name_add = publication
+                name_add = reference
             description = article.title[0]
             bibcode_add = article.bibcode
             if article.doi is None:
@@ -550,12 +551,13 @@ def ingest_publication(
             else:
                 doi_add = article.doi[0]
     elif bibcode:
-        name_add = publication
+        name_add = reference
         bibcode_add = bibcode
         doi_add = doi
+        using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
 
-    if publication and not bibcode and not doi:
-        name_add = publication
+    if reference and not bibcode and not doi:
+        name_add = reference
         using = "user input"
 
     new_ref = [

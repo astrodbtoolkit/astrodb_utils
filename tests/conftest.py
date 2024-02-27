@@ -1,68 +1,38 @@
 import pytest
 import os
 import sys
+import logging
 from astrodbkit2.astrodb import create_database, Database
-from astrodb_scripts import load_astrodb
+
 sys.path.append("./tests/astrodb-template-db/")
 from schema.schema_template import *  # import the schema of the template database
 
-DB_NAME = "tests/testdb.sqlite"
-DB_PATH = "tests/astrodb-template-db/data"
+logger = logging.getLogger("AstroDB")
 
 
-# Create a fresh temporary database and assert it exists
-if os.path.exists(DB_NAME):
-    os.remove(DB_NAME)
-    print(f"Removed existing database at {DB_NAME}")
-connection_string = "sqlite:///" + DB_NAME
-create_database(connection_string)
-print(f"Created new database at {DB_NAME}")
-assert os.path.exists(DB_NAME)
-
-# Connect to the new database and confirm it has the Sources table
-db = Database(connection_string)
-assert db
-assert "source" in [c.name for c in db.Sources.columns]
-
-# Add some data to the database
-ref_data = [
-    {
-        "reference": "Refr20",
-        "doi": "10.1093/mnras/staa1522",
-        "bibcode": "2020MNRAS.496.1922B",
-    },
-    {"reference": "Refr12", "doi": "Doi2", "bibcode": "2012yCat.2311....0C"},
-    {"reference": "Burn08", "doi": "Doi3", "bibcode": "2008MNRAS.391..320B"},
-]
-
-source_data = [
-    {
-        "source": "Fake 1",
-        "ra_deg": 19.0673755,
-        "dec_deg": 18.352889,
-        "reference": "Refr12",
-    },
-    {
-        "source": "Fake 2",
-        "ra_deg": 9.0673755,
-        "dec_deg": 50.352889,
-        "reference": "Refr20",
-    },
-    {
-        "source": "Fake 3",
-        "ra_deg": 125.0673755,
-        "dec_deg": 80.352889,
-        "reference": "Burn08",
-    },
-]
-
-with db.engine.connect() as conn:
-    conn.execute(db.Publications.insert().values(ref_data))
-    conn.execute(db.Sources.insert().values(source_data))
-    conn.commit()
-
-
+# load the template database for use by the tests
 @pytest.fixture(scope="session", autouse=True)
 def db():
-    db = load_astrodb(DB_NAME, recreatedb=False)
+    DB_NAME = "tests/test-template-db.sqlite"
+    DB_PATH = "tests/astrodb-template-db/data"
+
+    # Create a fresh temporary database and assert it exists
+    if os.path.exists(DB_NAME):
+        os.remove(DB_NAME)
+    connection_string = "sqlite:///" + DB_NAME
+    create_database(connection_string)
+
+    # Connect to the new database instance
+    db = Database(connection_string)
+    # Load data into an in-memory sqlite database first, for performance
+    db = Database("sqlite://")  # creates and connects to a temporary in-memory database
+    db.load_database(
+        DB_PATH, verbose=False
+    )  # loads the data from the data files into the database
+    db.dump_sqlite(DB_NAME)  # dump in-memory database to file
+    db = Database(
+        "sqlite:///" + DB_NAME
+    )  # replace database object with new file version
+    logger.info("Loaded SIMPLE database using db function in conftest")
+
     return db
