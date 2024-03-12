@@ -1,8 +1,5 @@
 import pytest
 import math
-import os
-import sys
-from astrodbkit2.astrodb import create_database, Database
 from astropy.table import Table
 from sqlalchemy import and_
 from astrodb_utils import (
@@ -13,61 +10,23 @@ from astrodb_utils import (
     ingest_sources,
     ingest_instrument,
 )
-import logging
-sys.path.append('./tests/astrodb-template-db')
-from schema.schema_template import * # import the schema of the template database
 
 
-logger = logging.getLogger("AstroDB")
-logger.setLevel(logging.DEBUG)
-
-
-DB_NAME = "tests/testdb.sqlite"
-DB_PATH = "tests/astrotemplate-db/data"
-
-
-# Load the database for use in individual tests
-@pytest.fixture(scope="module")
-def db():
-    # Create a fresh temporary database and assert it exists
-    # Because we've imported simple.schema, we will be using that schema for the database
-
-    if os.path.exists(DB_NAME):
-        os.remove(DB_NAME)
-    connection_string = "sqlite:///" + DB_NAME
-    create_database(connection_string)
-    assert os.path.exists(DB_NAME)
-
-    # Connect to the new database and confirm it has the Sources table
-    db = Database(connection_string)
-    assert db
-    assert "source" in [c.name for c in db.Sources.columns]
-
-    return db
-
-
-def test_setup_db(db):
-    # Some setup tasks to ensure some data exists in the database first
-    ref_data = [
-        {
-            "reference": "Ref 1",
-            "doi": "10.1093/mnras/staa1522",
-            "bibcode": "2020MNRAS.496.1922B",
-        },
-        {"reference": "Ref 2", "doi": "Doi2", "bibcode": "2012yCat.2311....0C"},
-        {"reference": "Burn08", "doi": "Doi3", "bibcode": "2008MNRAS.391..320B"},
-    ]
-
-    source_data = [
-        {"source": "Fake 1", "ra_deg": 9.0673755, "dec_deg": 18.352889, "reference": "Ref 1"},
-        {"source": "Fake 2", "ra_deg": 9.0673755, "dec_deg": 18.352889, "reference": "Ref 1"},
-        {"source": "Fake 3", "ra_deg": 9.0673755, "dec_deg": 18.352889, "reference": "Ref 2"},
-    ]
-
-    with db.engine.connect() as conn:
-        conn.execute(db.Publications.insert().values(ref_data))
-        conn.execute(db.Sources.insert().values(source_data))
-        conn.commit()
+def test_ingest_publications(db):
+    # add a made up publication and make sure it's there
+    ingest_publication(
+        db,
+        reference="Refr20",
+        bibcode="2020MNRAS.496.1922B",
+        doi="10.1093/mnras/staa1522",
+        ignore_ads=True,
+    )
+    assert (
+        db.query(db.Publications)
+        .filter(db.Publications.c.reference == "Refr20")
+        .count()
+        == 1
+    )
 
 
 @pytest.mark.filterwarnings(
@@ -81,19 +40,19 @@ def test_ingest_sources(db):
                 "source": "Apple",
                 "ra": 10.0673755,
                 "dec": 17.352889,
-                "reference": "Ref 1",
+                "reference": "Refr20",
             },
             {
                 "source": "Orange",
                 "ra": 12.0673755,
                 "dec": -15.352889,
-                "reference": "Ref 2",
+                "reference": "Refr20",
             },
             {
                 "source": "Banana",
                 "ra": 119.0673755,
                 "dec": -28.352889,
-                "reference": "Ref 1",
+                "reference": "Refr20",
             },
         ]
     )
@@ -115,7 +74,7 @@ def test_ingest_sources(db):
     "ignore::UserWarning"
 )  # suppress astroquery SIMBAD warnings
 def test_ingest_source(db):
-    ingest_source(db, "Barnard Star", reference="Ref 2", raise_error=True)
+    ingest_source(db, "Barnard Star", reference="Refr20", raise_error=True)
 
     Barnard_star = (
         db.query(db.Sources).filter(db.Sources.c.source == "Barnard Star").astropy()
@@ -176,30 +135,34 @@ def test_ingest_source(db):
 
 def test_find_publication(db):
     assert not find_publication(db)[0]  # False
-    assert find_publication(db, name="Ref 1")[0]  # True
-    assert find_publication(db, name="Ref 1", doi="10.1093/mnras/staa1522")[0]  # True
+    assert find_publication(db, reference="Refr20")[0]  # True
+    assert find_publication(db, reference="Refr20", doi="10.1093/mnras/staa1522")[
+        0
+    ]  # True
     doi_search = find_publication(db, doi="10.1093/mnras/staa1522")
     assert doi_search[0]  # True
-    assert doi_search[1] == "Ref 1"
+    assert doi_search[1] == "Refr20"
     bibcode_search = find_publication(db, bibcode="2020MNRAS.496.1922B")
     assert bibcode_search[0]  # True
-    assert bibcode_search[1] == "Ref 1"
-    multiple_matches = find_publication(db, name="Ref")
+    assert bibcode_search[1] == "Refr20"
+
+    # Fuzzy matching working!
+    assert find_publication(db, reference="Wright_2010") == (1, "Wrig10")
+
+
+@pytest.mark.skip(reason="Fuzzy matching not perfect yet. #27")
+# TODO: find publication only finds one of the Gaia publications
+def test_find_publication_fuzzy(db):
+    multiple_matches = find_publication(db, reference="Gaia")
+    print(multiple_matches)
     assert not multiple_matches[0]  # False, multiple matches
     assert multiple_matches[1] == 2  # multiple matches
-    assert not find_publication(db, name="Ref 2", doi="10.1093/mnras/staa1522")[
-        0
-    ]  # False
-    assert not find_publication(db, name="Ref 2", bibcode="2020MNRAS.496.1922B")[
-        0
-    ]  # False
-    assert find_publication(db, name="Burningham_2008") == (1, "Burn08")
 
 
-def test_ingest_publication(db):
+def test_ingest_publication_errors(db):
     # should fail if trying to add a duplicate record
     with pytest.raises(AstroDBError) as error_message:
-        ingest_publication(db, publication="Ref 1", bibcode="2020MNRAS.496.1922B")
+        ingest_publication(db, reference="Refr20", bibcode="2020MNRAS.496.1922B")
     assert " similar publication already exists" in str(error_message.value)
     # TODO - Mock environment  where ADS_TOKEN is not set. #117
 

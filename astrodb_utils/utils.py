@@ -26,7 +26,7 @@ __all__ = [
     "find_source_in_db",
     "find_publication",
     "ingest_publication",
-    "check_internet_connection",
+    "internet_connection",
     "ingest_names",
     "ingest_source",
     "ingest_sources",
@@ -68,7 +68,7 @@ class AstroDBError(Exception):
 #     yield
 #     sys.tracebacklimit = default_value  # revert changes
 
-#TODO:  Where should these live? 
+# TODO:  Where should these live?
 REFERENCE_TABLES = [
     "Publications",
     "Telescopes",
@@ -120,7 +120,7 @@ def load_astrodb(db_file, recreatedb=True, reference_tables=REFERENCE_TABLES):
     return db
 
 
-def find_source_in_db(db, source, ra=None, dec=None, search_radius=60.0):
+def find_source_in_db(db, source, *, ra=None, dec=None, search_radius=60.0):
     """
     Find a source in the database given a source name and optional coordinates.
 
@@ -184,7 +184,9 @@ def find_source_in_db(db, source, ra=None, dec=None, search_radius=60.0):
             f"{source}: No Simbad match, trying coord search around"
             f"{location.ra.degree}, {location.dec}"
         )
-        db_name_matches = db.query_region(location, radius=radius, ra_col='ra_deg', dec_col='dec_deg')
+        db_name_matches = db.query_region(
+            location, radius=radius, ra_col="ra_deg", dec_col="dec_deg"
+        )
 
     # If still no matches, try to get the coords from SIMBAD
     if len(db_name_matches) == 0:
@@ -204,7 +206,9 @@ def find_source_in_db(db, source, ra=None, dec=None, search_radius=60.0):
                 f"Finding SIMBAD matches around {simbad_skycoord} with radius {radius}"
             )
             logger.debug(msg2)
-            db_name_matches = db.query_region(simbad_skycoord, radius=radius,ra_col="ra_deg", dec_col="dec_deg")
+            db_name_matches = db.query_region(
+                simbad_skycoord, radius=radius, ra_col="ra_deg", dec_col="dec_deg"
+            )
 
     if len(db_name_matches) == 1:
         db_names = db_name_matches["source"].tolist()
@@ -222,7 +226,9 @@ def find_source_in_db(db, source, ra=None, dec=None, search_radius=60.0):
     return db_names
 
 
-def find_publication(db, name: str = None, doi: str = None, bibcode: str = None):
+def find_publication(
+    db, *, reference: str = None, doi: str = None, bibcode: str = None
+):
     """
     Find publications in the database by matching
     on the publication name,  doi, or bibcode
@@ -231,7 +237,7 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
     ----------
     db
         Variable referencing the database to search
-    name: str
+    reference: str
         Name of publication to search
     doi: str
         DOI of publication to search
@@ -246,10 +252,10 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
 
     Examples
     -------
-    >>> test = search_publication(db, name='Cruz')
+    >>> test = search_publication(db, reference='Cruz')
     Found 8 matching publications for Cruz or None or None
 
-    >>> test = search_publication(db, name='Kirk19')
+    >>> test = search_publication(db, reference='Kirk19')
     Found 1 matching publications for Kirk19 or None or None
      name        bibcode                 doi
     ------ ------------------- ------------------------
@@ -259,7 +265,7 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
     Preliminary Trigonometric Parallaxes of 184 Late-T and Y Dwarfs and an
     Analysis of the Field Substellar Mass Function into the Planetary Mass Regime
 
-    >>> test = search_publication(db, name='Smith')
+    >>> test = search_publication(db, reference='Smith')
     No matching publications for Smith, Trying Smit
     No matching publications for Smit
     Use add_publication() to add it to the database.
@@ -271,14 +277,14 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
     """
 
     # Make sure a search term is provided
-    if name is None and doi is None and bibcode is None:
+    if reference is None and doi is None and bibcode is None:
         logger.error("Name, Bibcode, or DOI must be provided")
         return False, 0
 
     not_null_pub_filters = []
-    if name:
+    if reference:
         # fuzzy_query_name = '%' + name + '%'
-        not_null_pub_filters.append(db.Publications.c.reference.ilike(name))
+        not_null_pub_filters.append(db.Publications.c.reference.ilike(reference))
     if doi:
         not_null_pub_filters.append(db.Publications.c.doi.ilike(doi))
     if bibcode:
@@ -294,7 +300,7 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
     if n_pubs_found == 1:
         logger.info(
             f"Found {n_pubs_found} matching publications for "
-            f"{name} or {doi} or {bibcode}: {pub_search_table['reference'].data}"
+            f"{reference} or {doi} or {bibcode}: {pub_search_table['reference'].data}"
         )
         if logger.level <= 10:  # debug
             pub_search_table.pprint_all()
@@ -302,16 +308,19 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
 
     if n_pubs_found > 1:
         logger.warning(
-            f"Found {n_pubs_found} matching publications for {name} or {doi} or {bibcode}"
+            f"Found {n_pubs_found} matching publications"
+            f"for {reference} or {doi} or {bibcode}"
         )
         if logger.level <= 30:  # warning
             pub_search_table.pprint_all()
         return False, n_pubs_found
 
     # If no matches found, search using first four characters of input name
-    if n_pubs_found == 0 and name:
-        shorter_name = name[:4]
-        logger.debug(f"No matching publications for {name}, Trying {shorter_name}.")
+    if n_pubs_found == 0 and reference:
+        shorter_name = reference[:4]
+        logger.debug(
+            f"No matching publications for {reference}, Trying {shorter_name}."
+        )
         fuzzy_query_shorter_name = "%" + shorter_name + "%"
         pub_search_table = (
             db.query(db.Publications)
@@ -320,7 +329,9 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
         )
         n_pubs_found_short = len(pub_search_table)
         if n_pubs_found_short == 0:
-            logger.warning(f"No matching publications for {name} or {shorter_name}")
+            logger.warning(
+                f"No matching publications for {reference} or {shorter_name}"
+            )
             logger.warning("Use add_publication() to add it to the database.")
             return False, 0
 
@@ -332,10 +343,10 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
                 pub_search_table.pprint_all()
 
             #  Try to find numbers in the reference which might be a date
-            dates = re.findall(r"\d+", name)
+            dates = re.findall(r"\d+", reference)
             # try to find a two digit date
             if len(dates) == 0:
-                logger.debug(f"Could not find a date in {name}")
+                logger.debug(f"Could not find a date in {reference}")
                 two_digit_date = None
             elif len(dates) == 1:
                 if len(dates[0]) == 4:
@@ -360,14 +371,14 @@ def find_publication(db, name: str = None, doi: str = None, bibcode: str = None)
                 if n_pubs_found_short_date == 1:
                     logger.debug(
                         f"Found {n_pubs_found_short_date} matching publications for "
-                        f"{name} using {shorter_name} and {two_digit_date}"
+                        f"{reference} using {shorter_name} and {two_digit_date}"
                     )
                     logger.debug(f"{pubs_found_short_date}")
                     return True, pubs_found_short_date[0]
                 else:
                     logger.warning(
                         f"Found {n_pubs_found_short_date} matching publications for "
-                        f"{name} using {shorter_name} and {two_digit_date}"
+                        f"{reference} using {shorter_name} and {two_digit_date}"
                     )
                     logger.warning(f"{pubs_found_short_date}")
                     return False, n_pubs_found_short_date
@@ -383,7 +394,7 @@ def ingest_publication(
     db,
     doi: str = None,
     bibcode: str = None,
-    publication: str = None,
+    reference: str = None,
     description: str = None,
     ignore_ads: bool = False,
 ):
@@ -416,13 +427,13 @@ def ingest_publication(
 
     """
 
-    if not (publication or doi or bibcode):
+    if not (reference or doi or bibcode):
         logger.error("Publication, DOI, or Bibcode is required input")
         return
 
     ads.config.token = os.getenv("ADS_TOKEN")
 
-    if not ads.config.token and (not publication and (not doi or not bibcode)):
+    if not ads.config.token and (not reference and (not doi or not bibcode)):
         logger.error(
             "An ADS_TOKEN environment variable must be set"
             "in order to auto-populate the fields.\n"
@@ -463,17 +474,17 @@ def ingest_publication(
                 f"{article.first_author}, {article.year},"
                 "{article.bibcode}, {article.title}"
             )
-            if not publication:  # generate the name if it was not provided
+            if not reference:  # generate the name if it was not provided
                 name_stub = article.first_author.replace(",", "").replace(" ", "")
                 name_add = name_stub[0:4] + article.year[-2:]
             else:
-                name_add = publication
+                name_add = reference
             description = article.title[0]
             bibcode_add = article.bibcode
             doi_add = article.doi[0]
 
     elif arxiv_id:
-        name_add = publication
+        name_add = reference
         bibcode_add = arxiv_id
         doi_add = doi
 
@@ -495,16 +506,16 @@ def ingest_publication(
                 f"{article.first_author}, {article.year},"
                 "{article.bibcode}, {article.title}"
             )
-            if not publication:  # generate the name if it was not provided
+            if not reference:  # generate the name if it was not provided
                 name_stub = article.first_author.replace(",", "").replace(" ", "")
                 name_add = name_stub[0:4] + article.year[-2:]
             else:
-                name_add = publication
+                name_add = reference
             description = article.title[0]
             bibcode_add = article.bibcode
             doi_add = article.doi[0]
     elif doi:
-        name_add = publication
+        name_add = reference
         bibcode_add = bibcode
         doi_add = doi
 
@@ -532,11 +543,11 @@ def ingest_publication(
                 f"{article.first_author}, {article.year}, "
                 "{article.bibcode}, {article.doi}, {article.title}"
             )
-            if not publication:  # generate the name if it was not provided
+            if not reference:  # generate the name if it was not provided
                 name_stub = article.first_author.replace(",", "").replace(" ", "")
                 name_add = name_stub[0:4] + article.year[-2:]
             else:
-                name_add = publication
+                name_add = reference
             description = article.title[0]
             bibcode_add = article.bibcode
             if article.doi is None:
@@ -544,12 +555,13 @@ def ingest_publication(
             else:
                 doi_add = article.doi[0]
     elif bibcode:
-        name_add = publication
+        name_add = reference
         bibcode_add = bibcode
         doi_add = doi
+        using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
 
-    if publication and not bibcode and not doi:
-        name_add = publication
+    if reference and not bibcode and not doi:
+        name_add = reference
         using = "user input"
 
     new_ref = [
@@ -578,7 +590,7 @@ def ingest_publication(
     return
 
 
-def check_internet_connection():
+def internet_connection():
     # get current IP address of  system
     ipaddress = socket.gethostbyname(socket.gethostname())
 
@@ -597,9 +609,9 @@ def check_url_valid(url):
     """
 
     request_response = requests.head(url)
-    status_code = request_response.status_code  # The website is up if the status code is 200
-    if status_code != 200:
-        status = 'skipped' # instead of incrememnting n_skipped, just skip this one
+    status_code = request_response.status_code
+    if status_code != 200:  # The website is up if the status code is 200
+        status = "skipped"  # instead of incrememnting n_skipped, just skip this one
         msg = "The spectrum location does not appear to be valid: \n" \
               f'spectrum: {url} \n' \
               f'status code: {status_code}'
@@ -646,6 +658,7 @@ def ingest_names(db, source, other_name):
 def ingest_source(
     db,
     source,
+    *,
     reference: str = None,
     ra: float = None,
     dec: float = None,
@@ -766,12 +779,12 @@ def ingest_source(
             else:
                 return
 
-        ref_check = find_publication(db, name=reference)
+        ref_check = find_publication(db, reference=reference)
         logger.debug(f"ref_check: {ref_check}")
 
-        if ref_check is False:
+        if ref_check[0] is False:
             msg = (
-                f"Skipping: {source}. Discovery reference {reference}"
+                f"Skipping: {source}. Discovery reference {reference} "
                 "is not in Publications table. \n"
                 f"(Add it with ingest_publication function.)"
             )
@@ -882,6 +895,7 @@ def ingest_source(
 def ingest_sources(
     db,
     sources,
+    *,
     references=None,
     ras=None,
     decs=None,
@@ -1118,7 +1132,7 @@ def find_survey_name_in_simbad(sources, desig_prefix, source_id_index=None):
     return result_table
 
 
-def ingest_instrument(db, telescope=None, instrument=None, mode=None):
+def ingest_instrument(db, *, telescope=None, instrument=None, mode=None):
     """
     Script to ingest instrumentation
     TODO: Add option to ingest references for the telescope and instruments

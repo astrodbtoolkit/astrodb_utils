@@ -1,3 +1,8 @@
+# Database files
+*.db
+*.sqlite3
+*.sqlite
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -160,4 +165,5 @@ cython_debug/
 #.idea/
 
 # Additional
-*.sqlite
+.vscode/
+.DS_Store
