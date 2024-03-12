@@ -48,7 +48,7 @@ extensions = [
 
 nbsphinx_prolog = """
 This notebook is available at
-https://github.com/astrodbtoolkit/astrodb_scripts/tree/main/docs/{{ env.doc2path(env.docname, base=None) }}
+https://github.com/astrodbtoolkit/astrodb_utils/tree/main/docs/{{ env.doc2path(env.docname, base=None) }}
 """
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ["_templates"]
@@ -67,7 +67,7 @@ source_suffix = ".rst"
 master_doc = "index"
 
 # General information about the project.
-project = "astrodb_scripts"
+project = "astrodb_utils"
 copyright = "2024, Kelle Cruz, Arjun B. Savel, David Rodriguez"
 author = "Kelle Cruz, Arjun B. Savel, David Rodriguez"
 
@@ -129,7 +129,7 @@ html_theme = "pydata_sphinx_theme"
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "astrodb_scriptsdoc"
+htmlhelp_basename = "astrodb_utilsdoc"
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -155,8 +155,8 @@ latex_elements = {
 latex_documents = [
     (
         master_doc,
-        "astrodb_scripts.tex",
-        "astrodb_scripts Documentation",
+        "astrodb_utils.tex",
+        "astrodb_utils Documentation",
         "Kelle Cruz, Arjun B. Savel, David Rodriguez",
         "manual",
     )
@@ -167,7 +167,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "astrodb_scripts", "astrodb_scripts Documentation", [author], 1)]
+man_pages = [(master_doc, "astrodb_utils", "astrodb_utils Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output -------------------------------------------
@@ -178,10 +178,10 @@ man_pages = [(master_doc, "astrodb_scripts", "astrodb_scripts Documentation", [a
 texinfo_documents = [
     (
         master_doc,
-        "astrodb_scripts",
-        "astrodb_scripts Documentation",
+        "astrodb_utils",
+        "astrodb_utils Documentation",
         author,
-        "astrodb_scripts",
+        "astrodb_utils",
         "Scripts for astronomical databases.",
         "Miscellaneous",
     )
