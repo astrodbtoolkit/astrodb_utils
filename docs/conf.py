@@ -23,12 +23,12 @@ from sphinx_pyproject import SphinxConfig
 
 import astrodb_scripts
 
-astrodb_scripts_version = version("astrodb_scripts")
+astrodb_utils_version = version("astrodb_utils")
 
 config = SphinxConfig(
     "../pyproject.toml",
     globalns=globals(),
-    config_overrides={"version": astrodb_scripts_version, "release": astrodb_scripts_version},
+    config_overrides={"version": astrodb_utils_version, "release": astrodb_utils_version},
 )
 
 sys.path.insert(0, os.path.abspath("../.."))
@@ -61,7 +61,7 @@ extensions = [
 
 nbsphinx_prolog = """
 This notebook is available at
-https://github.com/astrodbtoolkit/astrodb_scripts/tree/main/docs/{{ env.doc2path(env.docname, base=None) }}
+https://github.com/astrodbtoolkit/astrodb_utils/tree/main/docs/{{ env.doc2path(env.docname, base=None) }}
 """
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ["_templates"]
