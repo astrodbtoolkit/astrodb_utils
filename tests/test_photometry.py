@@ -1,7 +1,7 @@
 import pytest
 import astropy.units as u
-from astrodb_scripts import AstroDBError
-from astrodb_scripts.photometry import (
+from astrodb_utils import AstroDBError
+from astrodb_utils.photometry import (
     ingest_photometry,
     ingest_photometry_filter,
     fetch_svo,

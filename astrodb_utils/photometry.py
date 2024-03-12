@@ -6,7 +6,7 @@ import sqlalchemy.exc
 from typing import Optional
 import astropy.units as u
 from astropy.io.votable import parse
-from astrodb_scripts import (
+from astrodb_utils import (
     AstroDBError,
     find_source_in_db,
     find_publication,
