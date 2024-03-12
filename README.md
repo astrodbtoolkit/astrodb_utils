@@ -3,6 +3,14 @@
 [![Documentation Status](https://readthedocs.org/projects/astrodb-scripts/badge/?version=latest)](https://astrodb-scripts.readthedocs.io/en/latest/?badge=latest)
 [![PyPI version](https://badge.fury.io/py/astrodb-scripts.svg)](https://badge.fury.io/py/astrodb-scripts)
 
+The following tables are expected by AstroDB Toolkit and the AstroDB_scripts package:
+- Sources
+- Publications
+- Names
+- Telescopes
+- Instruments
+You may modify these tables, but doing so may decrease the interoperability of your database with other tools.
+
 # Developer Setup Instructions
 - Make new environment with Python=3.10
 - Install dependencies using an editable install:
