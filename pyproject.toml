@@ -3,14 +3,14 @@ requires = ["setuptools>=64", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "astrodb_scripts"
+name = "astrodb_utils"
 
 authors = [
     {name = "Arjun Savel", email = "asavel@umd.edu"},
     {name= "Kelle Cruz"},
     {name= "David Rodriguez"}
 ]
-description = "astrodb_scripts: scripts for interacting with the astrodb database"
+description = "astrodb_utils: scripts for interacting with the astrodb database"
 readme = "README.md"
 requires-python = ">=3.9"
 keywords = ["databases", "astronomy"]
@@ -34,9 +34,9 @@ dynamic = ["version"]
 test = ["pytest"]
 
 [project.urls]
-Homepage = "https://github.com/astrodbtoolkit/astrodb_scripts"
-Issues = "https://github.com/astrodbtoolkit/astrodb_scripts/issues"
-Documentation = "https://astrodb-scripts.readthedocs.io/en/latest/"
+Homepage = "https://github.com/astrodbtoolkit/astrodb_utils"
+Issues = "https://github.com/astrodbtoolkit/astrodb_utils/issues"
+Documentation = "https://astrodb-utils.readthedocs.io/en/latest/"
 
 [tool.setuptools_scm]
 root = '.'

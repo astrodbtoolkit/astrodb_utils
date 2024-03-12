@@ -2,7 +2,7 @@ import pytest
 import math
 from astropy.table import Table
 from sqlalchemy import and_
-from astrodb_scripts import (
+from astrodb_utils import (
     AstroDBError,
     find_publication,
     ingest_publication,
