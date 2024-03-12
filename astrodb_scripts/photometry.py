@@ -375,30 +375,24 @@ def assign_ucd(wave_eff_quantity: u.Quantity):
     wave_eff_quantity.to(u.Angstrom)
     wave_eff = wave_eff_quantity.value
 
-    if 3000 < wave_eff <= 4000:
-        ucd = "em.opt.U"
-    elif 4000 < wave_eff <= 5000:
-        ucd = "em.opt.B"
-    elif 5000 < wave_eff <= 6000:
-        ucd = "em.opt.V"
-    elif 6000 < wave_eff <= 7500:
-        ucd = "em.opt.R"
-    elif 7500 < wave_eff <= 10000:
-        ucd = "em.opt.I"
-    elif 10000 < wave_eff <= 15000:
-        ucd = "em.IR.J"
-    elif 15000 < wave_eff <= 20000:
-        ucd = "em.IR.H"
-    elif 20000 < wave_eff <= 30000:
-        ucd = "em.IR.K"
-    elif 30000 < wave_eff <= 40000:
-        ucd = "em.IR.3-4um"
-    elif 40000 < wave_eff <= 80000:
-        ucd = "em.IR.4-8um"
-    elif 80000 < wave_eff <= 150000:
-        ucd = "em.IR.8-15um"
-    elif 150000 < wave_eff <= 300000:
-        ucd = "em.IR.15-30um"
+    ucd_dict = {
+        (3000, 4000): "em.opt.U",
+        (4000, 5000): "em.opt.B",
+        (5000, 6000): "em.opt.V",
+        (6000, 7500): "em.opt.R",
+        (7500, 10000): "em.opt.I",
+        (10000, 15000): "em.IR.J",
+        (15000, 20000): "em.IR.H",
+        (20000, 30000): "em.IR.K",
+        (30000, 40000): "em.IR.3-4um",
+        (40000, 80000): "em.IR.4-8um",
+        (80000, 150000): "em.IR.8-15um",
+        (150000, 300000): "em.IR.15-30um",
+    }
+    for key, value in ucd_dict.items():
+        if key[0] < wave_eff <= key[1]:
+            ucd = value
+            break
     else:
         ucd = None
 
