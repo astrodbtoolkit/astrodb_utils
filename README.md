@@ -6,6 +6,8 @@
 The following tables are expected by AstroDB Toolkit and the AstroDB_scripts package:
 - Sources
 - Publications
+- Names
+- Telescopes
 - Instruments
 You may modify these tables, but doing so may decrease the interoperability of your database with other tools.
 
