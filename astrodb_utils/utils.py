@@ -18,7 +18,6 @@ from sqlalchemy import or_, and_
 import sqlalchemy.exc
 from astroquery.simbad import Simbad
 import socket
-# from scripts import REFERENCE_TABLES
 
 __all__ = [
     "AstroDBError",
@@ -68,20 +67,21 @@ class AstroDBError(Exception):
 #     yield
 #     sys.tracebacklimit = default_value  # revert changes
 
-# TODO:  Where should these live?
-REFERENCE_TABLES = [
-    "Publications",
-    "Telescopes",
-    "Instruments",
-    "Modes",
-    "PhotometryFilters",
-    "Versions",
-    "Parameters",
-]
 
-
-def load_astrodb(db_file, recreatedb=True, reference_tables=REFERENCE_TABLES):
+def load_astrodb(db_file, data_path="data/", recreatedb=True, reference_tables=None):
     # Utility function to load the database
+
+    if reference_tables is None:
+        logger.warning("No reference tables provided. Using default tables.")
+        REFERENCE_TABLES = [
+            "Publications",
+            "Telescopes",
+            "Instruments",
+            "Modes",
+            "Versions",
+        ]
+    else:
+        REFERENCE_TABLES = reference_tables
 
     db_file_path = Path(db_file)
     db_connection_string = "sqlite:///" + db_file
@@ -95,7 +95,7 @@ def load_astrodb(db_file, recreatedb=True, reference_tables=REFERENCE_TABLES):
                 "sqlite://", reference_tables=REFERENCE_TABLES
             )  # creates and connects to a temporary in-memory database
             db.load_database(
-                "data/"
+                data_path
             )  # loads the data from the data files into the database
             db.dump_sqlite(db_file)  # dump in-memory database to file
             db = Database(
@@ -110,7 +110,7 @@ def load_astrodb(db_file, recreatedb=True, reference_tables=REFERENCE_TABLES):
                 db_connection_string, reference_tables=REFERENCE_TABLES
             )  # connects to the empty database
             db.load_database(
-                "data/"
+                data_path
             )  # loads the data from the data files into the database
     else:
         db = Database(
