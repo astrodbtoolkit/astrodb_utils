@@ -77,8 +77,8 @@ def load_astrodb(db_file, data_path="data/", recreatedb=True, reference_tables=N
             "Publications",
             "Telescopes",
             "Instruments",
-            "Modes",
             "Versions",
+            "PhotometryFilters",
         ]
     else:
         REFERENCE_TABLES = reference_tables
