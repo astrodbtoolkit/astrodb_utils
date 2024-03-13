@@ -21,7 +21,7 @@ from importlib.metadata import version
 
 from sphinx_pyproject import SphinxConfig
 
-import astrodb_scripts
+import astrodb_utils
 
 astrodb_utils_version = version("astrodb_utils")
 
