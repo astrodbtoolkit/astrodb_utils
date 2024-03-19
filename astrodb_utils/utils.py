@@ -18,7 +18,6 @@ from sqlalchemy import or_, and_
 import sqlalchemy.exc
 from astroquery.simbad import Simbad
 import socket
-# from scripts import REFERENCE_TABLES
 
 __all__ = [
     "AstroDBError",
@@ -68,19 +67,19 @@ class AstroDBError(Exception):
 #     yield
 #     sys.tracebacklimit = default_value  # revert changes
 
-# TODO:  Where should these live?
-REFERENCE_TABLES = [
-    "Publications",
-    "Telescopes",
-    "Instruments",
-    "Modes",
-    "PhotometryFilters",
-    "Versions",
-    "Parameters",
-]
 
-
-def load_astrodb(db_file, recreatedb=True, reference_tables=REFERENCE_TABLES):
+def load_astrodb(
+    db_file,
+    data_path="data/",
+    recreatedb=True,
+    reference_tables=[
+        "Publications",
+        "Telescopes",
+        "Instruments",
+        "Versions",
+        "PhotometryFilters",
+    ],
+):
     # Utility function to load the database
 
     db_file_path = Path(db_file)
@@ -92,14 +91,14 @@ def load_astrodb(db_file, recreatedb=True, reference_tables=REFERENCE_TABLES):
     if not db_file_path.exists():
         try:  # Use fancy in-memory database, if supported by astrodbkit2
             db = Database(
-                "sqlite://", reference_tables=REFERENCE_TABLES
+                "sqlite://", reference_tables=reference_tables
             )  # creates and connects to a temporary in-memory database
             db.load_database(
-                "data/"
+                data_path
             )  # loads the data from the data files into the database
             db.dump_sqlite(db_file)  # dump in-memory database to file
             db = Database(
-                db_connection_string, reference_tables=REFERENCE_TABLES
+                db_connection_string, reference_tables=reference_tables
             )  # replace database object with new file version
         except RuntimeError:
             # use in-file database
@@ -107,14 +106,14 @@ def load_astrodb(db_file, recreatedb=True, reference_tables=REFERENCE_TABLES):
                 db_connection_string
             )  # creates empty database based on the simple schema
             db = Database(
-                db_connection_string, reference_tables=REFERENCE_TABLES
+                db_connection_string, reference_tables=reference_tables
             )  # connects to the empty database
             db.load_database(
-                "data/"
+                data_path
             )  # loads the data from the data files into the database
     else:
         db = Database(
-            db_connection_string, reference_tables=REFERENCE_TABLES
+            db_connection_string, reference_tables=reference_tables
         )  # if database already exists, connects to .db file
 
     return db
