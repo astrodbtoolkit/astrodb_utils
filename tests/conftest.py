@@ -3,8 +3,7 @@ import sys
 import logging
 
 sys.path.append("./tests/astrodb-template-db/")
-# from schema.schema_template import REFERENCE_TABLES
-# Waiting for PR#39 to be merged
+from schema.schema_template import REFERENCE_TABLES
 from schema.schema_template import *  # import the schema of the template database
 from astrodb_utils import load_astrodb
 
@@ -18,7 +17,7 @@ def db():
     DB_PATH = "tests/astrodb-template-db/data"
 
     db = load_astrodb(
-        DB_NAME, data_path=DB_PATH, recreatedb=True, reference_tables=None
+        DB_NAME, data_path=DB_PATH, recreatedb=True, reference_tables=REFERENCE_TABLES
     )
     # Use the default reference tables until astrodb-template-db PR #39 is merged
 
