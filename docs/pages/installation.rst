@@ -22,7 +22,7 @@ to avoid package dependency isues.
     python3 -m pip install -U pip
     python3 -m pip install -U setuptools setuptools_scm pep517
     git clone https://github.com/astrodbtoolkit/astrodb_utils.git
-    cd cortecs
+    cd astrodb_utils
     python3 -m pip install -e .
 
 
