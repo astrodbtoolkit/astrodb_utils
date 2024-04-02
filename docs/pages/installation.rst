@@ -59,13 +59,3 @@ Then, in the tests directory, run
     git clone git@github.com:astrodbtoolkit/astrodb-template-db.git
 
 This step installs a template repository. Tests can then be run in the top-level directory.
-
-
-
-From the outermost :code:`cortecs` directory, run
-
-.. code-block:: bash
-
-    python3 -m unittest discover src/cortecs/tests
-
-These tests should only take a couple of minutes to run on a laptop.
