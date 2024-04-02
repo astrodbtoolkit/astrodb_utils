@@ -1,7 +1,18 @@
 AstroDB Toolkit
 ==================================
 
-Testing that this works!
+.. toctree::
+   :maxdepth: 1
+   :caption: Getting Started
+
+   pages/installation
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Documentation
+
+   pages/faq
+   pages/api
 
 License & attribution
 ---------------------
