@@ -11,6 +11,7 @@ AstroDB Toolkit
    :maxdepth: 1
    :caption: Documentation
 
+   pages/overview
    pages/faq
    pages/api
 
