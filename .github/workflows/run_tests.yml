@@ -24,7 +24,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: astrodbtoolkit/astrodb-template-db
-        path: ../tests/astrodb-template-db
+        path: tests/astrodb-template-db
     
     - name: Set up Python 3.10
       uses: actions/setup-python@v5
