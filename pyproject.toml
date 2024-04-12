@@ -31,7 +31,10 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-test = ["pytest"]
+test = [
+    "pytest",
+    "pylint",
+    ]
 
 [project.urls]
 Homepage = "https://github.com/astrodbtoolkit/astrodb_utils"
