@@ -170,4 +170,4 @@ cython_debug/
 .DS_Store
 
 # AstroDB Toolkit Specific
-tests/astrodb-template-db
+*/tests/astrodb-template-db
