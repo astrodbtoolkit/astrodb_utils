@@ -45,5 +45,5 @@ Documentation = "https://astrodb-utils.readthedocs.io/en/latest/"
 root = '.'
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["astrodb_utils/tests"]
 norecursedirs = "astrodb-template-db"
