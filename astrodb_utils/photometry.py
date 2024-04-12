@@ -1,9 +1,11 @@
-import numpy as np
-import requests
+"""Photometry functions"""
+
+from typing import Optional
 from io import BytesIO
 import logging
+import requests
+import numpy as np
 import sqlalchemy.exc
-from typing import Optional
 import astropy.units as u
 from astropy.io.votable import parse
 from astrodb_utils import (
@@ -14,7 +16,7 @@ from astrodb_utils import (
     ingest_instrument,
 )
 
-logger = logging.getLogger("AstroDB")
+logger = logging.getLogger(__name__)
 
 __all__ = ["ingest_photometry", "ingest_photometry_filter", "fetch_svo", "assign_ucd"]
 

@@ -1,23 +1,25 @@
 """
 Utils functions for use in ingests
 """
+
 import logging
 import os
 import sys
 import re
 import warnings
+import socket
 from pathlib import Path
 import requests
-from astrodbkit2.astrodb import create_database, Database
-import numpy.ma as ma
+from numpy import ma
 import ads
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 from astropy.table import Table
+from astroquery.simbad import Simbad
 from sqlalchemy import or_, and_
 import sqlalchemy.exc
-from astroquery.simbad import Simbad
-import socket
+from astrodbkit2.astrodb import create_database, Database
+
 
 __all__ = [
     "AstroDBError",
@@ -33,7 +35,7 @@ __all__ = [
 ]
 
 warnings.filterwarnings("ignore", module="astroquery.simbad")
-logger = logging.getLogger("AstroDB")
+logger = logging.getLogger(__name__)
 
 # Logger setup
 # This will stream all logger messages to the standard output and
@@ -45,14 +47,13 @@ LOGFORMAT = logging.Formatter(
 ch = logging.StreamHandler(stream=sys.stdout)
 ch.setFormatter(LOGFORMAT)
 # To prevent duplicate handlers, only add if they haven't been set previously
-if not len(logger.handlers):
+if len(logger.handlers) == 0:
     logger.addHandler(ch)
 logger.setLevel(logging.INFO)
 
 
 class AstroDBError(Exception):
-    pass
-
+    """Custom error for AstroDB"""
 
 # TODO: commented out as not using with the new custom error
 # @contextmanager
@@ -80,7 +81,7 @@ def load_astrodb(
         "PhotometryFilters",
     ],
 ):
-    # Utility function to load the database
+    """Utility function to load the database"""
 
     db_file_path = Path(db_file)
     db_connection_string = "sqlite:///" + db_file
@@ -470,8 +471,7 @@ def ingest_publication(
             logger.debug(f"Publication found in ADS using arxiv id: , {arxiv_id}")
             article = arxiv_matches_list[0]
             logger.debug(
-                f"{article.first_author}, {article.year},"
-                "{article.bibcode}, {article.title}"
+                f"{article.first_author}, {article.year}, {article.bibcode}, {article.title}"
             )
             if not reference:  # generate the name if it was not provided
                 name_stub = article.first_author.replace(",", "").replace(" ", "")
@@ -525,17 +525,15 @@ def ingest_publication(
         )
         bibcode_matches_list = list(bibcode_matches)
         if len(bibcode_matches_list) == 0:
-            logger.error("not a valid bibcode:" + str(bibcode))
-            logger.error("nothing added")
-            raise
+            msg = f"Not a valid bibcode: {bibcode}"
+            raise AstroDBError(msg)
 
         elif len(bibcode_matches_list) > 1:
-            logger.error("should only be one matching bibcode for:" + str(bibcode))
-            logger.error("nothing added")
-            raise
+            msg = f"Should only be one matching bibcode for: {bibcode}"
+            raise AstroDBError(msg)
 
         elif len(bibcode_matches_list) == 1:
-            logger.debug("Publication found in ADS using bibcode: " + str(bibcode))
+            logger.debug(f"Publication found in ADS using bibcode: {bibcode}")
             using = str(bibcode)
             article = bibcode_matches_list[0]
             logger.debug(
@@ -580,17 +578,19 @@ def ingest_publication(
     except sqlalchemy.exc.IntegrityError as error:
         msg = (
             f"Not able to add {new_ref} to the database. "
-            f"It's possible that a similar publication already exists in database\n"
+            "It's possible that a similar publication already exists in database\n"
             "Use find_publication function before adding a new record"
         )
         logger.error(msg)
-        raise AstroDBError(msg + str(error))
+        raise AstroDBError(msg) from error
 
     return
 
 
 def internet_connection():
-    # get current IP address of  system
+    """Test internet connection - not clear if that's actually what's happening here"""
+
+    # get current IP address of system
     ipaddress = socket.gethostbyname(socket.gethostname())
 
     # checking system IP is the same as "127.0.0.1" or not.
@@ -607,7 +607,7 @@ def check_url_valid(url):
     :return:
     """
 
-    request_response = requests.head(url)
+    request_response = requests.head(url, timeout=60)
     status_code = request_response.status_code
     if status_code != 200:  # The website is up if the status code is 200
         status = "skipped"  # instead of incrememnting n_skipped, just skip this one
@@ -650,7 +650,7 @@ def ingest_names(db, source, other_name):
     except sqlalchemy.exc.IntegrityError as e:
         msg = f"Could not add {names_data} to database. Name is likely a duplicate."
         logger.warning(msg)
-        raise AstroDBError(msg + "\n" + str(e) + "\n")
+        raise AstroDBError(msg) from e
 
 
 # SOURCES
@@ -706,10 +706,7 @@ def ingest_source(
         coords_provided = False
     else:
         coords_provided = True
-        ra = ra
-        dec = dec
-        epoch = epoch
-        equinox = equinox
+
     logger.debug(f"coords_provided:{coords_provided}")
 
     # Find out if source is already in database or not
@@ -746,7 +743,7 @@ def ingest_source(
                 msg = f"   Could not add {alt_names_data} to database"
                 logger.warning(msg)
                 if raise_error:
-                    raise AstroDBError(msg + "\n" + str(e))
+                    raise AstroDBError(msg) from e
                 else:
                     return
 
@@ -799,9 +796,7 @@ def ingest_source(
             simbad_result_table = Simbad.query_object(source)
 
             if simbad_result_table is None:
-                msg = f"Not ingesting {source}. "
-                "Coordinates are needed and "
-                "could not be retrieved from SIMBAD. \n"
+                msg = f"Not ingesting {source}. Coordinates are needed and could not be retrieved from SIMBAD. \n"
                 logger.warning(msg)
                 if raise_error:
                     raise AstroDBError(msg)
@@ -820,9 +815,7 @@ def ingest_source(
                 msg = f"Coordinates retrieved from SIMBAD {ra}, {dec}"
                 logger.debug(msg)
             else:
-                msg = f"Not ingesting {source}. "
-                "Coordinates are needed and "
-                "could not be retrieved from SIMBAD. \n"
+                msg = f"Not ingesting {source}. Coordinates are needed and could not be retrieved from SIMBAD. \n"
                 logger.warning(msg)
                 if raise_error:
                     raise AstroDBError(msg)
@@ -860,7 +853,7 @@ def ingest_source(
         msg = f"Added {str(source_data)}"
         logger.info(f"Added {source}")
         logger.debug(msg)
-    except sqlalchemy.exc.IntegrityError:
+    except sqlalchemy.exc.IntegrityError as e:
         msg = (
             f"Not ingesting {source}. Not sure why. \n"
             "The reference may not exist in Publications table. \n"
@@ -870,7 +863,7 @@ def ingest_source(
         logger.warning(msg)
         logger.debug(msg2)
         if raise_error:
-            raise AstroDBError(msg + msg2)
+            raise AstroDBError(msg + msg2) from e
         else:
             return
 
@@ -880,11 +873,11 @@ def ingest_source(
             conn.execute(db.Names.insert().values(names_data))
             conn.commit()
         logger.debug(f"    Name added to database: {names_data}\n")
-    except sqlalchemy.exc.IntegrityError:
+    except sqlalchemy.exc.IntegrityError as e:
         msg = f"   Could not add {names_data} to database"
         logger.warning(msg)
         if raise_error:
-            raise AstroDBError(msg)
+            raise AstroDBError(msg) from e
         else:
             return
 
@@ -1195,7 +1188,7 @@ def ingest_instrument(db, *, telescope=None, instrument=None, mode=None):
         except sqlalchemy.exc.IntegrityError as e:  # pylint: disable=invalid-name
             msg = "Telescope could not be ingested"
             logger.error(msg)
-            raise AstroDBError(msg + "\n" + str(e))
+            raise AstroDBError(msg) from e
 
     # Ingest instrument+mode (requires telescope) if not already present
     if (
@@ -1216,6 +1209,6 @@ def ingest_instrument(db, *, telescope=None, instrument=None, mode=None):
         except sqlalchemy.exc.IntegrityError as e:  # pylint: disable=invalid-name
             msg = "Instrument/Mode could not be ingested"
             logger.error(msg)
-            raise AstroDBError(msg + "\n" + str(e))
+            raise AstroDBError(msg) from e
 
     return
