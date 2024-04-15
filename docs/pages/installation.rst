@@ -13,7 +13,7 @@ Installing from source
 -----------------------
 
 We develop `astrodb_utils` on `GitHub <https://github.com/astrodbtoolkit/astrodb_utils>`_.
-If you received the code as a tarball or zip, feel free to skip the first two lines; they essentially download the source code.
+If you received the code as a tarball or zip, feel free to skip the first three lines; they essentially download the source code.
 We recommend running the below lines in a fresh `conda <https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html>`_ environment
 to avoid package dependency isues.
 
