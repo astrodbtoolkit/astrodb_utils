@@ -14,6 +14,7 @@ AstroDB Toolkit
    pages/overview
    pages/faq
    pages/api
+   pages/organization
 
 License & attribution
 ---------------------
