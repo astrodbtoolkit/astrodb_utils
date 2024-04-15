@@ -1,4 +1,4 @@
-Installation and setup
+wouInstallation and setup
 ===========================
 
 Installing with pip
@@ -28,7 +28,7 @@ to avoid package dependency isues.
 
 Set up ADS token
 -----------------------
-`astrodb_utils` can query `NASA Astrophysics Data System <https://ui.adsabs.harvard.edu/>`_ with the `ingest_publications` function.
+`astrodb_utils` can query the `NASA Astrophysics Data System <https://ui.adsabs.harvard.edu/>`_ with the `ingest_publications` function.
 To use this feature, you'll need to set up an ADS token and add it to your environment.
 
 1. Make an ADS account at `https://ui.adsabs.harvard.edu/help/api/`.
