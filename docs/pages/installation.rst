@@ -3,7 +3,7 @@ wouInstallation and setup
 
 Installing with pip
 -----------------------
-`astrodb_utils` is distributed on `PyPI <https://pypi.org/>`_. It can be installed with
+`astrodb_utils` is distributed on `PyPI <https://pypi.org/project/astrodb-scripts/>`_. It can be installed with
 
 .. code-block:: bash
 
