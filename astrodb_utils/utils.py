@@ -1,25 +1,23 @@
-"""
-Utils functions for use in ingests
-"""
+"""Utils functions for use in ingests."""
 
 import logging
 import os
-import sys
 import re
-import warnings
 import socket
+import sys
+import warnings
 from pathlib import Path
-import requests
-from numpy import ma
+
 import ads
-from astropy.coordinates import SkyCoord
 import astropy.units as u
+import requests
+import sqlalchemy.exc
+from astrodbkit2.astrodb import Database, create_database
+from astropy.coordinates import SkyCoord
 from astropy.table import Table
 from astroquery.simbad import Simbad
-from sqlalchemy import or_, and_
-import sqlalchemy.exc
-from astrodbkit2.astrodb import create_database, Database
-
+from numpy import ma
+from sqlalchemy import and_, or_
 
 __all__ = [
     "AstroDBError",
@@ -850,7 +848,7 @@ def ingest_source(
         with db.engine.connect() as conn:
             conn.execute(db.Sources.insert().values(source_data))
             conn.commit()
-        msg = f"Added {str(source_data)}"
+        msg = f"Added {source_data}"
         logger.info(f"Added {source}")
         logger.debug(msg)
     except sqlalchemy.exc.IntegrityError as e:
@@ -859,7 +857,7 @@ def ingest_source(
             "The reference may not exist in Publications table. \n"
             "Add it with ingest_publication function. \n"
         )
-        msg2 = f"   {str(source_data)} "
+        msg2 = f"   {source_data} "
         logger.warning(msg)
         logger.debug(msg2)
         if raise_error:
