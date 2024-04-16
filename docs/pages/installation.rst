@@ -1,4 +1,4 @@
-wouInstallation and setup
+Installation and setup
 ===========================
 
 Installing with pip
