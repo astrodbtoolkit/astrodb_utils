@@ -1,7 +1,20 @@
-astrodb_utils
+AstroDB Toolkit
 ==================================
 
-Testing that this works!
+.. toctree::
+   :maxdepth: 1
+   :caption: Getting Started
+
+   pages/installation
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Documentation
+
+   pages/overview
+   pages/faq
+   pages/api
+   pages/organization
 
 License & attribution
 ---------------------
