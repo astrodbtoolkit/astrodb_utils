@@ -132,6 +132,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.conda
 
 # Spyder project settings
 .spyderproject
@@ -167,3 +168,7 @@ cython_debug/
 # Additional
 .vscode/
 .DS_Store
+
+# AstroDB Toolkit Specific
+tests/astrodb-template-db
+astrodb_utils/tests/astrodb-template-db

@@ -17,8 +17,8 @@ You may modify these tables, but doing so may decrease the interoperability of y
   ```
   pip install -e ".[test]"
   ```
-- In the `tests/` directory, clone the `astrodb-template` repo:
+- In the `astrodb_utils/tests/` directory, clone the `astrodb-template-db` repo:
   ```
-  git clone git@github.com:astrodbtoolkit/astrodb-template-db.git
+  git clone https://github.com/astrodbtoolkit/astrodb-template-db.git
   ```
 - Be sure to run tests from the top level directory.
