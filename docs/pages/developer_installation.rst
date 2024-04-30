@@ -10,7 +10,7 @@ If you'd like to run tests, make sure to install the package with the optional t
 
     pip install -e ".[test]"
 
-Then, in the tests directory, run
+Then, in the `astrodb_utils/tests/` directory, run
 
 .. code-block:: bash
 
