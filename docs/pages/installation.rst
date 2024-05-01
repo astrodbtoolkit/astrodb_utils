@@ -1,4 +1,4 @@
-wouInstallation and setup
+Installation and setup
 ===========================
 
 Installing with pip
@@ -26,40 +26,3 @@ to avoid package dependency isues.
     python3 -m pip install -e .
 
 
-Set up ADS token
------------------------
-`astrodb_utils` can query the `NASA Astrophysics Data System <https://ui.adsabs.harvard.edu/>`_ with the `ingest_publications` function.
-To use this feature, you'll need to set up an ADS token and add it to your environment.
-
-1. Make an ADS account at `https://ui.adsabs.harvard.edu/help/api/`.
-2. Go to `https://ui.adsabs.harvard.edu/user/settings/token`.
-3. Copy the token generated on the package.
-4. Add the token to your environment by running
-
-    .. code-block:: bash
-
-        export ADS_TOKEN=<your token>
-
-replacing <your token> with the token you copied.
-
-
-Test the installation
----------------------
-
-If you'd like to run tests, make sure to install the package with the optional test dependencies. E.g.,
-
-.. code-block:: bash
-
-    pip install -e ".[test]"
-
-Then, in the tests directory, run
-
-.. code-block:: bash
-
-    git clone git@github.com:astrodbtoolkit/astrodb-template-db.git
-
-This step installs a template repository. Tests can then be run in the top-level directory, with the command
-
-.. code-block:: bash
-
-    pytest

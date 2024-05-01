@@ -6,6 +6,7 @@ AstroDB Toolkit
    :caption: Getting Started
 
    pages/installation
+   pages/ingesting_publications
 
 .. toctree::
    :maxdepth: 1
@@ -15,6 +16,13 @@ AstroDB Toolkit
    pages/faq
    pages/api
    pages/organization
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: For developers
+
+   pages/developer_installation
 
 License & attribution
 ---------------------
