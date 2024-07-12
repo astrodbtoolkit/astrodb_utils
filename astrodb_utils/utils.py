@@ -621,7 +621,7 @@ def check_url_valid(url):
 
 
 # NAMES
-def ingest_names(db, source, other_name):
+def ingest_names(db, source, other_name, raise_error):
     """
     This function ingests an other name into the Names table
 
@@ -635,6 +635,9 @@ def ingest_names(db, source, other_name):
     other_name: str
         Name of the source different than that found in source table
 
+    eaise_error: bool
+        Raise an error if name was not ingested
+
     Returns
     -------
     None
@@ -646,9 +649,12 @@ def ingest_names(db, source, other_name):
             conn.commit()
         logger.info(f" Name added to database: {names_data}\n")
     except sqlalchemy.exc.IntegrityError as e:
-        msg = f"Could not add {names_data} to database. Name is likely a duplicate."
+        msg = f"Could not add {names_data} to database."
+        if "UNIQUE constraint failed:" in str(e):
+            meg += " Name is likely a duplicate."
         logger.warning(msg)
-        raise AstroDBError(msg) from e
+        if(raise_error):
+            raise AstroDBError(msg) from e
 
 
 # SOURCES
