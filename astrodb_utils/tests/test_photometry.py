@@ -14,6 +14,7 @@ def test_ingest_photometry(db):
         db,
         source="Dark energy source 1",
         band="Generic/Johnson.V",
+        regime="optical",
         magnitude=10,
         reference="Rubin80",
     )
@@ -22,6 +23,7 @@ def test_ingest_photometry(db):
         source="Dark energy source 2",
         band="Generic/Cousins.R",
         magnitude=10,
+        regime="optical",
         reference="Riess98",
         telescope="Generic",
     )
