@@ -53,6 +53,7 @@ logger.setLevel(logging.INFO)
 class AstroDBError(Exception):
     """Custom error for AstroDB"""
 
+
 # TODO: commented out as not using with the new custom error
 # @contextmanager
 # def disable_exception_traceback():
@@ -609,19 +610,23 @@ def check_url_valid(url):
     status_code = request_response.status_code
     if status_code != 200:  # The website is up if the status code is 200
         status = "skipped"  # instead of incrememnting n_skipped, just skip this one
-        msg = "The spectrum location does not appear to be valid: \n" \
-              f'spectrum: {url} \n' \
-              f'status code: {status_code}'
+        msg = (
+            "The spectrum location does not appear to be valid: \n"
+            f"spectrum: {url} \n"
+            f"status code: {status_code}"
+        )
         logger.error(msg)
     else:
         msg = f"The spectrum location appears up: {url}"
         logger.debug(msg)
-        status = 'added'
+        status = "added"
     return status
 
 
 # NAMES
-def ingest_names(db, source, other_name, raise_error):
+def ingest_names(
+    db, source: str = None, other_name: str = None, raise_error: bool = None
+):
     """
     This function ingests an other name into the Names table
 
@@ -635,7 +640,7 @@ def ingest_names(db, source, other_name, raise_error):
     other_name: str
         Name of the source different than that found in source table
 
-    eaise_error: bool
+    raise_error: bool
         Raise an error if name was not ingested
 
     Returns
@@ -651,10 +656,11 @@ def ingest_names(db, source, other_name, raise_error):
     except sqlalchemy.exc.IntegrityError as e:
         msg = f"Could not add {names_data} to database."
         if "UNIQUE constraint failed:" in str(e):
-            meg += " Name is likely a duplicate."
-        logger.warning(msg)
-        if(raise_error):
+            msg += " Name is likely a duplicate."
+        if raise_error:
             raise AstroDBError(msg) from e
+        else:
+            logger.warning(msg)
 
 
 # SOURCES
