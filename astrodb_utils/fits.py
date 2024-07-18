@@ -1,9 +1,12 @@
+import astropy.units as u
+import dateparser
 import numpy as np
 from astropy.io import fits
-from photometry import assign_ucd
+
+from astrodb_utils.photometry import assign_ucd
 
 
-def add_missing_keywords(header=None, *,format='simple-spectrum',keywords=None):
+def add_missing_keywords(header=None, *, format='simple-spectrum', keywords=None):
     """Finds the keywords that are missing from a header
 
     Inputs
@@ -27,10 +30,8 @@ def add_missing_keywords(header=None, *,format='simple-spectrum',keywords=None):
     Returns a header with keywords but blank values
     >>> new_header = add_missing_keywords(format='simple-spectrum')
 
-    Adds missing keywords (with  blank values) to existing header
+    Adds missing keywords (with blank values) to an existing header
     >>> new_header = add_missing_keywords(old_header, format='simple-spectrum')
-
-
     """
 
     # If no header was provided, start with a blank one
@@ -43,19 +44,22 @@ def add_missing_keywords(header=None, *,format='simple-spectrum',keywords=None):
     keywords = get_keywords(format)
 
     missing_keywords = []
-    # Loop through original header and add keywords with blank values to new header
+    # Loop through the original header and add keywords with blank values to the new header
     for keyword, comment in keywords:
         value = header.get(keyword)
         if value is None:
             header.set(keyword, None, comment)
-            missing_keywords.append((keyword,comment))
-    
+            missing_keywords.append((keyword, comment))
+
     # Loop over missing keywords and print for copy and paste purposes
-    print("COPY AND PASTE THE FOLLOWING COMMAND INTO YOUR SCRIPT")
-    print("Fill in the values you have after the colon (:)")
-    print("new_header_keywords_dict =")
-    for keyword,comment in missing_keywords:
-        print(f"header.set({keyword}, <value>) # {comment}")
+    print("COPY AND PASTE THE FOLLOWING COMMANDS INTO YOUR SCRIPT")
+    print("Replace <value> with the appropriate value for your dataset")
+    print("If you're not sure of the correct value, use None")
+    print("If you started with a header object not called `header`, replace 'header' with the name of your header object")
+    print("Use the `add_wavelength_keywords` function to add the SPEC_VAL, SPEC_BW, and SPECBAND keywords")
+    print("\n")
+    for keyword, comment in missing_keywords:
+        print(f"header.set('{keyword}', <value>)  # {comment}")
 
     return header
 
@@ -73,12 +77,12 @@ def add_wavelength_keywords(header=None, wavelength_data = None):
 
     Returns
     -------
-    a fits header dictionary with wavelegth keywords added
+    None
 
     Examples
     --------
-    >>> wavelength = 
-    >>> header = add_wavelength_keywords(wavelength_data = wavelength)
+    >>> wavelength = np.arange(5100, 5300)*u.AA
+    >>> add_wavelength_keywords(header=new_header, wavelength_data = wavelength)
 
     """
 
@@ -93,23 +97,70 @@ def add_wavelength_keywords(header=None, wavelength_data = None):
     w_mid = ((w_max + w_min) / 2).astype(np.single)
     bandpass = assign_ucd(w_mid)
 
+    header.set("SPECBAND", bandpass )
     header.set("SPEC_VAL", w_mid.value, f"[{w_mid.unit}] Characteristic spec coord")
     header.set("SPEC_BW", width.value, f"[{width.unit}] Width of spectrum")
-    header.set("SPECBAND", bandpass )
     header.set("TDMIN1", w_min.value, f"[{w_min.unit}] Starting wavelength")
     header.set("TDMAX1", w_max.value, f"[{w_max.unit}] Ending wavelength")
+    header['HISTORY'] = "Wavelength keywords added by astrodb_utils.fits.add_wavelength_keywords"
    
-    return header    
+    #return header    
 
    
 
+def add_observation_date(header=None, date=None):
+    """Adds the observation date to the header
 
-def check_header(header=None, format=None)
+    Inputs
+    -------
+    header: fits.Header
+        a fits header object or dictionary of header values
+
+    date: string
+        the date of the observation
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    >>> add_observation_date(header, date='2021-06-01')
+    """
+
+    if header is None:
+        header = fits.Header()
+
+    if date is None:
+        raise ValueError("Date of observation is required")
+
+    try:
+        obs_date = dateparser.parse(date)
+        obs_date_short = obs_date.strftime("%Y-%m-%d")
+        obs_date_long = obs_date.strftime("%b %d, %Y")
+        header.set("DATE-OBS", obs_date_short, "date of the observation")
+        print(f"Date of observation: {obs_date_long}")
+        print(f"DATE-OBS set to : {obs_date_short}.")
+    except Exception as e:
+        raise e("Invalid date format")
+    
+
+    #return header
+
+
+def check_header(header=None, format=None):
     # check for missing keywords
     # check RA and Dec are in degrees
     # check date can be turned to dateTime object
     # validate the header 
 
+    # search SIMBAD for object name
+
+    # check RA and Dec agree with SIMBAD
+
+    # list missing keywords as a double check
+
+    return None
 
 def get_keywords(format):
 
@@ -120,44 +171,44 @@ def get_keywords(format):
 
     if format == 'simple-spectrum':
         keywords = [
-            ("TITLE", "Dataset title "),
             ("OBJECT", "Name of observed object"),
-            ("RA", "[deg] Pointing position"),
-            ("DEC", "[deg] Pointing position"),
+            ("RA_TARG", "[deg] target position"),
+            ("DEC_TARG", "[deg] target position"),
+            ("DATE-OBS", "Date of observation"),
             ("INSTRUME", "Instrument name"),
             ("TELESCOP", "Telescope name"),
-            ("AUTHOR", ""),
-            ("CONTRIB1","Contributor who generated this file"),
-            ("REFERENC","DOI of original publication"),
-            ("VOPUB", "Publisher") # TODO: Set to SIMPLE
-            ("DATE-OBS", "Date of observation"),
             ("TELAPSE", "[s] Total elapsed time (s)"),
+            ("APERTURE", "[arcsec] slit width"),
+            ("AUTHOR", "First author of original dataset"),
+            ("TITLE", "Dataset title "),
+            ("VOREF","URL, DOI, or bibcode of original publication"),
+            ("VOPUB", "Publisher"), # TODO: Set to SIMPLE
+            ("CONTRIB1","Contributor who generated this header"),
             ("SPEC_VAL", "[angstrom] Characteristic spectral coordinate"),
             ("SPEC_BW", "[angstrom] width of spectrum"),
             ("SPECBAND", "SED.bandpass"),
-            ("APERTURE", "[arcsec] slit width")
         ]
     elif format == 'ivoa-spectrum-dm-1.2':    
         keywords = [
-            ("VOCLASS","Data model name and version") # TODO:  'Spectrum-1.2', 
+            ("VOCLASS","Data model name and version"), # TODO:  'Spectrum-1.2', 
             ("VOPUB", ""),
-            ("VOREF", ""),
+            ("VOREF", "URL, DOI, or bibcode of original publication"),
             ("TITLE", "Dataset title "),
             ("OBJECT", "Name of observed object"),
-            ("RA_TARG", "[deg] Pointing position"),
-            ("DEC_TARG", "[deg] Pointing position"),
+            ("RA_TARG", "[deg] target position"),
+            ("DEC_TARG", "[deg] target position"),
             ("INSTRUME", ""),
             ("TELESCOP", ""),
             ("OBSERVAT", ""),
             ("AUTHOR", ""),
-            ("CONTRIB1","Contributor who generated this file")
+            ("CONTRIB1","Contributor who generated this file"),
             ("DATE-OBS", "Date of observation"),
             ("TMID", "[d] MJD of exposure mid-point"),
             ("TELAPSE", "[s] Total elapsed time (s)"),
             ("SPEC_VAL", "[angstrom] Characteristic spectral coordinate"),
             ("SPEC_BW", "[angstrom] width of spectrum"),
-            ("TDMIN1","Start in spectral coordinate"),
-            ("TDMAX1","Stop in spectral coordinate")
+            ("TDMIN1", "Start in spectral coordinate"),
+            ("TDMAX1", "Stop in spectral coordinate"),
             ("SPECBAND", "SED.bandpass"),
             ("APERTURE", "[arcsec] slit width"),
         ]
@@ -165,21 +216,4 @@ def get_keywords(format):
     return keywords
 
 
-     # try:
-    #     obs_date = dateparser.parse(original_header_dict["obs_date"]).strftime(
-    #         "%Y-%m-%d"
-    #     )
-    #     header.set("DATE-OBS", obs_date, "date of the observation")
-    # except KeyError:
-    #     obs_date = input("REQUIRED: Please input the date of the observation: ")
-    #     obs_date = dateparser.parse(obs_date).strftime("%Y-%m-%d")
-    #     header.set("DATE-OBS", obs_date, "date of the observation")
 
-    # try:
-    #     header.set("REFERENC", original_header_dict["doi"], "DOI of dataset")
-    # except KeyError:
-    #     pass
-
-    # Should be done by specutils
-    # header.set("DATE", date.today().strftime("%Y-%m-%d"), "Date of file creation")
-    # header.set("CREATOR", "simple.spectra.convert_to_fits.py", "FITS file creator")
