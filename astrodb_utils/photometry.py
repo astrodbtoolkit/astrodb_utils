@@ -191,7 +191,7 @@ def ingest_photometry(
                 logger.error(msg+str(e))
                 raise AstroDBError(msg+str(e))
             else:
-                logger.warning(f"{msg}/n{str(e)})
+                logger.warning(f"{msg}/n{str(e)}")
 
     return flags
 
