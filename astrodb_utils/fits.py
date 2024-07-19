@@ -1,7 +1,9 @@
 import astropy.units as u
 import dateparser
 import numpy as np
+from astropy.coordinates import SkyCoord
 from astropy.io import fits
+from astroquery.simbad import Simbad
 
 from astrodb_utils.photometry import assign_ucd
 
@@ -107,7 +109,6 @@ def add_wavelength_keywords(header=None, wavelength_data = None):
     #return header    
 
    
-
 def add_observation_date(header=None, date=None):
     """Adds the observation date to the header
 
@@ -148,19 +149,89 @@ def add_observation_date(header=None, date=None):
     #return header
 
 
-def check_header(header=None, format=None):
+def check_header(header=None, format='simple-spectrum', ignore_simbad=False):
+    
+    if header is None:
+        raise ValueError("Header is required")
+
+    keywords = get_keywords(format)
+    missing_keywords = []    
+
     # check for missing keywords
+    for keyword, comment in keywords:
+        value = header.get(keyword)
+        if value is None:
+            missing_keywords.append((keyword, comment))
+   
+    if len(missing_keywords) > 0:
+        print("The following keywords are not set in the header:")
+        for keyword, comment in missing_keywords:
+            print(f"{keyword} : {comment}")
+
     # check RA and Dec are in degrees
-    # check date can be turned to dateTime object
-    # validate the header 
+    ra = header.get('RA_TARG')
 
-    # search SIMBAD for object name
+    if ra > 360:
+        print("RA_TARG does not appear to be in degrees")
+        print(f"RA_TARG: {ra}")
+        print("RA_TARG should be in degrees")
 
-    # check RA and Dec agree with SIMBAD
+    dec = header.get('DEC_TARG')
 
-    # list missing keywords as a double check
+    if dec > 90:
+        print("DEC_TARG does not appear to be in degrees")
+        print(f"DEC_TARG: {dec}")
+        print("DEC_TARG should be in degrees")
+
+    # Check if ra and dec could be read into SkyCoord object and converted to sexagesimal
+    if ra < 360 and dec < 90:
+        try:
+            coord = SkyCoord(ra,dec, unit=(u.deg, u.deg))
+            coord_str = coord.to_string('hmsdms')
+            print(f"coordinates converted to sexagesimal: {coord_str}")
+        except Exception as e:
+            print(f"coordinates ({ra},{dec}) could not be converted to Skycoord object: {e}")
+
+    if ignore_simbad is False:
+        # search SIMBAD for object name
+        object_name = header.get('OBJECT')
+        simbad_name_results = Simbad.query_object(object_name)
+        if len(simbad_name_results) == 0:
+            print(f"Object name {object_name} not found in SIMBAD")
+
+        # check RA and Dec agree with SIMBAD
+        if len(simbad_name_results) == 1:
+            ra_simbad = simbad_name_results['ra'][0]
+            dec_simbad = simbad_name_results['dec'][0]
+            ra_check = np.isclose(ra, ra_simbad, atol=0.1) # check if ra is close to simbad ra
+            dec_check = np.isclose(dec, dec_simbad, atol=0.1) # check if dec
+            if not ra_check or not dec_check:
+                print("RA_TARG and DEC_TARG do not match SIMBAD coordinates")
+                print(f"RA_TARG: {ra}, DEC_TARG: {dec}")
+                print(f"SIMBAD RA: {ra_simbad}, DEC: {dec_simbad}")
+        elif len(simbad_name_results) == 0:
+            print(f"Object name {object_name} not found in SIMBAD, trying 60\" coord search")
+            simbad_coord_results = Simbad.query_region(coord, radius='0d0m60s')
+            if len(simbad_coord_results) >0:
+                print(f"SIMBAD objects within 60\" search of {coord_str}:")
+                print(simbad_coord_results)
+        else:
+            print(f"Multiple results found for object name {object_name} in SIMBAD")
+            print(simbad_name_results)
+
+        # check date can be turned to dateTime object
+        date = header.get('DATE-OBS')
+        try:
+            obs_date = dateparser.parse(date)
+            obs_date_long = obs_date.strftime("%b %d, %Y")
+            print(f"DATE-OBS set to : {date}.")
+            print(f"Date of observation: {obs_date_long}")
+        except Exception as e:
+            print(f"Date ({date})could not be converted to Python DateTime object \n {e}")   
+
 
     return None
+
 
 def get_keywords(format):
 
