@@ -27,6 +27,7 @@ dependencies = [
     "sqlalchemy==2.0.3",
     "tqdm",
     "ads",
+    "dateparser",
 ]
 dynamic = ["version"]
 
