@@ -61,7 +61,7 @@ def add_missing_keywords(header=None, *, format='simple-spectrum', keywords=None
     print("Use the `add_wavelength_keywords` function to add the SPEC_VAL, SPEC_BW, and SPECBAND keywords")
     print("\n")
     for keyword, comment in missing_keywords:
-        print(f"header.set('{keyword}', <value>)  # {comment}")
+        print(f"header.set('{keyword}', \"<value>\"")  # {comment}")
 
     return header
 
@@ -137,20 +137,23 @@ def add_observation_date(header=None, date=None):
 
     try:
         obs_date = dateparser.parse(date)
-        obs_date_short = obs_date.strftime("%Y-%m-%d")
-        obs_date_long = obs_date.strftime("%b %d, %Y")
-        header.set("DATE-OBS", obs_date_short, "date of the observation")
-        print(f"Date of observation: {obs_date_long}")
-        print(f"DATE-OBS set to : {obs_date_short}.")
+        if obs_date is not None:
+            obs_date_short = obs_date.strftime("%Y-%m-%d")
+            obs_date_long = obs_date.strftime("%b %d, %Y")
+            header.set("DATE-OBS", obs_date_short, "date of the observation")
+            print(f"Date of observation: {obs_date_long}")
+            print(f"DATE-OBS set to : {obs_date_short}.")
+        else:
+            raise ValueError(f"Date could not be parsed by dateparser.parse: {date}")
     except Exception as e:
-        raise e("Invalid date format")
-    
-
-    #return header
+        raise e
 
 
 def check_header(header=None, format='simple-spectrum', ignore_simbad=False):
-    
+    #TODO: Check DOI
+
+    result = True
+
     if header is None:
         raise ValueError("Header is required")
 
@@ -169,71 +172,96 @@ def check_header(header=None, format='simple-spectrum', ignore_simbad=False):
             print(f"{keyword} : {comment}")
 
     # check RA and Dec are in degrees
-    ra = header.get('RA_TARG')
+    ra_targ = header.get('RA_TARG')
+    if ra_targ is None:
+        ra_targ = header.get('RA')
+        if ra_targ is None:
+            print("RA_TARG or RA is required")
+            ra = None
+            result = False
+    else:
+        ra = float(header.get('RA_TARG'))
+        if ra > 360:
+            print("RA_TARG does not appear to be in degrees")
+            print(f"RA_TARG: {ra}")
+            print("RA_TARG should be in degrees")
+            result = False
 
-    if ra > 360:
-        print("RA_TARG does not appear to be in degrees")
-        print(f"RA_TARG: {ra}")
-        print("RA_TARG should be in degrees")
+    dec_targ = header.get('DEC_TARG')
+    if dec_targ is None:
+        dec_targ = header.get('DEC')
+        if dec_targ is None:
+            print("DEC_TARG or DEC is required")
+            dec = None
+            result=False
+    else:
+        dec = float(header.get('DEC_TARG'))
 
-    dec = header.get('DEC_TARG')
-
-    if dec > 90:
-        print("DEC_TARG does not appear to be in degrees")
-        print(f"DEC_TARG: {dec}")
-        print("DEC_TARG should be in degrees")
+        if dec > 90:
+            print("DEC_TARG does not appear to be in degrees")
+            print(f"DEC_TARG: {dec}")
+            print("DEC_TARG should be in degrees")
+            result = False
 
     # Check if ra and dec could be read into SkyCoord object and converted to sexagesimal
-    if ra < 360 and dec < 90:
-        try:
-            coord = SkyCoord(ra,dec, unit=(u.deg, u.deg))
-            coord_str = coord.to_string('hmsdms')
-            print(f"coordinates converted to sexagesimal: {coord_str}")
-        except Exception as e:
-            print(f"coordinates ({ra},{dec}) could not be converted to Skycoord object: {e}")
+    if ra is not None and dec is not None:
+        if ra < 360 and dec < 90:
+            try:
+                coord = SkyCoord(ra,dec, unit=(u.deg, u.deg))
+                coord_str = coord.to_string('hmsdms')
+                print(f"coordinates converted to sexagesimal: {coord_str}")
+            except Exception as e:
+                print(f"coordinates ({ra},{dec}) could not be converted to Skycoord object: {e}")
+                result = False
+    else:
+        coord = None
 
     if ignore_simbad is False:
         # search SIMBAD for object name
         object_name = header.get('OBJECT')
         simbad_name_results = Simbad.query_object(object_name)
-        if len(simbad_name_results) == 0:
-            print(f"Object name {object_name} not found in SIMBAD")
-
-        # check RA and Dec agree with SIMBAD
-        if len(simbad_name_results) == 1:
-            ra_simbad = simbad_name_results['ra'][0]
-            dec_simbad = simbad_name_results['dec'][0]
-            ra_check = np.isclose(ra, ra_simbad, atol=0.1) # check if ra is close to simbad ra
-            dec_check = np.isclose(dec, dec_simbad, atol=0.1) # check if dec
-            if not ra_check or not dec_check:
-                print("RA_TARG and DEC_TARG do not match SIMBAD coordinates")
-                print(f"RA_TARG: {ra}, DEC_TARG: {dec}")
-                print(f"SIMBAD RA: {ra_simbad}, DEC: {dec_simbad}")
-        elif len(simbad_name_results) == 0:
+        if simbad_name_results is None and coord is not None:
             print(f"Object name {object_name} not found in SIMBAD, trying 60\" coord search")
             simbad_coord_results = Simbad.query_region(coord, radius='0d0m60s')
             if len(simbad_coord_results) >0:
                 print(f"SIMBAD objects within 60\" search of {coord_str}:")
                 print(simbad_coord_results)
-        else:
-            print(f"Multiple results found for object name {object_name} in SIMBAD")
+        
+        
+        # check RA and Dec agree with SIMBAD
+        if simbad_name_results is not None:
+            print(f"Object name {object_name} found in SIMBAD")
             print(simbad_name_results)
+            # ra_simbad = simbad_name_results['RA']
+            # dec_simbad = simbad_name_results['DEC']
+            # TODO: make this a skycoord object  comparison
+            # ra_check = np.isclose(ra, ra_simbad, atol=0.1) # check if ra is close to simbad ra
+            # dec_check = np.isclose(dec, dec_simbad, atol=0.1) # check if dec
+            # if not ra_check or not dec_check:
+            #    print("RA_TARG and DEC_TARG do not match SIMBAD coordinates")
+            #    print(f"RA_TARG: {ra}, DEC_TARG: {dec}")
+            #    print(f"SIMBAD RA: {ra_simbad}, DEC: {dec_simbad}")
 
         # check date can be turned to dateTime object
         date = header.get('DATE-OBS')
-        try:
-            obs_date = dateparser.parse(date)
-            obs_date_long = obs_date.strftime("%b %d, %Y")
-            print(f"DATE-OBS set to : {date}.")
-            print(f"Date of observation: {obs_date_long}")
-        except Exception as e:
-            print(f"Date ({date})could not be converted to Python DateTime object \n {e}")   
+        if date is None:
+            print("DATE-OBS is not set in header")
+            result = False
+        else:
+            try:
+                obs_date = dateparser.parse(date)
+                obs_date_long = obs_date.strftime("%b %d, %Y")
+                print(f"DATE-OBS set to : {date}.")
+                print(f"Date of observation: {obs_date_long}")
+            except Exception as e:
+                print(f"Date ({date})could not be converted to Python DateTime object \n {e}")  
+                result = False 
 
-
-    return None
-
+    return result
 
 def get_keywords(format):
+    #TODO: What do if RA/DEC is present but not RA_TARG/DEC_TARG?
+
 
     formats = ['simple-spectrum','ivoa-spectrum-dm-1.2']
     if format not in formats:
@@ -250,7 +278,7 @@ def get_keywords(format):
             ("TELESCOP", "Telescope name"),
             ("TELAPSE", "[s] Total elapsed time (s)"),
             ("APERTURE", "[arcsec] slit width"),
-            ("AUTHOR", "First author of original dataset"),
+            ("AUTHOR", "Authors of original dataset"),
             ("TITLE", "Dataset title "),
             ("VOREF","URL, DOI, or bibcode of original publication"),
             ("VOPUB", "Publisher"), # TODO: Set to SIMPLE
