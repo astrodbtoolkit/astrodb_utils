@@ -259,6 +259,7 @@ def check_header(header=None, format='simple-spectrum', ignore_simbad=False):
 
     return result
 
+
 def get_keywords(format):
     #TODO: What do if RA/DEC is present but not RA_TARG/DEC_TARG?
 
