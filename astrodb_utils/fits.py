@@ -8,8 +8,8 @@ from astroquery.simbad import Simbad
 from astrodb_utils.photometry import assign_ucd
 
 
-def add_missing_keywords(header=None, *, format='simple-spectrum', keywords=None):
-    """Finds the keywords that are missing from a header
+def add_missing_keywords(header=None, format='simple-spectrum', keywords=None):
+    """Finds the keywords that are missing from a header and adds them with blank values
 
     Inputs
     -------
@@ -61,7 +61,7 @@ def add_missing_keywords(header=None, *, format='simple-spectrum', keywords=None
     print("Use the `add_wavelength_keywords` function to add the SPEC_VAL, SPEC_BW, and SPECBAND keywords")
     print("\n")
     for keyword, comment in missing_keywords:
-        print(f"header.set('{keyword}', \"<value>\"")  # {comment}")
+        print(f"header.set('{keyword}', \"<value>\")")  # {comment}")
 
     return header
 
@@ -318,11 +318,12 @@ def check_simbad_name(header):
 
 
 def check_ra_dec_simbad(simbad_name_results):
+    # TODO: make this a skycoord object  comparison and figure out correct tolerance
     result = True
     # check RA and  Dec agree with SIMBAD
         # ra_simbad = simbad_name_results['RA']
         # dec_simbad = simbad_name_results['DEC']
-        # TODO: make this a skycoord object  comparison
+        
         # ra_check = np.isclose(ra, ra_simbad, atol=0.1) # check if ra is close to simbad ra
         # dec_check = np.isclose(dec, dec_simbad, atol=0.1) # check if dec
         # if not ra_check or not dec_check:
