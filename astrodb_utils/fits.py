@@ -58,7 +58,7 @@ def add_missing_keywords(header=None, format='simple-spectrum', keywords=None):
     print("Replace <value> with the appropriate value for your dataset")
     print("If you're not sure of the correct value, use None")
     print("If you started with a header object not called `header`, replace 'header' with the name of your header object")
-    print("Use the `astrodb.fits.add_wavelength_keywords` function to add the SPEC_VAL, SPEC_BW, and SPECBAND keywords")
+    print("Use the `astrodb_utils.fits.add_wavelength_keywords` function to add the SPEC_VAL, SPEC_BW, and SPECBAND keywords")
     print("\n")
     for keyword, comment in missing_keywords:
         print(f"header.set('{keyword}', \"<value>\")")  # {comment}")
