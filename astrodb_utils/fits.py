@@ -58,7 +58,7 @@ def add_missing_keywords(header=None, format='simple-spectrum', keywords=None):
     print("Replace <value> with the appropriate value for your dataset")
     print("If you're not sure of the correct value, use None")
     print("If you started with a header object not called `header`, replace 'header' with the name of your header object")
-    print("Use the `add_wavelength_keywords` function to add the SPEC_VAL, SPEC_BW, and SPECBAND keywords")
+    print("Use the `astrodb.fits.add_wavelength_keywords` function to add the SPEC_VAL, SPEC_BW, and SPECBAND keywords")
     print("\n")
     for keyword, comment in missing_keywords:
         print(f"header.set('{keyword}', \"<value>\")")  # {comment}")
@@ -150,7 +150,31 @@ def add_observation_date(header=None, date=None):
 
 
 def check_header(header=None, format='simple-spectrum', ignore_simbad=False):
+    """
+    Check the header of a FITS file for required keywords and other properties.
+
+    Parameters
+    ----------
+    header : astropy.io.fits.Header
+        The header object to be checked.
+    format : str, optional
+        The format of the FITS file. Default is 'simple-spectrum'.
+    ignore_simbad : bool, optional
+        Whether to ignore checking SIMBAD coordinates. Default is False.
+
+    Returns
+    -------
+    bool
+        True if the header passes all checks, False otherwise.
+
+    Raises
+    ------
+    ValueError
+        If the header is not provided.
+
+    """
     #TODO: Check DOI
+
 
     result = True
 
