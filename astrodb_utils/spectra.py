@@ -80,8 +80,9 @@ def check_spectrum_units(spectrum, raise_error=True):
 
 def plot_spectrum(spectrum):
     plt.plot(spectrum.spectral_axis, spectrum.flux)
+    plt.xlabel("Dispersion ({spectrum.spectral_axis.unit})")
+    plt.ylabel("Flux ({spectrum.flux.unit})")
     plt.show()
-    # TODO: add labels with spectral axis units
 
 
 def check_spectrum_plottable(spectrum_path, raise_error=True, show_plot=False):
