@@ -1,11 +1,16 @@
+import importlib.util
 import logging
 
 import astropy.units as u
-import matplotlib.pyplot as plt
 import numpy as np
 from specutils import Spectrum1D
 
 from astrodb_utils import AstroDBError
+
+matplotlib_check = importlib.util.find_spec("matplotlib")
+if matplotlib_check is not None:
+    import matplotlib.pyplot as plt
+
 
 __all__ = ["check_spectrum_class", "check_spectrum_not_nans", "check_spectrum_units", "check_spectrum_plottable"]
 
