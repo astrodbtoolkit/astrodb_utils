@@ -1,5 +1,6 @@
 import importlib.util
 import logging
+import sys
 
 import astropy.units as u
 import numpy as np
@@ -79,15 +80,22 @@ def check_spectrum_units(spectrum, raise_error=True):
 
 
 def plot_spectrum(spectrum):
-    plt.plot(spectrum.spectral_axis, spectrum.flux)
-    plt.xlabel("Dispersion ({spectrum.spectral_axis.unit})")
-    plt.ylabel("Flux ({spectrum.flux.unit})")
-    plt.show()
+    if "matplotlib" in sys.modules:
+        plt.plot(spectrum.spectral_axis, spectrum.flux)
+        plt.xlabel("Dispersion ({spectrum.spectral_axis.unit})")
+        plt.ylabel("Flux ({spectrum.flux.unit})")
+        plt.show()
+    else:
+        msg = "To display the spectrum, matplotlib most be installed."
+        logger.warning(msg)        
 
 
 def check_spectrum_plottable(spectrum_path, raise_error=True, show_plot=False):
     """
     Check if spectrum is plottable
+
+    show_plot only works if matplotlib is installed. matplotlib is not installed with astrodb_utils. 
+
     """
     # load the spectrum and make sure it's readable as a Spectrum1D object, has units, is not all NaNs.
     class_check = check_spectrum_class(spectrum_path, raise_error=raise_error)
