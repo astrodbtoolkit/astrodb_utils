@@ -15,8 +15,7 @@ if matplotlib_check is not None:
 
 __all__ = ["check_spectrum_class", "check_spectrum_not_nans", "check_spectrum_units", "check_spectrum_plottable"]
 
-
-logger = logging.getLogger("AstroDB")
+logger = logging.getLogger(__name__)
 
 
 def check_spectrum_class(spectrum, raise_error=True):
@@ -49,12 +48,13 @@ def check_spectrum_not_nans(spectrum, raise_error=True):
         return True
 
 
-def check_spectrum_units(spectrum, raise_error=True):
+def check_spectrum_wave_units(spectrum, raise_error=True):
     try:
-        wave: np.ndarray = spectrum.spectral_axis.to(u.micron).value
-        flux: np.ndarray = spectrum.flux.value
+        spectrum.spectral_axis.to(u.micron).value
+        return True
     except AttributeError as e:
-        msg = str(e) + f"Unable to parse spectral axis: {spectrum_path}"
+        logger.debug(f"{e}")
+        msg = f"Unable to parse spectral axis: {spectrum}"
         if raise_error:
             logger.error(msg)
             raise AstroDBError(msg)
@@ -62,7 +62,8 @@ def check_spectrum_units(spectrum, raise_error=True):
             logger.warning(msg)
             return False
     except u.UnitConversionError as e:
-        msg = f"{e} \n" f"Unable to convert spectral axis to microns:  {spectrum_path}"
+        logger.debug(f"{e}")
+        msg = f"Unable to convert spectral axis to microns:  {spectrum}"
         if raise_error:
             logger.error(msg)
             raise AstroDBError(msg)
@@ -70,7 +71,41 @@ def check_spectrum_units(spectrum, raise_error=True):
             logger.warning(msg)
             return False
     except ValueError as e:
-        msg = f"{e} \n Value error: {spectrum_path}:"
+        logger.debug(f"{e}")
+        msg = f"Value error: {spectrum}:"
+        if raise_error:
+            logger.error(msg)
+            raise AstroDBError(msg)
+        else:
+            logger.warning(msg)
+            return False
+
+
+def check_spectrum_flux_units(spectrum, raise_error=True):
+    try:
+        spectrum.flux.to(u.erg / u.s / u.cm ** 2 / u.AA).value
+        return True
+    except AttributeError as e:
+        logger.debug(f"{e}")
+        msg = f"Unable to parse flux: {spectrum}"
+        if raise_error:
+            logger.error(msg)
+            raise AstroDBError(msg)
+        else:
+            logger.warning(msg)
+            return False
+    except u.UnitConversionError as e:
+        logger.debug(f"{e}")
+        msg = f"Unable to convert flux to erg/s/cm^2/Angstrom:  {spectrum}"
+        if raise_error:
+            logger.error(msg)
+            raise AstroDBError(msg)
+        else:
+            logger.warning(msg)
+            return False
+    except ValueError as e:
+        logger.debug(f"{e}")
+        msg = f"Value error: {spectrum}:"
         if raise_error:
             logger.error(msg)
             raise AstroDBError(msg)
@@ -98,15 +133,23 @@ def check_spectrum_plottable(spectrum_path, raise_error=True, show_plot=False):
 
     """
     # load the spectrum and make sure it's readable as a Spectrum1D object, has units, is not all NaNs.
-    class_check = check_spectrum_class(spectrum_path, raise_error=raise_error)
-    if not class_check:
-        return False
-    else:
-        spectrum = Spectrum1D.read(spectrum_path)
+    if isinstance(spectrum_path, Spectrum1D):
+        spectrum = spectrum_path
+        class_check = True
+    else:    
+        class_check = check_spectrum_class(spectrum_path, raise_error=raise_error)
+        if not class_check:
+            return False
+        else:
+            spectrum = Spectrum1D.read(spectrum_path)
 
     # checking spectrum has good units
-    unit_check = check_spectrum_units(spectrum, raise_error=raise_error)
-    if not unit_check:
+    wave_unit_check = check_spectrum_wave_units(spectrum, raise_error=raise_error)
+    if not wave_unit_check:
+        return False
+
+    flux_unit_check = check_spectrum_flux_units(spectrum, raise_error=raise_error)
+    if not flux_unit_check:
         return False
 
     # check for NaNs
