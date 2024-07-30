@@ -10,7 +10,6 @@ from astrodb_utils.spectra import (
     check_spectrum_not_nans,
     check_spectrum_plottable,
     check_spectrum_wave_units,
-    plot_spectrum,
 )
 
 

@@ -13,7 +13,13 @@ if matplotlib_check is not None:
     import matplotlib.pyplot as plt
 
 
-__all__ = ["check_spectrum_class", "check_spectrum_not_nans", "check_spectrum_units", "check_spectrum_plottable"]
+__all__ = [
+    "check_spectrum_class", 
+    "check_spectrum_not_nans", 
+    "check_spectrum_wave_units", 
+    "check_spectrum_flux_units", 
+    "check_spectrum_plottable"
+    ]
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +89,7 @@ def check_spectrum_wave_units(spectrum, raise_error=True):
 
 def check_spectrum_flux_units(spectrum, raise_error=True):
     try:
-        spectrum.flux.to(u.erg / u.s / u.cm ** 2 / u.AA).value
+        spectrum.flux.to(u.erg / u.s / u.cm**2 / u.AA).value
         return True
     except AttributeError as e:
         logger.debug(f"{e}")
@@ -122,21 +128,21 @@ def plot_spectrum(spectrum):
         plt.show()
     else:
         msg = "To display the spectrum, matplotlib most be installed."
-        logger.warning(msg)        
+        logger.warning(msg)
 
 
 def check_spectrum_plottable(spectrum_path, raise_error=True, show_plot=False):
     """
     Check if spectrum is plottable
 
-    show_plot only works if matplotlib is installed. matplotlib is not installed with astrodb_utils. 
+    show_plot only works if matplotlib is installed. matplotlib is not installed with astrodb_utils.
 
     """
     # load the spectrum and make sure it's readable as a Spectrum1D object, has units, is not all NaNs.
     if isinstance(spectrum_path, Spectrum1D):
         spectrum = spectrum_path
         class_check = True
-    else:    
+    else:
         class_check = check_spectrum_class(spectrum_path, raise_error=raise_error)
         if not class_check:
             return False
