@@ -28,6 +28,7 @@ def ingest_photometry(
     *,
     source: str = None,
     band: str = None,
+    regime: str = None,
     magnitude: float = None,
     magnitude_error: float = None,
     reference: str = None,
@@ -44,6 +45,7 @@ def ingest_photometry(
     db: astrodbkit2.astrodb.Database
     source: str
     band: str
+    regime: str
     magnitude: float
     magnitude_error: float
     reference: str
@@ -151,6 +153,7 @@ def ingest_photometry(
         {
             "source": db_name,
             "band": band,
+            "regime": regime,
             "magnitude": str(
                 magnitude
             ),  # Convert to string to maintain significant digits
@@ -185,10 +188,10 @@ def ingest_photometry(
                 "Add it with add_publication function."
             )
             if raise_error:
-                logger.error(msg)
-                raise AstroDBError(msg)
+                logger.error(msg+str(e))
+                raise AstroDBError(msg+str(e))
             else:
-                logger.warning(msg)
+                logger.warning(f"{msg}/n{str(e)}")
 
     return flags
 

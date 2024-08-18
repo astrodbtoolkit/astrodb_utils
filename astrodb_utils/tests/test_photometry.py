@@ -1,11 +1,12 @@
-import pytest
 import astropy.units as u
+import pytest
+
 from astrodb_utils import AstroDBError
 from astrodb_utils.photometry import (
+    assign_ucd,
+    fetch_svo,
     ingest_photometry,
     ingest_photometry_filter,
-    fetch_svo,
-    assign_ucd,
 )
 
 
@@ -22,6 +23,7 @@ def test_ingest_photometry(db):
         db,
         source="Dark energy source 2",
         band="Generic/Cousins.R",
+        regime="optical",
         magnitude=10,
         regime="optical",
         reference="Riess98",
