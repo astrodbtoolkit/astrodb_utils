@@ -100,7 +100,7 @@ def test_find_source_in_db(db):
             ra=100,
             dec=17,
             ra_col_name="bad_column_name",
-            dec_col_name="dec_deg",
+            dec_col_name="bad_column_name",
         )
     assert "KeyError" in str(error_message)
 
