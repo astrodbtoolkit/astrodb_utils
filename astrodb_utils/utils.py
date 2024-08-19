@@ -223,7 +223,7 @@ def find_source_in_db(
         logger.debug(f"One match found for {source}: {db_names[0]}")
     elif len(db_name_matches) > 1:
         db_names = db_name_matches["source"].tolist()
-        logger.debug(f"More than match found for {source}: {db_names}")
+        logger.debug(f"More than one match found for {source}: {db_names}")
         # TODO: Find way for user to choose correct match
     elif len(db_name_matches) == 0:
         db_names = []
