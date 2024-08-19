@@ -97,8 +97,8 @@ def test_find_source_in_db(db):
     find_source_in_db(
         db,
         "Apple",
-        ra=100.0673775,
-        dec=17.352889,
+        ra=100,
+        dec=17,
         ra_col_name="bad_column_name",
         dec_col_name="dec_deg",
     )
