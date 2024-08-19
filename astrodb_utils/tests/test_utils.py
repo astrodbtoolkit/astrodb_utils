@@ -93,7 +93,7 @@ def test_find_source_in_db(db):
     )
     assert len(search_result) == 0
 
-    with pytest.raises(ValueError) as error_message:
+    with pytest.raises(KeyError) as error_message:
         find_source_in_db(
             db,
             "Apple",
