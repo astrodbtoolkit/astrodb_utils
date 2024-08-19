@@ -25,7 +25,6 @@ def test_ingest_photometry(db):
         band="Generic/Cousins.R",
         regime="optical",
         magnitude=10,
-        regime="optical",
         reference="Riess98",
         telescope="Generic",
     )

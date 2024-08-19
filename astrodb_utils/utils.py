@@ -119,7 +119,16 @@ def load_astrodb(
     return db
 
 
-def find_source_in_db(db, source, *, ra=None, dec=None, search_radius=60.0):
+def find_source_in_db(
+    db,
+    source,
+    *,
+    ra=None,
+    dec=None,
+    search_radius=60.0,
+    ra_col_name="ra_deg",
+    dec_col_name="dec_deg",
+):
     """
     Find a source in the database given a source name and optional coordinates.
 
@@ -206,7 +215,7 @@ def find_source_in_db(db, source, *, ra=None, dec=None, search_radius=60.0):
             )
             logger.debug(msg2)
             db_name_matches = db.query_region(
-                simbad_skycoord, radius=radius, ra_col="ra_deg", dec_col="dec_deg"
+                simbad_skycoord, radius=radius, ra_col=ra_col_name, dec_col=dec_col_name
             )
 
     if len(db_name_matches) == 1:
