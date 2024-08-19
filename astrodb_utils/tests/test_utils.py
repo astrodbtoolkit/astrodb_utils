@@ -102,7 +102,7 @@ def test_find_source_in_db(db):
             ra_col_name="bad_column_name",
             dec_col_name="bad_column_name",
         )
-    assert "KeyError" in str(error_message)
+    assert "bad_column_name" in str(error_message)
 
 
 @pytest.mark.filterwarnings(
