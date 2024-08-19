@@ -85,13 +85,24 @@ def test_find_source_in_db(db):
 
     search_result = find_source_in_db(
         db,
-        "Apple",
+        "Pear",
         ra=100,
-        dec=17.352889,
+        dec=17,
         ra_col_name="ra_deg",
         dec_col_name="dec_deg",
     )
     assert len(search_result) == 0
+
+    with pytest.raises(ValueError) as error_message:
+        find_source_in_db(
+            db,
+            "Apple",
+            ra=100.0673775,
+            dec=17.352889,
+            ra_col_name="bad_column_name",
+            dec_col_name="dec_deg",
+        )
+    assert "KeyError" in str(error_message)
 
 
 @pytest.mark.filterwarnings(
