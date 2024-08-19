@@ -53,6 +53,7 @@ logger.setLevel(logging.INFO)
 class AstroDBError(Exception):
     """Custom error for AstroDB"""
 
+
 # TODO: commented out as not using with the new custom error
 # @contextmanager
 # def disable_exception_traceback():
@@ -118,7 +119,16 @@ def load_astrodb(
     return db
 
 
-def find_source_in_db(db, source, *, ra=None, dec=None, search_radius=60.0):
+def find_source_in_db(
+    db,
+    source,
+    *,
+    ra=None,
+    dec=None,
+    search_radius=60.0,
+    ra_col_name="ra_deg",
+    dec_col_name="dec_deg",
+):
     """
     Find a source in the database given a source name and optional coordinates.
 
@@ -183,7 +193,7 @@ def find_source_in_db(db, source, *, ra=None, dec=None, search_radius=60.0):
             f"{location.ra.degree}, {location.dec}"
         )
         db_name_matches = db.query_region(
-            location, radius=radius, ra_col="ra_deg", dec_col="dec_deg"
+            location, radius=radius, ra_col=ra_col_name, dec_col=dec_col_name
         )
 
     # If still no matches, try to get the coords from SIMBAD
@@ -205,7 +215,7 @@ def find_source_in_db(db, source, *, ra=None, dec=None, search_radius=60.0):
             )
             logger.debug(msg2)
             db_name_matches = db.query_region(
-                simbad_skycoord, radius=radius, ra_col="ra_deg", dec_col="dec_deg"
+                simbad_skycoord, radius=radius, ra_col=ra_col_name, dec_col=dec_col_name
             )
 
     if len(db_name_matches) == 1:
@@ -213,7 +223,7 @@ def find_source_in_db(db, source, *, ra=None, dec=None, search_radius=60.0):
         logger.debug(f"One match found for {source}: {db_names[0]}")
     elif len(db_name_matches) > 1:
         db_names = db_name_matches["source"].tolist()
-        logger.debug(f"More than match found for {source}: {db_names}")
+        logger.debug(f"More than one match found for {source}: {db_names}")
         # TODO: Find way for user to choose correct match
     elif len(db_name_matches) == 0:
         db_names = []
@@ -609,19 +619,23 @@ def check_url_valid(url):
     status_code = request_response.status_code
     if status_code != 200:  # The website is up if the status code is 200
         status = "skipped"  # instead of incrememnting n_skipped, just skip this one
-        msg = "The spectrum location does not appear to be valid: \n" \
-              f'spectrum: {url} \n' \
-              f'status code: {status_code}'
+        msg = (
+            "The spectrum location does not appear to be valid: \n"
+            f"spectrum: {url} \n"
+            f"status code: {status_code}"
+        )
         logger.error(msg)
     else:
         msg = f"The spectrum location appears up: {url}"
         logger.debug(msg)
-        status = 'added'
+        status = "added"
     return status
 
 
 # NAMES
-def ingest_names(db, source, other_name):
+def ingest_names(
+    db, source: str = None, other_name: str = None, raise_error: bool = None
+):
     """
     This function ingests an other name into the Names table
 
@@ -635,6 +649,9 @@ def ingest_names(db, source, other_name):
     other_name: str
         Name of the source different than that found in source table
 
+    raise_error: bool
+        Raise an error if name was not ingested
+
     Returns
     -------
     None
@@ -646,9 +663,13 @@ def ingest_names(db, source, other_name):
             conn.commit()
         logger.info(f" Name added to database: {names_data}\n")
     except sqlalchemy.exc.IntegrityError as e:
-        msg = f"Could not add {names_data} to database. Name is likely a duplicate."
-        logger.warning(msg)
-        raise AstroDBError(msg) from e
+        msg = f"Could not add {names_data} to database."
+        if "UNIQUE constraint failed:" in str(e):
+            msg += " Name is likely a duplicate."
+        if raise_error:
+            raise AstroDBError(msg) from e
+        else:
+            logger.warning(msg)
 
 
 # SOURCES
