@@ -193,7 +193,7 @@ def find_source_in_db(
             f"{location.ra.degree}, {location.dec}"
         )
         db_name_matches = db.query_region(
-            location, radius=radius, ra_col="ra_deg", dec_col="dec_deg"
+            location, radius=radius, ra_col=ra_col_name, dec_col=dec_col_name
         )
 
     # If still no matches, try to get the coords from SIMBAD

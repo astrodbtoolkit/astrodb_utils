@@ -96,7 +96,7 @@ def test_find_source_in_db(db):
     # with pytest.raises(Exception) as error_message:
     find_source_in_db(
         db,
-        "Apple",
+        "Pear",
         ra=100,
         dec=17,
         ra_col_name="bad_column_name",
