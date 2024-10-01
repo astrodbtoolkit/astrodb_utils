@@ -13,6 +13,7 @@ AstroDB Toolkit
    :caption: Documentation
 
    pages/overview
+   pages/ingesting_publications
    pages/faq
    pages/api
    pages/organization
