@@ -3,17 +3,36 @@ AstroDB Toolkit
 
 .. toctree::
    :maxdepth: 1
-   :caption: Getting Started
+   :caption: Getting started
 
+   pages/overview
    pages/installation
+   pages/querying
+   pages/making_private_version
+   
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Ingesting
+
+   pages/getting_started_ingesting
+   pages/ingesting_data
    pages/ingesting_publications
+   pages/ingesting_spectra
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Making a new database from scratch
+
+   pages/getting_started_new_database
+   pages/the_template_schema
+   pages/modifying_schema
 
 .. toctree::
    :maxdepth: 1
    :caption: Documentation
 
-   pages/overview
-   pages/ingesting_publications
    pages/faq
    pages/api
    pages/organization
