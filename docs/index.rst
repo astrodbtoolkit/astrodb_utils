@@ -2,7 +2,7 @@ AstroDB Toolkit
 ==================================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Getting started
 
    pages/getting_started/index.rst
