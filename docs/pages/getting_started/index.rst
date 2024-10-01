@@ -5,7 +5,7 @@ Getting started
    :maxdepth: 1
    :caption: Getting started
 
-   pages/overview
-   pages/installation
-   pages/querying
-   pages/making_private_version
+   overview
+   installation
+   querying
+   making_private_version
