@@ -12,7 +12,7 @@ import ads
 import astropy.units as u
 import requests
 import sqlalchemy.exc
-from astrodbkit2.astrodb import Database, create_database
+from astrodbkit.astrodb import Database, create_database
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
 from astroquery.simbad import Simbad
