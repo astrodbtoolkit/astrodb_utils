@@ -4,6 +4,8 @@
 name: Publish Python Package to PyPI
 
 on:
+  pull_request:     # delete this once workflow tested
+    branches: [main]  # delete this once workflow tested
   release:
     types: [created]
   workflow_dispatch:
