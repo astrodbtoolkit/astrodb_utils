@@ -1,13 +1,13 @@
 # Based on 
 # https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflow
+# Every pull request to main will get published to testpypi
+# Only tagged things (aka, releases) will get published to pypi.
 
-name: Publish Python Package to PyPI
+name: Publish to TestPyPi and PyPI
 
 on:
-  pull_request:     # delete this once workflow tested
-    branches: [main]  # delete this once workflow tested
-  release:
-    types: [created]
+  pull_request:       
+    branches: [main]
   workflow_dispatch:
     
 jobs:
