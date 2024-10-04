@@ -42,7 +42,7 @@ def ingest_photometry(
 
     Parameters
     ----------
-    db: astrodbkit2.astrodb.Database
+    db: astrodbkit.astrodb.Database
     source: str
     band: str
     regime: str
