@@ -24,3 +24,12 @@ Spectra
     :members:
     :undoc-members:
     :show-inheritance:
+
+
+Fits
+-----------
+
+.. automodule:: astrodb_utils.fits
+    :members:
+    :undoc-members:
+    :show-inheritance:
