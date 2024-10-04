@@ -15,3 +15,12 @@ Utils
     :members:
     :undoc-members:
     :show-inheritance:
+
+
+Spectra
+-----------
+
+.. automodule:: astrodb_utils.spectra
+    :members:
+    :undoc-members:
+    :show-inheritance:
