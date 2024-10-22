@@ -4,11 +4,12 @@
 name: Test astrodb_utils
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-
+  
 permissions:
   contents: read
 

@@ -11,12 +11,14 @@ Set up ADS token
 
 1. Make an ADS account at `https://ui.adsabs.harvard.edu/help/api/`.
 2. Go to `https://ui.adsabs.harvard.edu/user/settings/token`.
-3. Copy the token generated on the package.
-4. Add the token as an environment variable, `ADS_TOKEN`. If using the `bash` shell, this can be done with
-   
-    .. code-block:: bash
+3. Copy the token.
+4. Add the `ADS_TOKEN` environment variable to your shell startup script, 
 
-        export ADS_TOKEN=<your token>
+   * If using the `zsh` shell, this can be done by adding the following line to your `~/.zshenv`. If you don't have a `.zshenv` file, create one in your home directory.
+   
+    .. code-block:: zsh
+
+        export ADS_TOKEN="<your token>"
 
 replacing <your token> with the token you copied.
 
