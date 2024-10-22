@@ -89,7 +89,7 @@ def load_astrodb(
         os.remove(db_file)  # removes the current .db file if one already exists
 
     if not db_file_path.exists():
-        try:  # Use fancy in-memory database, if supported by astrodbkit2
+        try:  # Use fancy in-memory database, if supported by astrodbkit
             db = Database(
                 "sqlite://", reference_tables=reference_tables
             )  # creates and connects to a temporary in-memory database
@@ -154,7 +154,7 @@ def find_source_in_db(
 
     """
 
-    # TODO: In astrodbkit2, convert verbose to using logger
+    # TODO: In astrodbkit, convert verbose to using logger
 
     if ra and dec:
         coords = True
@@ -641,8 +641,8 @@ def ingest_names(
 
     Parameters
     ----------
-    db: astrodbkit2.astrodb.Database
-        Database object created by astrodbkit2
+    db: astrodbkit.astrodb.Database
+        Database object created by astrodbkit
     source: str
         Name of source as it appears in sources table
 
@@ -690,8 +690,8 @@ def ingest_source(
     """
     Parameters
     ----------
-    db: astrodbkit2.astrodb.Database
-        Database object created by astrodbkit2
+    db: astrodbkit.astrodb.Database
+        Database object created by astrodbkit
     sources: str
         Names of sources
     references: str
@@ -922,8 +922,8 @@ def ingest_sources(
     TODO: better support references=None
     Parameters
     ----------
-    db: astrodbkit2.astrodb.Database
-        Database object created by astrodbkit2
+    db: astrodbkit.astrodb.Database
+        Database object created by astrodbkit
     sources: list[str]
         Names of sources
     references: str or list[strings]
@@ -1150,8 +1150,8 @@ def ingest_instrument(db, *, telescope=None, instrument=None, mode=None):
 
     Parameters
     ----------
-    db: astrodbkit2.astrodb.Database
-        Database object created by astrodbkit2
+    db: astrodbkit.astrodb.Database
+        Database object created by astrodbkit
     telescope: str
     instrument: str
     mode: str
