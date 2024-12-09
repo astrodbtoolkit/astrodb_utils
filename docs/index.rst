@@ -2,32 +2,15 @@ AstroDB Toolkit
 ==================================
 
 .. toctree::
-   :maxdepth: 3
-   :caption: Using with an existing database
+   :glob:
+   :maxdepth: 2
 
-   pages/using_existing_db/index.rst
-   
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Ingesting
-
-   pages/getting_started_ingesting
-   pages/ingesting_data
-   pages/ingesting_publications
-   pages/ingesting_spectra
-
-
-
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Documentation
-
-   pages/api
-
-
-
+   Overview of the AstroDB Toolkit <pages/overview/organization>
+   pages/getting_started/index
+   Using `astrodb_utils` with an existing database <pages/using_existing_db/index>
+   Making a new database with `astrodb_template` <pages/make_new_db/getting_started_new_database>
+   pages/getting_help/index
+   API documentation for astrodb_utils <pages/api>
 
 
 License & attribution

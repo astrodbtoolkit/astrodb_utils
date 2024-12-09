@@ -2,5 +2,9 @@ Using an existing database
 ===============
 
 .. toctree::
-   :maxdepth: 3
-   :caption: Using an existing database
+
+    getting_started/index
+    querying
+    ingesting/getting_started_ingesting
+    making_private_version
+
