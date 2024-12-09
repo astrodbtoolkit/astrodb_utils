@@ -2,10 +2,10 @@ AstroDB Toolkit
 ==================================
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Getting started
+   :maxdepth: 3
+   :caption: Using with an existing database
 
-   pages/getting_started/index.rst
+   pages/using_existing_db/index.rst
    
 
 .. toctree::
@@ -18,28 +18,17 @@ AstroDB Toolkit
    pages/ingesting_spectra
 
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Making a new database from scratch
 
-   pages/getting_started_new_database
-   pages/the_template_schema
-   pages/modifying_schema
 
 .. toctree::
    :maxdepth: 1
    :caption: Documentation
 
-   pages/faq
    pages/api
-   pages/organization
 
 
-.. toctree::
-   :maxdepth: 1
-   :caption: For developers
 
-   pages/developer_installation
+
 
 License & attribution
 ---------------------

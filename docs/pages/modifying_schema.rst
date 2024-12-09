@@ -1,2 +1,0 @@
-Modifying the schema
-======================
