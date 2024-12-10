@@ -1,6 +1,8 @@
 Using an existing database
 ===============
 
+Using an existing database entails querying the database and ingesting data.
+
 .. toctree::
 
     getting_started/index
@@ -8,3 +10,6 @@ Using an existing database
     ingesting/getting_started_ingesting
     making_private_version
 
+.. note::
+
+    If you want to modify the tables or columns of an existing database, you will need to :doc:`modify the schema <../make_new_db/modifying_schema>`.
