@@ -1,45 +1,27 @@
 AstroDB Toolkit
 ==================================
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Getting started
+The AstroDB Toolkit provides a set of tools to help astronomers work with and create databases. 
+The `astrodb_utils` package provides a set of functions to query and ingest data into databases built with the `astrodb-template-db` schema.
+Currently, the Toolkit only supports SQLite databases. 
+Under the hood, the Toolkit uses `AstrodbKit <https://github.com/astrodbtoolkit/AstrodbKit>`_, a package built on `SQLAlchemy <https://www.sqlalchemy.org/>`_.
 
-   pages/getting_started/index.rst
-   
+
+User Guide
+==================================
 
 .. toctree::
+   :glob:
    :maxdepth: 1
-   :caption: Ingesting
 
-   pages/getting_started_ingesting
-   pages/ingesting_data
-   pages/ingesting_publications
-   pages/ingesting_spectra
+   Overview of the AstroDB Toolkit <pages/overview/organization>
+   pages/getting_started/index
+   Working with an existing database <pages/using_existing_db/index>
+   Making a new database <pages/make_new_db/getting_started_new_database>
+   pages/getting_help/index
+   Developer documentation <pages/dev_docs/developer_installation>
+   API documentation <pages/api>
 
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Making a new database from scratch
-
-   pages/getting_started_new_database
-   pages/the_template_schema
-   pages/modifying_schema
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Documentation
-
-   pages/faq
-   pages/api
-   pages/organization
-
-
-.. toctree::
-   :maxdepth: 1
-   :caption: For developers
-
-   pages/developer_installation
 
 License & attribution
 ---------------------

@@ -26,3 +26,9 @@ replacing <your token> with the token you copied.
 Ingesting publications
 -----------------------
 Fill this in...
+
+
+API documentation
+-----------------
+:py:mod:`astrodb_utils.find_publication`
+:py:mod:`astrodb_utils.ingest_publication`
