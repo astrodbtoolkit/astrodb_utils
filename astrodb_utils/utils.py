@@ -280,7 +280,7 @@ def find_publication(
 
     See Also
     --------
-    add_publication: Function to add publications in the database
+    ingest_publication: Function to add publications in the database
 
     """
 
@@ -431,7 +431,7 @@ def ingest_publication(
 
     See Also
     --------
-    search_publication: Function to find publications in the database
+    find_publication: Function to find publications in the database
 
     """
 

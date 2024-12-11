@@ -26,3 +26,10 @@ All contributions should include tests. To run the tests, use the command
 .. code-block:: bash
 
     pytest
+
+Linting
+---------------------
+
+Use Ruff.
+
+

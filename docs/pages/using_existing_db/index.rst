@@ -4,6 +4,7 @@ Using an existing database
 Using an existing database entails querying the database and ingesting data.
 
 .. toctree::
+    :maxdepth: 2
 
     getting_started/index
     querying

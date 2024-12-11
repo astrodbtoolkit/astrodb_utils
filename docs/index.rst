@@ -1,6 +1,13 @@
 AstroDB Toolkit
 ==================================
 
+The AstroDB Toolkit provides a set of tools to help astronomers work with and create databases. 
+The `astrodb_utils` package provides a set of functions to query and ingest data into databases built with the `astrodb-template-db` schema.
+Currently, the Toolkit only supports SQLite databases.
+
+User Guide
+==================================
+
 .. toctree::
    :glob:
    :maxdepth: 2
