@@ -19,6 +19,8 @@ There are several tables which are expected by ``astrodb_utils`` and should be m
 * Names
 * Publications
 * Versions
+* Telescopes
+* Instruments
 
 Optional tables
 ----------------
