@@ -79,6 +79,7 @@ def load_astrodb(
         "Versions",
         "PhotometryFilters",
     ],
+    felis_schema=None
 ):
     """Utility function to load the database"""
 
@@ -89,32 +90,14 @@ def load_astrodb(
         os.remove(db_file)  # removes the current .db file if one already exists
 
     if not db_file_path.exists():
-        try:  # Use fancy in-memory database, if supported by astrodbkit
-            db = Database(
-                "sqlite://", reference_tables=reference_tables
-            )  # creates and connects to a temporary in-memory database
-            db.load_database(
-                data_path
-            )  # loads the data from the data files into the database
-            db.dump_sqlite(db_file)  # dump in-memory database to file
-            db = Database(
-                db_connection_string, reference_tables=reference_tables
-            )  # replace database object with new file version
-        except RuntimeError:
-            # use in-file database
-            create_database(
-                db_connection_string
-            )  # creates empty database based on the simple schema
-            db = Database(
-                db_connection_string, reference_tables=reference_tables
-            )  # connects to the empty database
-            db.load_database(
-                data_path
-            )  # loads the data from the data files into the database
+        # Create database, using Felis if provided
+        create_database(db_connection_string, felis_schema=felis_schema)
+        # Connect and load the database
+        db = Database(db_connection_string, reference_tables=reference_tables)
+        db.load_database(data_path)
     else:
-        db = Database(
-            db_connection_string, reference_tables=reference_tables
-        )  # if database already exists, connects to .db file
+        # if database already exists, connects to .db file
+        db = Database(db_connection_string, reference_tables=reference_tables)
 
     return db
 
