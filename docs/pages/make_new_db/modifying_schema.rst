@@ -30,6 +30,9 @@ These are included in the template database and can be used as models for other 
 Philosophy and guidelines
 ---------------------
 
+We encourage users to follow the detailed best practices for astronomical databases outlined in `Chen et al. 2022 <https://iopscience.iop.org/article/10.3847/1538-4365/ac6268>`_.
+
+
 Long vs Wide tables
 ~~~~~~~~~~~~~~~~~~~~
 Think carefully about the structure of your tables.
@@ -44,3 +47,13 @@ Column names
   For example, instead of ``ra`` and ``dec``, use ``ra_deg``, ``dec_deg``. 
   While units are also included in the documentation of the schema, 
   including them in the column name increases their visibility to the user.
+  
+
+Units
+---------------------------
+Per `Chen et al. 2022 <https://iopscience.iop.org/article/10.3847/1538-4365/ac6268>`_, we explicitly define the units
+for each table in their name (e.g., in the `Sources` table, the column with Right Ascension values
+is named `ra_deg`). Doing so removes unit ambiguity when querying and modifying the database.
+
+Some tables have a dedicated column for units, such as the `ModeledParameters` table. 
+These columns expect strings which are resolvable as `Astropy units <https://docs.astropy.org/en/stable/units/index.html>`_.
