@@ -54,20 +54,6 @@ class AstroDBError(Exception):
     """Custom error for AstroDB"""
 
 
-# TODO: commented out as not using with the new custom error
-# @contextmanager
-# def disable_exception_traceback():
-#     """
-#     All traceback information is suppressed and only the exception type and value
-#       are printed
-#     """
-#     default_value = getattr(sys, "tracebacklimit", 1000)  # `1000` is a Python's
-#                                                             default value
-#     sys.tracebacklimit = 0
-#     yield
-#     sys.tracebacklimit = default_value  # revert changes
-
-
 def load_astrodb(
     db_file,
     data_path="data/",
@@ -79,42 +65,41 @@ def load_astrodb(
         "Versions",
         "PhotometryFilters",
     ],
+    felis_schema=None
 ):
-    """Utility function to load the database"""
+    """Utility function to load the database
+    
+    Parameters
+    ----------
+    db_file : str
+        Name of SQLite file to use
+    data_path : str
+        Path to data directory; default 'data/'
+    recreatedb : bool
+        Flag whether or not the database file should be recreated
+    reference_tables : list
+        List of tables to consider as reference tables.   
+        Default: Publications, Telescopes, Instruments, Versions, PhotometryFilters
+    felis_schema : str
+        Path to Felis schema; default None
+    """
 
     db_file_path = Path(db_file)
     db_connection_string = "sqlite:///" + db_file
 
+    # removes the current .db file if one already exists
     if recreatedb and db_file_path.exists():
-        os.remove(db_file)  # removes the current .db file if one already exists
+        os.remove(db_file)  
 
     if not db_file_path.exists():
-        try:  # Use fancy in-memory database, if supported by astrodbkit
-            db = Database(
-                "sqlite://", reference_tables=reference_tables
-            )  # creates and connects to a temporary in-memory database
-            db.load_database(
-                data_path
-            )  # loads the data from the data files into the database
-            db.dump_sqlite(db_file)  # dump in-memory database to file
-            db = Database(
-                db_connection_string, reference_tables=reference_tables
-            )  # replace database object with new file version
-        except RuntimeError:
-            # use in-file database
-            create_database(
-                db_connection_string
-            )  # creates empty database based on the simple schema
-            db = Database(
-                db_connection_string, reference_tables=reference_tables
-            )  # connects to the empty database
-            db.load_database(
-                data_path
-            )  # loads the data from the data files into the database
+        # Create database, using Felis if provided
+        create_database(db_connection_string, felis_schema=felis_schema)
+        # Connect and load the database
+        db = Database(db_connection_string, reference_tables=reference_tables)
+        db.load_database(data_path)
     else:
-        db = Database(
-            db_connection_string, reference_tables=reference_tables
-        )  # if database already exists, connects to .db file
+        # if database already exists, connects to it
+        db = Database(db_connection_string, reference_tables=reference_tables)
 
     return db
 
