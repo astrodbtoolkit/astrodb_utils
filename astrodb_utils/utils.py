@@ -143,7 +143,6 @@ def find_source_in_db(
 
     """
 
-    # TODO: In astrodbkit, convert verbose to using logger
 
     if ra and dec:
         coords = True
@@ -675,25 +674,27 @@ def ingest_source(
     comment: str = None,
     raise_error: bool = True,
     search_db: bool = True,
+    ra_col_name: str = None,
+    dec_col_name: str = None
 ):
     """
     Parameters
     ----------
     db: astrodbkit.astrodb.Database
         Database object created by astrodbkit
-    sources: str
+    source: str
         Names of sources
-    references: str
+    reference: str
         Discovery references of sources
-    ras: float, optional
+    ra: float, optional
         Right ascensions of sources. Decimal degrees.
-    decs: float, optional
+    dec: float, optional
         Declinations of sources. Decimal degrees.
-    comments: string, optional
+    comment: string, optional
         Comments
-    epochs: str, optional
+    epoch: str, optional
         Epochs of coordinates
-    equinoxes: str, optional
+    equinoxe: str, optional
         Equinoxes of coordinates
     other_references: str
     raise_error: bool, optional
@@ -702,6 +703,10 @@ def ingest_source(
     search_db: bool, optional
         True (default): Search database to see if source is already ingested
         False: Ingest source without searching the database
+    ra_col_name: str
+        Name of the column in the database table that contains the right ascension
+    dec_col_name: str
+        Name of the column in the database table that contains the declination
 
     Returns
     -------
@@ -710,24 +715,19 @@ def ingest_source(
 
     """
 
-    if ra is None and dec is None:
-        coords_provided = False
-    else:
-        coords_provided = True
-
-    logger.debug(f"coords_provided:{coords_provided}")
-
     # Find out if source is already in database or not
-    if coords_provided and search_db:
+    if search_db:
         logger.debug(f"Checking database for: {source} at ra: {ra}, dec: {dec}")
-        name_matches = find_source_in_db(db, source, ra=ra, dec=dec)
-    elif search_db:
-        logger.debug(f"Checking database for: {source}")
-        name_matches = find_source_in_db(db, source)
-    elif not search_db:
-        name_matches = []
+        name_matches = find_source_in_db(
+            db,
+            source,
+            ra=ra,
+            dec=dec,
+            ra_col_name=ra_col_name,
+            dec_col_name=dec_col_name,
+        )
     else:
-        name_matches = None
+        name_matches = []
 
     logger.debug(f"Source matches in database: {name_matches}")
 
@@ -799,7 +799,7 @@ def ingest_source(
                 return
 
         # Try to get coordinates from SIMBAD if they were not provided
-        if not coords_provided:
+        if ra is not None and dec is not None:
             # Try to get coordinates from SIMBAD
             simbad_result_table = Simbad.query_object(source)
 
@@ -842,8 +842,8 @@ def ingest_source(
     source_data = [
         {
             "source": source,
-            "ra_deg": ra,
-            "dec_deg": dec,
+            ra_col_name: ra,
+            dec_col_name: dec,
             "reference": reference,
             "epoch_year": epoch,
             "equinox": equinox,
