@@ -128,6 +128,10 @@ def find_source_in_db(
         Declinations of sources. Decimal degrees.
     search_radius
         radius in arcseconds to use for source matching
+    ra_col_name: str
+        Name of the column in the database table that contains the right ascension
+    dec_col_name: str
+        Name of the column in the database table that contains the declination
 
     Returns
     -------
