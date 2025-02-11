@@ -46,6 +46,7 @@ def load_astrodb(
         "Instruments",
         "Versions",
         "PhotometryFilters",
+        "Regimes"
     ],
     felis_schema=None
 ):
@@ -95,6 +96,7 @@ def find_source_in_db(
     search_radius=60.0,
     ra_col_name="ra_deg",
     dec_col_name="dec_deg",
+    use_simbad=True,
 ):
     """
     Find a source in the database given a source name and optional coordinates.
@@ -114,6 +116,9 @@ def find_source_in_db(
         Name of the column in the database table that contains the right ascension
     dec_col_name: str
         Name of the column in the database table that contains the declination
+    use_simbad: bool
+        Use Simbad to resolve the source name if it is not found in the database. Default is True. 
+        Set to False if no internet connection.
 
     Returns
     -------
@@ -136,7 +141,7 @@ def find_source_in_db(
     logger.debug(f"{source}: Searching for match in database.")
 
     db_name_matches = db.search_object(
-        source, output_table="Sources", fuzzy_search=False, verbose=False
+        source, output_table="Sources", fuzzy_search=False, verbose=False, resolve_simbad=use_simbad
     )
 
     # NO MATCHES
@@ -717,6 +722,7 @@ def ingest_source(
     ra_col_name: str = "ra_deg",
     dec_col_name: str = "dec_deg",
     epoch_col_name: str = "epoch_year",
+    use_simbad: bool = True,
 ):
     """
     Parameters
@@ -748,6 +754,9 @@ def ingest_source(
         Name of the column in the database table that contains the right ascension
     dec_col_name: str
         Name of the column in the database table that contains the declination
+    use_simbad: bool
+        True (default): Use Simbad to resolve the source name if it is not found in the database
+        False: Do not use Simbad to resolve the source name.
 
     Returns
     -------
@@ -777,7 +786,7 @@ def ingest_source(
     if len(name_matches) == 1 and search_db:
         # Figure out if source name provided is an alternate name
         db_source_matches = db.search_object(
-            source, output_table="Sources", fuzzy_search=False
+            source, output_table="Sources", resolve_simbad=use_simbad, fuzzy_search=False, 
         )
 
         # Try to add alternate source name to Names table
@@ -840,7 +849,7 @@ def ingest_source(
                 return
 
         # Try to get coordinates from SIMBAD if they were not provided
-        if ra is None or dec is None:
+        if (ra is None or dec is None) and use_simbad:
             # Try to get coordinates from SIMBAD
             simbad_result_table = Simbad.query_object(source)
 

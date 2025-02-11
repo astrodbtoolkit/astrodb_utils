@@ -7,16 +7,6 @@ from astrodb_utils import load_astrodb, logger
 
 logger.setLevel("DEBUG")
 
-REFERENCE_TABLES = [
-    "Publications",
-    "Telescopes",
-    "Instruments",
-    "PhotometryFilters",
-    "Versions",
-    "Regimes"
-]
-
-
 sys.path.append("./tests/astrodb-template-db/")
 
 DB_NAME = "tests/test-template-db.sqlite"
@@ -28,7 +18,7 @@ CONNECTION_STRING = "sqlite:///" + DB_NAME
 @pytest.fixture(scope="session", autouse=True)
 def db():
     db = load_astrodb(
-        DB_NAME, data_path=DB_PATH, recreatedb=True, reference_tables=REFERENCE_TABLES, felis_schema=SCHEMA_PATH
+        DB_NAME, data_path=DB_PATH, recreatedb=True, felis_schema=SCHEMA_PATH
     )
 
     # Confirm file was created
