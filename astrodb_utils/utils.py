@@ -148,12 +148,12 @@ def find_source_in_db(
     if len(db_name_matches) == 0:
         logger.debug(f"{source}: No name matches, trying fuzzy search")
         db_name_matches = db.search_object(
-            source, output_table="Sources", fuzzy_search=True, verbose=False
+            source, output_table="Sources", fuzzy_search=True, verbose=False, resolve_simbad=use_simbad
         )
 
     # If still no matches, try to resolve the name with Simbad
-    if len(db_name_matches) == 0:
-        logger.debug(f"{source}: No name matches, trying Simbad search")
+    if len(db_name_matches) == 0 and use_simbad:
+        logger.debug(f"{source}: No name matches, trying Simbad search. use_simbad: {use_simbad}")
         db_name_matches = db.search_object(
             source, resolve_simbad=True, fuzzy_search=False, verbose=False
         )
@@ -171,7 +171,7 @@ def find_source_in_db(
         )
 
     # If still no matches, try to get the coords from SIMBAD
-    if len(db_name_matches) == 0:
+    if len(db_name_matches) == 0 and use_simbad:
         simbad_result_table = Simbad.query_object(source)
         if simbad_result_table is not None and len(simbad_result_table) == 1:
             simbad_coords = (
