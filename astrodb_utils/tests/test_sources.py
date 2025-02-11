@@ -6,6 +6,7 @@ from astrodb_utils import (
     AstroDBError,
 )
 from astrodb_utils.sources import (
+    coords_from_simbad,
     find_source_in_db,
     ingest_source,
 )
@@ -144,3 +145,8 @@ def test_ingest_source(db):
         )
         assert "already exists" in str(error_message.value)
 
+
+def test_coords_from_simbad():
+    coords = coords_from_simbad("Barnard Star")
+    assert math.isclose(coords.ra.deg, 269.452, abs_tol=0.001)
+    assert math.isclose(coords.dec.deg, 4.6933, abs_tol=0.001)

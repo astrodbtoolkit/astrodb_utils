@@ -155,8 +155,9 @@ def coords_from_simbad(source):
             dec_col_name_simbad = 'dec'
         simbad_coords = f"{simbad_result_table[ra_col_name_simbad][0]} {simbad_result_table[dec_col_name_simbad][0]}"
         logger.debug(f"SIMBAD coord string: {simbad_coords}")
-        simbad_skycoord = SkyCoord(simbad_coords, unit=(u.hourangle, u.deg))
+        simbad_skycoord = SkyCoord(simbad_coords, unit=(u.deg, u.deg))
         ra = simbad_skycoord.to_string(style="decimal").split()[0]
+        ra = simbad_skycoord.ra.deg
         dec = simbad_skycoord.to_string(style="decimal").split()[1]
         msg = f"Coordinates retrieved from SIMBAD {ra}, {dec}"
         logger.debug(msg)
