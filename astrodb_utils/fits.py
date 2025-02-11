@@ -329,6 +329,7 @@ def check_simbad_name(header):
 
     simbad_name_results = Simbad.query_object(object_name)
     logger.debug(f"SIMBAD results for object name {object_name}: {simbad_name_results}")
+    print(f"SIMBAD results for object name {object_name}: {simbad_name_results}")
     coord = make_skycoord(header)
     
     if simbad_name_results is None and coord is None:
