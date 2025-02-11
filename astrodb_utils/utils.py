@@ -138,8 +138,7 @@ def find_source_in_db(
 
     source = source.strip()
 
-    logger.debug(f"{source}: Searching for match in database.")
-
+    logger.debug(f"{source}: Searching for match in database. Use Simbad: {use_simbad}")
     db_name_matches = db.search_object(
         source, output_table="Sources", fuzzy_search=False, verbose=False, resolve_simbad=use_simbad
     )
@@ -775,6 +774,7 @@ def ingest_source(
             dec=dec,
             ra_col_name=ra_col_name,
             dec_col_name=dec_col_name,
+            use_simbad=use_simbad,
         )
     else:
         name_matches = []
