@@ -4,8 +4,6 @@ import logging
 import os
 import re
 import socket
-import sys
-import warnings
 from pathlib import Path
 
 import ads
@@ -28,27 +26,11 @@ __all__ = [
     "internet_connection",
     "ingest_names",
     "ingest_source",
-    "ingest_sources",
     "ingest_instrument",
+    "check_ads_token",
 ]
 
-warnings.filterwarnings("ignore", module="astroquery.simbad")
-logger = logging.getLogger(__name__)
-
-# Logger setup
-# This will stream all logger messages to the standard output and
-# apply formatting for that
-logger.propagate = False  # prevents duplicated logging messages
-LOGFORMAT = logging.Formatter(
-    "%(asctime)s %(levelname)s: %(message)s", datefmt="%m/%d/%Y %I:%M:%S%p"
-)
-ch = logging.StreamHandler(stream=sys.stdout)
-ch.setFormatter(LOGFORMAT)
-# To prevent duplicate handlers, only add if they haven't been set previously
-if len(logger.handlers) == 0:
-    logger.addHandler(ch)
-logger.setLevel(logging.INFO)
-
+logger = logging.getLogger('astrodb_utils')
 
 class AstroDBError(Exception):
     """Custom error for AstroDB"""
@@ -176,8 +158,8 @@ def find_source_in_db(
     if len(db_name_matches) == 0 and coords:
         location = SkyCoord(ra, dec, frame="icrs", unit="deg")
         radius = u.Quantity(search_radius, unit="arcsec")
-        logger.info(
-            f"{source}: No Simbad match, trying coord search around"
+        logger.debug(
+            f"{source}: No Simbad match, trying coord search around "
             f"{location.ra.degree}, {location.dec}"
         )
         db_name_matches = db.query_region(
@@ -277,6 +259,8 @@ def find_publication(
         logger.error("Name, Bibcode, or DOI must be provided")
         return False, 0
 
+    use_ads = check_ads_token()
+
     not_null_pub_filters = []
     if reference:
         # fuzzy_query_name = '%' + name + '%'
@@ -294,7 +278,7 @@ def find_publication(
     n_pubs_found = len(pub_search_table)
 
     if n_pubs_found == 1:
-        logger.info(
+        logger.debug(
             f"Found {n_pubs_found} matching publications for "
             f"{reference} or {doi} or {bibcode}: {pub_search_table['reference'].data}"
         )
@@ -380,6 +364,38 @@ def find_publication(
                     return False, n_pubs_found_short_date
             else:
                 return False, n_pubs_found_short
+    if n_pubs_found == 0 and "arXiv" in bibcode and use_ads:
+        logger.debug(f"Using ADS to find alt name for {bibcode}")
+        arxiv_id = bibcode
+        arxiv_matches = ads.SearchQuery(
+            q=arxiv_id, fl=["id", "bibcode", "title", "first_author", "year", "doi"]
+        )
+        arxiv_matches_list = list(arxiv_matches)
+        if len(arxiv_matches_list) == 1:
+            logger.debug(f"Publication found in ADS using arxiv id: , {arxiv_id}")
+            article = arxiv_matches_list[0]
+            logger.debug(
+                f"{article.first_author}, {article.year}, {article.bibcode}, {article.title}"
+            )
+            bibcode_alt = article.bibcode
+            not_null_pub_filters = []
+            not_null_pub_filters.append(db.Publications.c.bibcode.ilike(bibcode_alt))
+            print(not_null_pub_filters)
+            pub_search_table = Table()
+            pub_search_table = (
+                db.query(db.Publications).filter(or_(*not_null_pub_filters)).table()
+                )
+            if len(pub_search_table) == 1:
+                logger.debug(
+                    f"Found {len(pub_search_table)} matching publications for "
+                    f"{reference} or {doi} or {bibcode}: {pub_search_table['reference'].data}"
+                )
+                if logger.level <= 10:  # debug
+                    pub_search_table.pprint_all()
+                
+                return True, pub_search_table["reference"].data[0]
+            else: 
+                return False, len(pub_search_table)
     else:
         return False, n_pubs_found
 
@@ -417,19 +433,24 @@ def ingest_publication(
         Description of the paper, typically the title of the papre [optional]
     ignore_ads: bool
 
+    Returns
+    -------
+    publication: str
+
     See Also
     --------
     find_publication: Function to find publications in the database
 
     """
 
+    logger.debug(f"Adding publication to database using {reference}, {doi}, {bibcode}")
+
     if not (reference or doi or bibcode):
         logger.error("Publication, DOI, or Bibcode is required input")
         return
 
-    ads.config.token = os.getenv("ADS_TOKEN")
-
-    if not ads.config.token and (not reference and (not doi or not bibcode)):
+    use_ads = check_ads_token()
+    if not use_ads and (not reference and (not doi or not bibcode)):
         logger.error(
             "An ADS_TOKEN environment variable must be set"
             "in order to auto-populate the fields.\n"
@@ -437,10 +458,6 @@ def ingest_publication(
         )
         return
 
-    if ads.config.token and not ignore_ads:
-        use_ads = True
-    else:
-        use_ads = False
     logger.debug(f"Use ADS set to {use_ads}")
 
     if bibcode:
@@ -478,10 +495,12 @@ def ingest_publication(
             bibcode_add = article.bibcode
             doi_add = article.doi[0]
 
+            using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
     elif arxiv_id:
         name_add = reference
         bibcode_add = arxiv_id
         doi_add = doi
+        using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
 
     # Search ADS using a provided DOI
     if doi and use_ads:
@@ -499,7 +518,7 @@ def ingest_publication(
             article = doi_matches_list[0]
             logger.debug(
                 f"{article.first_author}, {article.year},"
-                "{article.bibcode}, {article.title}"
+                f"{article.bibcode}, {article.title}"
             )
             if not reference:  # generate the name if it was not provided
                 name_stub = article.first_author.replace(",", "").replace(" ", "")
@@ -534,7 +553,7 @@ def ingest_publication(
             article = bibcode_matches_list[0]
             logger.debug(
                 f"{article.first_author}, {article.year}, "
-                "{article.bibcode}, {article.doi}, {article.title}"
+                f"{article.bibcode}, {article.doi}, {article.title}"
             )
             if not reference:  # generate the name if it was not provided
                 name_stub = article.first_author.replace(",", "").replace(" ", "")
@@ -565,12 +584,15 @@ def ingest_publication(
             "description": description,
         }
     ]
+    logger.debug(f"Adding {new_ref} to Publications table using {using}")
 
     try:
         with db.engine.connect() as conn:
             conn.execute(db.Publications.insert().values(new_ref))
             conn.commit()
         logger.info(f"Added {name_add} to Publications table using {using}")
+
+        return name_add
     except sqlalchemy.exc.IntegrityError as error:
         msg = (
             f"Not able to add {new_ref} to the database. "
@@ -581,6 +603,19 @@ def ingest_publication(
         raise AstroDBError(msg) from error
 
     return
+
+
+def check_ads_token():
+    """Check if an ADS token is set"""
+
+    ads.config.token = os.getenv("ADS_TOKEN")
+
+    if ads.config.token:
+        use_ads = True
+    else:
+        use_ads = False
+
+    return use_ads
 
 
 def internet_connection():
@@ -633,10 +668,8 @@ def ingest_names(
         Database object created by astrodbkit
     source: str
         Name of source as it appears in sources table
-
     other_name: str
         Name of the source different than that found in source table
-
     raise_error: bool
         Raise an error if name was not ingested
 
@@ -649,11 +682,11 @@ def ingest_names(
         with db.engine.connect() as conn:
             conn.execute(db.Names.insert().values(names_data))
             conn.commit()
-        logger.info(f" Name added to database: {names_data}\n")
+        logger.info(f"Name added to database: {names_data}\n")
     except sqlalchemy.exc.IntegrityError as e:
-        msg = f"Could not add {names_data} to database."
+        msg = f"Could not add {names_data} to Names."
         if "UNIQUE constraint failed:" in str(e):
-            msg += " Name is likely a duplicate."
+            msg += " Other name is already present."
         if raise_error:
             raise AstroDBError(msg) from e
         else:
@@ -674,8 +707,9 @@ def ingest_source(
     comment: str = None,
     raise_error: bool = True,
     search_db: bool = True,
-    ra_col_name: str = None,
-    dec_col_name: str = None
+    ra_col_name: str = "ra",
+    dec_col_name: str = "dec",
+    epoch_col_name: str = "epoch",
 ):
     """
     Parameters
@@ -799,7 +833,7 @@ def ingest_source(
                 return
 
         # Try to get coordinates from SIMBAD if they were not provided
-        if ra is not None and dec is not None:
+        if ra is None or dec is None:
             # Try to get coordinates from SIMBAD
             simbad_result_table = Simbad.query_object(source)
 
@@ -845,12 +879,13 @@ def ingest_source(
             ra_col_name: ra,
             dec_col_name: dec,
             "reference": reference,
-            "epoch_year": epoch,
+            epoch_col_name: epoch,
             "equinox": equinox,
             "other_references": other_reference,
             "comments": comment,
         }
     ]
+    logger.debug(f"   Data: {source_data}.")
     names_data = [{"source": source, "other_name": source}]
 
     # Try to add the source to the database
