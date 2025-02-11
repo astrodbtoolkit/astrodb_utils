@@ -12,7 +12,7 @@ authors = [
 ]
 description = "astrodb_utils: scripts for interacting with the astrodb database"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 keywords = ["databases", "astronomy"]
 license = {text = "BSD-3-Clause"}
 classifiers = [
