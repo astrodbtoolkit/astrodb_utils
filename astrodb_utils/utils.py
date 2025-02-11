@@ -307,9 +307,9 @@ def find_publication(
             pub_search_table.pprint_all()
         return False, n_pubs_found
 
-    print("n_pubs_found: ",n_pubs_found)
-    print("bibcode: ", bibcode)
-    print("use_ads: ",use_ads)
+    logger.info(f"n_pubs_found: {n_pubs_found}")
+    logger.debug(f"bibcode: {bibcode}")
+    logger.debug(f"use_ads: {use_ads}")
 
     # If no matches found, search using first four characters of input name
     if n_pubs_found == 0 and reference:
