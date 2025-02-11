@@ -179,7 +179,6 @@ def check_header(header=None, format='simple-spectrum', ignore_simbad=False):
     """
     #TODO: Check DOI
 
-
     result = True
 
     if header is None:
@@ -198,7 +197,9 @@ def check_header(header=None, format='simple-spectrum', ignore_simbad=False):
 
     coord = make_skycoord(header)
     if coord is None:
+        print("Coordinates are required")
         result = False
+        logger.debug(f"Coords: {coord}, result: {result}")
 
     if ignore_simbad is False:
         name_check = check_simbad_name(header)
@@ -208,10 +209,13 @@ def check_header(header=None, format='simple-spectrum', ignore_simbad=False):
             #check_ra_dec_simbad(simbad_name_results):
         else:
             result = False
+        logger.debug(f"name check returns {result}")
         
     if check_date(header) is False:
         result = False
+        logger.debug(f"Date check returns {result}")
 
+    logger.debug(f"Header check returns {result}")
     return result
 
 
@@ -370,7 +374,6 @@ def check_ra_dec_simbad(simbad_name_results):
 
 
 def check_date(header):
-    result = True
     # check date can be turned to dateTime object
     date = header.get('DATE-OBS')
     if date is None:
@@ -382,8 +385,10 @@ def check_date(header):
             obs_date_long = obs_date.strftime("%b %d, %Y")
             print(f"DATE-OBS set to : {date}.")
             print(f"Date of observation: {obs_date_long}")
+            result = True
         except Exception as e:
             print(f"Date ({date})could not be converted to Python DateTime object \n {e}")  
             result = False 
-    
+
+    logger.debug(f"Date of observation: {date} returns {result}")
     return result
