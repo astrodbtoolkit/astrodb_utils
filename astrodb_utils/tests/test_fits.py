@@ -2,7 +2,6 @@ import astropy.units as u
 import numpy as np
 import pytest
 
-from astrodb_utils import logger
 from astrodb_utils.fits import (
     add_missing_keywords,
     add_observation_date,
