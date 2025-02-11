@@ -106,7 +106,7 @@ def test_find_source_in_db(db):
     "ignore::UserWarning"
 )  # suppress astroquery SIMBAD warnings
 def test_ingest_source(db):
-    ingest_source(db, "Barnard Star", reference="Refr20", raise_error=True)
+    ingest_source(db, "Barnard Star", reference="Refr20", raise_error=True, ra_col_name="ra_deg", dec_col_name="dec_deg")
 
     Barnard_star = (
         db.query(db.Sources).filter(db.Sources.c.source == "Barnard Star").astropy()
