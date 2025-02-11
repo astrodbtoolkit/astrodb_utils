@@ -64,7 +64,7 @@ def test_ingest_sources(db, source_data):
         ra=source_data["ra"],
         dec=source_data["dec"],
         reference=source_data["reference"],
-        use_simbad=False,
+        use_simbad=True,
     )
 
 

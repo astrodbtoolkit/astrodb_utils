@@ -174,8 +174,9 @@ def find_source_in_db(
     if len(db_name_matches) == 0 and use_simbad:
         simbad_result_table = Simbad.query_object(source)
         if simbad_result_table is not None and len(simbad_result_table) == 1:
+            print(f"simbad results: {simbad_result_table.colnames} \n {simbad_result_table}")
             simbad_coords = (
-                simbad_result_table["RA"][0] + " " + simbad_result_table["DEC"][0]
+                simbad_result_table["ra"][0] + " " + simbad_result_table["dec"][0]
             )
             simbad_skycoord = SkyCoord(simbad_coords, unit=(u.hourangle, u.deg))
             ra = simbad_skycoord.to_string(style="decimal").split()[0]
