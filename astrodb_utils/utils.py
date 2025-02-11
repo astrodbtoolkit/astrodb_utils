@@ -295,6 +295,10 @@ def find_publication(
             pub_search_table.pprint_all()
         return False, n_pubs_found
 
+    print("n_pubs_found: ",n_pubs_found)
+    print("bibcode: ", bibcode)
+    print("use_ads: ",use_ads)
+
     # If no matches found, search using first four characters of input name
     if n_pubs_found == 0 and reference:
         shorter_name = reference[:4]
@@ -364,7 +368,7 @@ def find_publication(
                     return False, n_pubs_found_short_date
             else:
                 return False, n_pubs_found_short
-    if n_pubs_found == 0 and "arXiv" in bibcode and use_ads:
+    if n_pubs_found == 0 and bibcode and "arXiv" in bibcode and use_ads:
         logger.debug(f"Using ADS to find alt name for {bibcode}")
         arxiv_id = bibcode
         arxiv_matches = ads.SearchQuery(
@@ -449,14 +453,17 @@ def ingest_publication(
         logger.error("Publication, DOI, or Bibcode is required input")
         return
 
-    use_ads = check_ads_token()
-    if not use_ads and (not reference and (not doi or not bibcode)):
-        logger.error(
-            "An ADS_TOKEN environment variable must be set"
-            "in order to auto-populate the fields.\n"
-            "Without an ADS_TOKEN, name and bibcode or DOI must be set explicity."
-        )
-        return
+    if not ignore_ads:
+        use_ads = check_ads_token()
+        if not use_ads and (not reference and (not doi or not bibcode)):
+            logger.error(
+                "An ADS_TOKEN environment variable must be set"
+                "in order to auto-populate the fields.\n"
+                "Without an ADS_TOKEN, name and bibcode or DOI must be set explicity."
+            )
+            return
+    else:
+        use_ads = False
 
     logger.debug(f"Use ADS set to {use_ads}")
 
@@ -709,7 +716,7 @@ def ingest_source(
     search_db: bool = True,
     ra_col_name: str = "ra_deg",
     dec_col_name: str = "dec_deg",
-    epoch_col_name: str = "epoch",
+    epoch_col_name: str = "epoch_year",
 ):
     """
     Parameters
