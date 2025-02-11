@@ -707,8 +707,8 @@ def ingest_source(
     comment: str = None,
     raise_error: bool = True,
     search_db: bool = True,
-    ra_col_name: str = "ra",
-    dec_col_name: str = "dec",
+    ra_col_name: str = "ra_deg",
+    dec_col_name: str = "dec_deg",
     epoch_col_name: str = "epoch",
 ):
     """
