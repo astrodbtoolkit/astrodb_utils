@@ -5,6 +5,8 @@ import pytest
 
 from astrodb_utils import load_astrodb, logger
 
+logger.setLevel("DEBUG")
+
 REFERENCE_TABLES = [
     "Publications",
     "Telescopes",

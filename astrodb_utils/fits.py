@@ -1,3 +1,5 @@
+import logging
+
 import astropy.units as u
 import dateparser
 import numpy as np
@@ -7,6 +9,7 @@ from astroquery.simbad import Simbad
 
 from astrodb_utils.photometry import assign_ucd
 
+logger = logging.getLogger('astrodb_utils')
 
 def add_missing_keywords(header=None, format='simple-spectrum', keywords=None):
     """Finds the keywords that are missing from a header and adds them with blank values
@@ -137,6 +140,7 @@ def add_observation_date(header=None, date=None):
 
     try:
         obs_date = dateparser.parse(date)
+        logger.debug(f"Date of observation: {date} parsed to {obs_date}")
         if obs_date is not None:
             obs_date_short = obs_date.strftime("%Y-%m-%d")
             obs_date_long = obs_date.strftime("%b %d, %Y")
@@ -314,7 +318,13 @@ def make_skycoord(header):
 def check_simbad_name(header):
      # search SIMBAD for object name
     object_name = header.get('OBJECT')
+    
+    if object_name is None:
+        print("OBJECT name is required")
+        return False
+
     simbad_name_results = Simbad.query_object(object_name)
+    logger.debug(f"SIMBAD results for object name {object_name}: {simbad_name_results}")
     coord = make_skycoord(header)
     
     if simbad_name_results is None and coord is None:
