@@ -4,8 +4,6 @@ import logging
 import os
 import re
 import socket
-import sys
-import warnings
 from pathlib import Path
 
 import ads
@@ -28,27 +26,11 @@ __all__ = [
     "internet_connection",
     "ingest_names",
     "ingest_source",
-    "ingest_sources",
     "ingest_instrument",
+    "check_ads_token",
 ]
 
-warnings.filterwarnings("ignore", module="astroquery.simbad")
-logger = logging.getLogger(__name__)
-
-# Logger setup
-# This will stream all logger messages to the standard output and
-# apply formatting for that
-logger.propagate = False  # prevents duplicated logging messages
-LOGFORMAT = logging.Formatter(
-    "%(asctime)s %(levelname)s: %(message)s", datefmt="%m/%d/%Y %I:%M:%S%p"
-)
-ch = logging.StreamHandler(stream=sys.stdout)
-ch.setFormatter(LOGFORMAT)
-# To prevent duplicate handlers, only add if they haven't been set previously
-if len(logger.handlers) == 0:
-    logger.addHandler(ch)
-logger.setLevel(logging.INFO)
-
+logger = logging.getLogger('astrodb_utils')
 
 class AstroDBError(Exception):
     """Custom error for AstroDB"""
@@ -64,6 +46,7 @@ def load_astrodb(
         "Instruments",
         "Versions",
         "PhotometryFilters",
+        "Regimes"
     ],
     felis_schema=None
 ):
@@ -113,6 +96,7 @@ def find_source_in_db(
     search_radius=60.0,
     ra_col_name="ra_deg",
     dec_col_name="dec_deg",
+    use_simbad=True,
 ):
     """
     Find a source in the database given a source name and optional coordinates.
@@ -128,6 +112,13 @@ def find_source_in_db(
         Declinations of sources. Decimal degrees.
     search_radius
         radius in arcseconds to use for source matching
+    ra_col_name: str
+        Name of the column in the database table that contains the right ascension
+    dec_col_name: str
+        Name of the column in the database table that contains the declination
+    use_simbad: bool
+        Use Simbad to resolve the source name if it is not found in the database. Default is True. 
+        Set to False if no internet connection.
 
     Returns
     -------
@@ -139,7 +130,6 @@ def find_source_in_db(
 
     """
 
-    # TODO: In astrodbkit, convert verbose to using logger
 
     if ra and dec:
         coords = True
@@ -148,10 +138,9 @@ def find_source_in_db(
 
     source = source.strip()
 
-    logger.debug(f"{source}: Searching for match in database.")
-
+    logger.debug(f"{source}: Searching for match in database. Use Simbad: {use_simbad}")
     db_name_matches = db.search_object(
-        source, output_table="Sources", fuzzy_search=False, verbose=False
+        source, output_table="Sources", fuzzy_search=False, verbose=False, resolve_simbad=use_simbad
     )
 
     # NO MATCHES
@@ -159,12 +148,12 @@ def find_source_in_db(
     if len(db_name_matches) == 0:
         logger.debug(f"{source}: No name matches, trying fuzzy search")
         db_name_matches = db.search_object(
-            source, output_table="Sources", fuzzy_search=True, verbose=False
+            source, output_table="Sources", fuzzy_search=True, verbose=False, resolve_simbad=use_simbad
         )
 
     # If still no matches, try to resolve the name with Simbad
-    if len(db_name_matches) == 0:
-        logger.debug(f"{source}: No name matches, trying Simbad search")
+    if len(db_name_matches) == 0 and use_simbad:
+        logger.debug(f"{source}: No name matches, trying Simbad search. use_simbad: {use_simbad}")
         db_name_matches = db.search_object(
             source, resolve_simbad=True, fuzzy_search=False, verbose=False
         )
@@ -173,8 +162,8 @@ def find_source_in_db(
     if len(db_name_matches) == 0 and coords:
         location = SkyCoord(ra, dec, frame="icrs", unit="deg")
         radius = u.Quantity(search_radius, unit="arcsec")
-        logger.info(
-            f"{source}: No Simbad match, trying coord search around"
+        logger.debug(
+            f"{source}: No Simbad match, trying coord search around "
             f"{location.ra.degree}, {location.dec}"
         )
         db_name_matches = db.query_region(
@@ -182,11 +171,18 @@ def find_source_in_db(
         )
 
     # If still no matches, try to get the coords from SIMBAD
-    if len(db_name_matches) == 0:
+    if len(db_name_matches) == 0 and use_simbad:
         simbad_result_table = Simbad.query_object(source)
         if simbad_result_table is not None and len(simbad_result_table) == 1:
+            logger.debug(f"simbad colnames: {simbad_result_table.colnames} \n simbad results \n {simbad_result_table}")
+            if 'RA' in simbad_result_table.colnames:
+                ra_col_name_simbad = 'RA'
+                dec_col_name_simbad = 'DEC'
+            elif 'ra' in simbad_result_table.colnames:
+                ra_col_name_simbad = 'ra'
+                dec_col_name_simbad = 'dec'
             simbad_coords = (
-                simbad_result_table["RA"][0] + " " + simbad_result_table["DEC"][0]
+                simbad_result_table[ra_col_name_simbad][0] + " " + simbad_result_table[dec_col_name_simbad][0]
             )
             simbad_skycoord = SkyCoord(simbad_coords, unit=(u.hourangle, u.deg))
             ra = simbad_skycoord.to_string(style="decimal").split()[0]
@@ -197,6 +193,7 @@ def find_source_in_db(
             radius = u.Quantity(search_radius, unit="arcsec")
             msg2 = (
                 f"Finding SIMBAD matches around {simbad_skycoord} with radius {radius}"
+                f"using ra_col_name: {ra_col_name}, dec_col_name: {dec_col_name}"
             )
             logger.debug(msg2)
             db_name_matches = db.query_region(
@@ -274,6 +271,8 @@ def find_publication(
         logger.error("Name, Bibcode, or DOI must be provided")
         return False, 0
 
+    use_ads = check_ads_token()
+
     not_null_pub_filters = []
     if reference:
         # fuzzy_query_name = '%' + name + '%'
@@ -291,7 +290,7 @@ def find_publication(
     n_pubs_found = len(pub_search_table)
 
     if n_pubs_found == 1:
-        logger.info(
+        logger.debug(
             f"Found {n_pubs_found} matching publications for "
             f"{reference} or {doi} or {bibcode}: {pub_search_table['reference'].data}"
         )
@@ -307,6 +306,10 @@ def find_publication(
         if logger.level <= 30:  # warning
             pub_search_table.pprint_all()
         return False, n_pubs_found
+
+    logger.info(f"n_pubs_found: {n_pubs_found}")
+    logger.debug(f"bibcode: {bibcode}")
+    logger.debug(f"use_ads: {use_ads}")
 
     # If no matches found, search using first four characters of input name
     if n_pubs_found == 0 and reference:
@@ -377,6 +380,38 @@ def find_publication(
                     return False, n_pubs_found_short_date
             else:
                 return False, n_pubs_found_short
+    if n_pubs_found == 0 and bibcode and "arXiv" in bibcode and use_ads:
+        logger.debug(f"Using ADS to find alt name for {bibcode}")
+        arxiv_id = bibcode
+        arxiv_matches = ads.SearchQuery(
+            q=arxiv_id, fl=["id", "bibcode", "title", "first_author", "year", "doi"]
+        )
+        arxiv_matches_list = list(arxiv_matches)
+        if len(arxiv_matches_list) == 1:
+            logger.debug(f"Publication found in ADS using arxiv id: , {arxiv_id}")
+            article = arxiv_matches_list[0]
+            logger.debug(
+                f"{article.first_author}, {article.year}, {article.bibcode}, {article.title}"
+            )
+            bibcode_alt = article.bibcode
+            not_null_pub_filters = []
+            not_null_pub_filters.append(db.Publications.c.bibcode.ilike(bibcode_alt))
+            print(not_null_pub_filters)
+            pub_search_table = Table()
+            pub_search_table = (
+                db.query(db.Publications).filter(or_(*not_null_pub_filters)).table()
+                )
+            if len(pub_search_table) == 1:
+                logger.debug(
+                    f"Found {len(pub_search_table)} matching publications for "
+                    f"{reference} or {doi} or {bibcode}: {pub_search_table['reference'].data}"
+                )
+                if logger.level <= 10:  # debug
+                    pub_search_table.pprint_all()
+                
+                return True, pub_search_table["reference"].data[0]
+            else: 
+                return False, len(pub_search_table)
     else:
         return False, n_pubs_found
 
@@ -414,30 +449,34 @@ def ingest_publication(
         Description of the paper, typically the title of the papre [optional]
     ignore_ads: bool
 
+    Returns
+    -------
+    publication: str
+
     See Also
     --------
     find_publication: Function to find publications in the database
 
     """
 
+    logger.debug(f"Adding publication to database using {reference}, {doi}, {bibcode}")
+
     if not (reference or doi or bibcode):
         logger.error("Publication, DOI, or Bibcode is required input")
         return
 
-    ads.config.token = os.getenv("ADS_TOKEN")
-
-    if not ads.config.token and (not reference and (not doi or not bibcode)):
-        logger.error(
-            "An ADS_TOKEN environment variable must be set"
-            "in order to auto-populate the fields.\n"
-            "Without an ADS_TOKEN, name and bibcode or DOI must be set explicity."
-        )
-        return
-
-    if ads.config.token and not ignore_ads:
-        use_ads = True
+    if not ignore_ads:
+        use_ads = check_ads_token()
+        if not use_ads and (not reference and (not doi or not bibcode)):
+            logger.error(
+                "An ADS_TOKEN environment variable must be set"
+                "in order to auto-populate the fields.\n"
+                "Without an ADS_TOKEN, name and bibcode or DOI must be set explicity."
+            )
+            return
     else:
         use_ads = False
+
     logger.debug(f"Use ADS set to {use_ads}")
 
     if bibcode:
@@ -475,10 +514,12 @@ def ingest_publication(
             bibcode_add = article.bibcode
             doi_add = article.doi[0]
 
+            using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
     elif arxiv_id:
         name_add = reference
         bibcode_add = arxiv_id
         doi_add = doi
+        using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
 
     # Search ADS using a provided DOI
     if doi and use_ads:
@@ -496,7 +537,7 @@ def ingest_publication(
             article = doi_matches_list[0]
             logger.debug(
                 f"{article.first_author}, {article.year},"
-                "{article.bibcode}, {article.title}"
+                f"{article.bibcode}, {article.title}"
             )
             if not reference:  # generate the name if it was not provided
                 name_stub = article.first_author.replace(",", "").replace(" ", "")
@@ -531,7 +572,7 @@ def ingest_publication(
             article = bibcode_matches_list[0]
             logger.debug(
                 f"{article.first_author}, {article.year}, "
-                "{article.bibcode}, {article.doi}, {article.title}"
+                f"{article.bibcode}, {article.doi}, {article.title}"
             )
             if not reference:  # generate the name if it was not provided
                 name_stub = article.first_author.replace(",", "").replace(" ", "")
@@ -562,12 +603,15 @@ def ingest_publication(
             "description": description,
         }
     ]
+    logger.debug(f"Adding {new_ref} to Publications table using {using}")
 
     try:
         with db.engine.connect() as conn:
             conn.execute(db.Publications.insert().values(new_ref))
             conn.commit()
         logger.info(f"Added {name_add} to Publications table using {using}")
+
+        return name_add
     except sqlalchemy.exc.IntegrityError as error:
         msg = (
             f"Not able to add {new_ref} to the database. "
@@ -578,6 +622,19 @@ def ingest_publication(
         raise AstroDBError(msg) from error
 
     return
+
+
+def check_ads_token():
+    """Check if an ADS token is set"""
+
+    ads.config.token = os.getenv("ADS_TOKEN")
+
+    if ads.config.token:
+        use_ads = True
+    else:
+        use_ads = False
+
+    return use_ads
 
 
 def internet_connection():
@@ -630,10 +687,8 @@ def ingest_names(
         Database object created by astrodbkit
     source: str
         Name of source as it appears in sources table
-
     other_name: str
         Name of the source different than that found in source table
-
     raise_error: bool
         Raise an error if name was not ingested
 
@@ -646,11 +701,11 @@ def ingest_names(
         with db.engine.connect() as conn:
             conn.execute(db.Names.insert().values(names_data))
             conn.commit()
-        logger.info(f" Name added to database: {names_data}\n")
+        logger.info(f"Name added to database: {names_data}\n")
     except sqlalchemy.exc.IntegrityError as e:
-        msg = f"Could not add {names_data} to database."
+        msg = f"Could not add {names_data} to Names."
         if "UNIQUE constraint failed:" in str(e):
-            msg += " Name is likely a duplicate."
+            msg += " Other name is already present."
         if raise_error:
             raise AstroDBError(msg) from e
         else:
@@ -671,25 +726,29 @@ def ingest_source(
     comment: str = None,
     raise_error: bool = True,
     search_db: bool = True,
+    ra_col_name: str = "ra_deg",
+    dec_col_name: str = "dec_deg",
+    epoch_col_name: str = "epoch_year",
+    use_simbad: bool = True,
 ):
     """
     Parameters
     ----------
     db: astrodbkit.astrodb.Database
         Database object created by astrodbkit
-    sources: str
+    source: str
         Names of sources
-    references: str
+    reference: str
         Discovery references of sources
-    ras: float, optional
+    ra: float, optional
         Right ascensions of sources. Decimal degrees.
-    decs: float, optional
+    dec: float, optional
         Declinations of sources. Decimal degrees.
-    comments: string, optional
+    comment: string, optional
         Comments
-    epochs: str, optional
+    epoch: str, optional
         Epochs of coordinates
-    equinoxes: str, optional
+    equinoxe: str, optional
         Equinoxes of coordinates
     other_references: str
     raise_error: bool, optional
@@ -698,6 +757,13 @@ def ingest_source(
     search_db: bool, optional
         True (default): Search database to see if source is already ingested
         False: Ingest source without searching the database
+    ra_col_name: str
+        Name of the column in the database table that contains the right ascension
+    dec_col_name: str
+        Name of the column in the database table that contains the declination
+    use_simbad: bool
+        True (default): Use Simbad to resolve the source name if it is not found in the database
+        False: Do not use Simbad to resolve the source name.
 
     Returns
     -------
@@ -706,24 +772,21 @@ def ingest_source(
 
     """
 
-    if ra is None and dec is None:
-        coords_provided = False
-    else:
-        coords_provided = True
-
-    logger.debug(f"coords_provided:{coords_provided}")
-
     # Find out if source is already in database or not
-    if coords_provided and search_db:
+    if search_db:
         logger.debug(f"Checking database for: {source} at ra: {ra}, dec: {dec}")
-        name_matches = find_source_in_db(db, source, ra=ra, dec=dec)
-    elif search_db:
-        logger.debug(f"Checking database for: {source}")
-        name_matches = find_source_in_db(db, source)
-    elif not search_db:
-        name_matches = []
+        logger.debug(f" colnames: {ra_col_name}, {dec_col_name}")
+        name_matches = find_source_in_db(
+            db,
+            source,
+            ra=ra,
+            dec=dec,
+            ra_col_name=ra_col_name,
+            dec_col_name=dec_col_name,
+            use_simbad=use_simbad,
+        )
     else:
-        name_matches = None
+        name_matches = []
 
     logger.debug(f"Source matches in database: {name_matches}")
 
@@ -732,7 +795,7 @@ def ingest_source(
     if len(name_matches) == 1 and search_db:
         # Figure out if source name provided is an alternate name
         db_source_matches = db.search_object(
-            source, output_table="Sources", fuzzy_search=False
+            source, output_table="Sources", resolve_simbad=use_simbad, fuzzy_search=False, 
         )
 
         # Try to add alternate source name to Names table
@@ -795,7 +858,7 @@ def ingest_source(
                 return
 
         # Try to get coordinates from SIMBAD if they were not provided
-        if not coords_provided:
+        if (ra is None or dec is None) and use_simbad:
             # Try to get coordinates from SIMBAD
             simbad_result_table = Simbad.query_object(source)
 
@@ -838,15 +901,16 @@ def ingest_source(
     source_data = [
         {
             "source": source,
-            "ra_deg": ra,
-            "dec_deg": dec,
+            ra_col_name: ra,
+            dec_col_name: dec,
             "reference": reference,
-            "epoch_year": epoch,
+            epoch_col_name: epoch,
             "equinox": equinox,
             "other_references": other_reference,
             "comments": comment,
         }
     ]
+    logger.debug(f"   Data: {source_data}.")
     names_data = [{"source": source, "other_name": source}]
 
     # Try to add the source to the database
@@ -884,173 +948,6 @@ def ingest_source(
             raise AstroDBError(msg) from e
         else:
             return
-
-    return
-
-
-def ingest_sources(
-    db,
-    sources,
-    *,
-    references=None,
-    ras=None,
-    decs=None,
-    comments=None,
-    epochs=None,
-    equinoxes=None,
-    other_references=None,
-    raise_error=True,
-    search_db=True,
-):
-    """
-    Script to ingest sources
-    TODO: better support references=None
-    Parameters
-    ----------
-    db: astrodbkit.astrodb.Database
-        Database object created by astrodbkit
-    sources: list[str]
-        Names of sources
-    references: str or list[strings]
-        Discovery references of sources
-    ras: list[floats], optional
-        Right ascensions of sources. Decimal degrees.
-    decs: list[floats], optional
-        Declinations of sources. Decimal degrees.
-    comments: list[strings], optional
-        Comments
-    epochs: str or list[str], optional
-        Epochs of coordinates
-    equinoxes: str or list[string], optional
-        Equinoxes of coordinates
-    other_references: str or list[strings]
-    raise_error: bool, optional
-        True (default): Raise an error if a source cannot be ingested
-        False: Log a warning but skip sources which cannot be ingested
-    search_db: bool, optional
-        True (default): Search database to see if source is already ingested
-        False: Ingest source without searching the database
-
-    Returns
-    -------
-
-    None
-
-    """
-    # TODO: add example
-
-    # SETUP INPUTS
-    if ras is None and decs is None:
-        coords_provided = False
-    else:
-        coords_provided = True
-
-    if isinstance(sources, str):
-        n_sources = 1
-    else:
-        n_sources = len(sources)
-
-    # Convert single element input values into lists
-    input_values = [
-        sources,
-        references,
-        ras,
-        decs,
-        epochs,
-        equinoxes,
-        comments,
-        other_references,
-    ]
-    for i, input_value in enumerate(input_values):
-        if input_value is None:
-            input_values[i] = [None] * n_sources
-        elif isinstance(input_value, (str, float)):
-            input_values[i] = [input_value] * n_sources
-    (
-        sources,
-        references,
-        ras,
-        decs,
-        epochs,
-        equinoxes,
-        comments,
-        other_references,
-    ) = input_values
-
-    # TODO: figure out counting
-    # n_added = 0
-    # n_existing = 0
-    # n_names = 0
-    # n_alt_names = 0
-    # n_skipped = 0
-    # n_multiples = 0
-
-    if n_sources > 1:
-        logger.info(f"Trying to add {n_sources} sources")
-
-    # Loop over each source and decide to ingest, skip, or add alt name
-    for source_counter, source in enumerate(sources):
-        logger.debug(f"{source_counter}: Trying to ingest {source}")
-
-        reference = references[source_counter]
-        other_reference = other_references[source_counter]
-        comment = (
-            None if ma.is_masked(comments[source_counter]) else comments[source_counter]
-        )
-
-        if coords_provided:
-            ra = ras[source_counter]
-            dec = decs[source_counter]
-            epoch = (
-                None if ma.is_masked(epochs[source_counter]) else epochs[source_counter]
-            )
-            equinox = (
-                None
-                if ma.is_masked(equinoxes[source_counter])
-                else equinoxes[source_counter]
-            )
-
-            ingest_source(
-                db,
-                source,
-                reference=reference,
-                ra=ra,
-                dec=dec,
-                epoch=epoch,
-                equinox=equinox,
-                other_reference=other_reference,
-                comment=comment,
-                raise_error=raise_error,
-                search_db=search_db,
-            )
-        else:
-            ingest_source(
-                db,
-                source,
-                reference=reference,
-                other_reference=other_reference,
-                comment=comment,
-                raise_error=raise_error,
-                search_db=search_db,
-            )
-
-    # if n_sources > 1:
-    #     logger.info(f"Sources added to database: {n_added}")
-    #     logger.info(f"Names added to database: {n_names} \n")
-    #     logger.info(f"Sources already in database: {n_existing}")
-    #     logger.info(f"Alt Names added to database: {n_alt_names}")
-    #     logger.info(
-    #         f"Sources NOT added to database because multiple matches: {n_multiples}"
-    #     )
-    #     logger.info(f"Sources NOT added to database: {n_skipped} \n")
-
-    # if n_added != n_names:
-    #     msg = f"Number added should equal names added."
-    #     raise AstroDBError(msg)
-
-    # if n_added + n_existing + n_multiples + n_skipped != n_sources:
-    #     msg = f"Number added + Number skipped doesn't add up to total sources"
-    #     raise AstroDBError(msg)
 
     return
 

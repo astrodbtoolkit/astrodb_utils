@@ -2,6 +2,7 @@ import astropy.units as u
 import numpy as np
 import pytest
 
+from astrodb_utils import logger
 from astrodb_utils.fits import (
     add_missing_keywords,
     add_observation_date,
@@ -46,6 +47,7 @@ def test_add_obs_date_fails(input_date, obs_date):
 def test_check_header():
     header = add_missing_keywords()
     assert check_header(header) is False
+
     header.set('RA_TARG',"63.831417")
     assert check_header(header) is False
     header.set('DEC_TARG',"-9.585167")

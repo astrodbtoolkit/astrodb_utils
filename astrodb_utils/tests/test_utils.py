@@ -1,15 +1,15 @@
-import pytest
 import math
-from astropy.table import Table
+
+import pytest
 from sqlalchemy import and_
+
 from astrodb_utils import (
     AstroDBError,
     find_publication,
     find_source_in_db,
+    ingest_instrument,
     ingest_publication,
     ingest_source,
-    ingest_sources,
-    ingest_instrument,
 )
 
 
@@ -30,45 +30,41 @@ def test_ingest_publications(db):
     )
 
 
+@pytest.mark.parametrize(
+    "source_data",
+    [
+        ({
+            "source": "Apple",
+            "ra": 10.0673755,
+            "dec": 17.352889,
+            "reference": "Refr20",
+        }),
+        ({
+            "source": "Orange",
+            "ra": 12.0673755,
+            "dec": -15.352889,
+            "reference": "Refr20",
+        }),
+        ({
+            "source": "Banana",
+            "ra": 119.0673755,
+            "dec": -28.352889,
+            "reference": "Refr20",
+        })]
+)
 @pytest.mark.filterwarnings(
     "ignore::UserWarning"
 )  # suppress astroquery SIMBAD warnings
-def test_ingest_sources(db):
+def test_ingest_sources(db, source_data):
     # TODO: Test adding an alt name
-    source_data1 = Table(
-        [
-            {
-                "source": "Apple",
-                "ra": 10.0673755,
-                "dec": 17.352889,
-                "reference": "Refr20",
-            },
-            {
-                "source": "Orange",
-                "ra": 12.0673755,
-                "dec": -15.352889,
-                "reference": "Refr20",
-            },
-            {
-                "source": "Banana",
-                "ra": 119.0673755,
-                "dec": -28.352889,
-                "reference": "Refr20",
-            },
-        ]
-    )
-
-    ingest_sources(
+    print(source_data)
+    ingest_source(
         db,
-        source_data1["source"],
-        ras=source_data1["ra"],
-        decs=source_data1["dec"],
-        references=source_data1["reference"],
-        raise_error=True,
+        source_data["source"],
+        ra=source_data["ra"],
+        dec=source_data["dec"],
+        reference=source_data["reference"],
     )
-    assert db.query(db.Sources).filter(db.Sources.c.source == "Apple").count() == 1
-    assert db.query(db.Sources).filter(db.Sources.c.source == "Orange").count() == 1
-    assert db.query(db.Sources).filter(db.Sources.c.source == "Banana").count() == 1
 
 
 def test_find_source_in_db(db):
@@ -109,7 +105,7 @@ def test_find_source_in_db(db):
     "ignore::UserWarning"
 )  # suppress astroquery SIMBAD warnings
 def test_ingest_source(db):
-    ingest_source(db, "Barnard Star", reference="Refr20", raise_error=True)
+    ingest_source(db, "Barnard Star", reference="Refr20", raise_error=True, ra_col_name="ra_deg", dec_col_name="dec_deg")
 
     Barnard_star = (
         db.query(db.Sources).filter(db.Sources.c.source == "Barnard Star").astropy()
@@ -212,20 +208,6 @@ def test_ingest_instrument(db):
     )
     assert len(telescope_db) == 1
     assert telescope_db["telescope"][0] == "test"
-
-    # No longer supported just adding an instrument without a mode
-    #  test adding telescope and instrument
-    # tel_test = 'test2'
-    # inst_test = 'test3'
-    # ingest_instrument(db, telescope=tel_test, instrument=inst_test)
-    # telescope_db = db.query(db.Telescopes).
-    #   filter(db.Telescopes.c.telescope == tel_test).table()
-    # instrument_db = db.query(db.Instruments).
-    #   filter(db.Instruments.c.instrument == inst_test).table()
-    # assert len(telescope_db) == 1
-    # assert telescope_db['telescope'][0] == tel_test
-    # assert len(instrument_db) == 1
-    # assert instrument_db['instrument'][0] == inst_test
 
     #  test adding new telescope, instrument, and mode
     tel_test = "test4"

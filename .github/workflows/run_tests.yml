@@ -17,6 +17,9 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
 
     steps:
     - uses: actions/checkout@v4
@@ -27,10 +30,11 @@ jobs:
         repository: astrodbtoolkit/astrodb-template-db
         path: tests/astrodb-template-db
     
-    - name: Set up Python 3.11
+    - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
-        python-version: "3.11"
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
         
     - name: Install dependencies
       run: |
@@ -38,4 +42,4 @@ jobs:
         pip install .[test]
     - name: Test with pytest
       run: |
-        pytest 
+        pytest -s
