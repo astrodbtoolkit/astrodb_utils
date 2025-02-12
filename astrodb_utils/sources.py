@@ -15,7 +15,7 @@ __all__ = [
     "ingest_source",
 ]
 
-logger = logging.getLogger('astrodb_utils')
+logger = logging.getLogger("astrodb_utils")
 
 
 def find_source_in_db(
@@ -48,7 +48,7 @@ def find_source_in_db(
     dec_col_name: str
         Name of the column in the database table that contains the declination
     use_simbad: bool
-        Use Simbad to resolve the source name if it is not found in the database. Default is True. 
+        Use Simbad to resolve the source name if it is not found in the database. Default is True.
         Set to False if no internet connection.
 
     Returns
@@ -65,7 +65,11 @@ def find_source_in_db(
 
     logger.debug(f"{source}: Searching for match in database. Use Simbad: {use_simbad}")
     db_name_matches = db.search_object(
-        source, output_table="Sources", fuzzy_search=False, verbose=False, resolve_simbad=use_simbad
+        source,
+        output_table="Sources",
+        fuzzy_search=False,
+        verbose=False,
+        resolve_simbad=use_simbad,
     )
 
     # NO MATCHES
@@ -73,12 +77,18 @@ def find_source_in_db(
     if len(db_name_matches) == 0:
         logger.debug(f"{source}: No name matches, trying fuzzy search")
         db_name_matches = db.search_object(
-            source, output_table="Sources", fuzzy_search=True, verbose=False, resolve_simbad=use_simbad
+            source,
+            output_table="Sources",
+            fuzzy_search=True,
+            verbose=False,
+            resolve_simbad=use_simbad,
         )
 
     # If still no matches, try to resolve the name with Simbad
     if len(db_name_matches) == 0 and use_simbad:
-        logger.debug(f"{source}: No name matches, trying Simbad search. use_simbad: {use_simbad}")
+        logger.debug(
+            f"{source}: No name matches, trying Simbad search. use_simbad: {use_simbad}"
+        )
         db_name_matches = db.search_object(
             source, resolve_simbad=True, fuzzy_search=False, verbose=False
         )
@@ -136,35 +146,39 @@ def coords_from_simbad(source):
         Name of the source
 
     Returns
-    ------- 
+    -------
     SkyCoord object
 
     """
-    simbad_result_table = Simbad.query_object(source)   
+    simbad_result_table = Simbad.query_object(source)
     if simbad_result_table is None:
         logger.debug(f"SIMBAD returned no results for {source}")
         simbad_skycoord = None
     elif len(simbad_result_table) == 1:
-        logger.debug(f"simbad colnames: {simbad_result_table.colnames} \n simbad results \n {simbad_result_table}")
-        if 'RA' in simbad_result_table.colnames: # for astroquery<0.4.7
-            ra_col_name_simbad = 'RA'
-            dec_col_name_simbad = 'DEC'
-        elif 'ra' in simbad_result_table.colnames: # for astroquery >=0.4.8
-            ra_col_name_simbad = 'ra'
-            dec_col_name_simbad = 'dec'
+        logger.debug(
+            f"simbad colnames: {simbad_result_table.colnames} \n simbad results \n {simbad_result_table}"
+        )
+        if "ra" in simbad_result_table.colnames:  # for astroquery >=0.4.8
+            ra_col_name_simbad = "ra"
+            dec_col_name_simbad = "dec"
+        else:
+            msg = (
+                f"Unexpected column names in SIMBAD result table. "
+                f"You may need to upgrade astroquery >=0.4.8. "
+                f"Expecting 'ra'. Recieved: \n {simbad_result_table.colnames}"
+            )
+            raise AstroDBError(msg)
         simbad_coords = f"{simbad_result_table[ra_col_name_simbad][0]} {simbad_result_table[dec_col_name_simbad][0]}"
         logger.debug(f"SIMBAD coord string: {simbad_coords}")
+        # TODO: Get units from SIMBAD result table?
         simbad_skycoord = SkyCoord(simbad_coords, unit=(u.deg, u.deg))
-        ra = simbad_skycoord.to_string(style="decimal").split()[0]
-        ra = simbad_skycoord.ra.deg
-        dec = simbad_skycoord.to_string(style="decimal").split()[1]
-        msg = f"Coordinates retrieved from SIMBAD {ra}, {dec}"
+        msg = f"Coordinates retrieved from SIMBAD {simbad_skycoord.ra.deg}, {simbad_skycoord.dec.deg}"
         logger.debug(msg)
     else:
         simbad_skycoord = None
         msg = f"More than one match found in SIMBAD for {source}"
         logger.warning(msg)
-    
+
     return simbad_skycoord
 
 
@@ -286,12 +300,12 @@ def ingest_source(
 
     logger.debug(f"   Source matches in database: {name_matches}")
 
-    # NOT INGESTING. 
+    # NOT INGESTING.
     if len(name_matches) != 0:
         msg1 = f"   Not ingesting {source}. \n"
 
-         # One source match in the database, ingesting possible alt name
-        if len(name_matches) == 1: 
+        # One source match in the database, ingesting possible alt name
+        if len(name_matches) == 1:
             ingest_names(db, name_matches[0], source)
             msg2 = f"   Already in database as {name_matches[0]}. \n "
 
@@ -299,15 +313,15 @@ def ingest_source(
         elif len(name_matches) > 1:
             msg2 = f"   More than one match for {source}\n {name_matches}\n"
 
-        exit_function(msg1+msg2, raise_error)
-        return    
+        exit_function(msg1 + msg2, raise_error)
+        return
 
     # Make sure reference is provided and in References table
     ref_check = find_publication(db, reference=reference)
     logger.debug(f"ref_check: {ref_check}")
     if ref_check[0] is False:
         msg = (
-            f"Skipping: {source}." 
+            f"Skipping: {source}."
             f"Discovery reference {reference} is either missing or "
             " is not in Publications table. \n"
             f"(Add it with ingest_publication function.)"
@@ -323,7 +337,7 @@ def ingest_source(
         if simbad_skycoord is None:
             msg = f"Not ingesting {source}. Coordinates are needed and could not be retrieved from SIMBAD. \n"
             exit_function(msg, raise_error)
-                
+
         # Using those coordinates for source.
         ra = simbad_skycoord.to_string(style="decimal").split()[0]
         dec = simbad_skycoord.to_string(style="decimal").split()[1]
@@ -331,7 +345,6 @@ def ingest_source(
         equinox = "J2000"  # Default frame from SIMBAD is IRCS and J2000.
         msg = f"Coordinates retrieved from SIMBAD {ra}, {dec}"
         logger.debug(msg)
-            
 
     logger.debug(f"   Ingesting {source}....")
 

@@ -11,39 +11,49 @@ from astrodb_utils.sources import (
     ingest_source,
 )
 
+# TODO: Ingest publication just for these tests so they can be run independent of test_publications.py
+
 
 @pytest.mark.parametrize(
     "source_data",
     [
-        ({
-            "source": "Apple",
-            "ra": 10.0673755,
-            "dec": 17.352889,
-            "reference": "Refr20",
-            "raise_error": True,
-        }),
-        ({
-            "source": "Orange",
-            "ra": 12.0673755,
-            "dec": -15.352889,
-            "reference": "Refr20",
-            "raise_error": True,
-        }),
-        ({
-            "source": "Banana",
-            "ra": 119.0673755,
-            "dec": -28.352889,
-            "reference": "Refr20",
-            "raise_error": True,
-        }),
-        ({
-            "source": "Plantain", # should be an alt name for Banana
-            "ra": 119.0673755,
-            "dec": -28.352889,
-            "reference": "Refr20",
-            "raise_error": False,
-        }),
-        ]
+        (
+            {
+                "source": "Apple",
+                "ra": 10.0673755,
+                "dec": 17.352889,
+                "reference": "Refr20",
+                "raise_error": True,
+            }
+        ),
+        (
+            {
+                "source": "Orange",
+                "ra": 12.0673755,
+                "dec": -15.352889,
+                "reference": "Refr20",
+                "raise_error": True,
+            }
+        ),
+        (
+            {
+                "source": "Banana",
+                "ra": 119.0673755,
+                "dec": -28.352889,
+                "reference": "Refr20",
+                "raise_error": True,
+            }
+        ),
+        (
+            {
+                "source": "Plantain",  # should be an alt name for Banana
+                "ra": 119.0673755,
+                "dec": -28.352889,
+                "reference": "Refr20",
+                "raise_error": False,
+            }
+        ),
+    ],
 )
 @pytest.mark.filterwarnings(
     "ignore::UserWarning"
@@ -55,7 +65,7 @@ def test_ingest_sources(db, source_data):
         ra=source_data["ra"],
         dec=source_data["dec"],
         reference=source_data["reference"],
-        raise_error=source_data["raise_error"] 
+        raise_error=source_data["raise_error"],
     )
 
     in_database = find_source_in_db(db, source_data["source"])
@@ -98,7 +108,14 @@ def test_find_source_in_db_errors(db):
     "ignore::UserWarning"
 )  # suppress astroquery SIMBAD warnings
 def test_ingest_source(db):
-    ingest_source(db, "Barnard Star", reference="Refr20", raise_error=True, ra_col_name="ra_deg", dec_col_name="dec_deg")
+    ingest_source(
+        db,
+        "Barnard Star",
+        reference="Refr20",
+        raise_error=True,
+        ra_col_name="ra_deg",
+        dec_col_name="dec_deg",
+    )
 
     Barnard_star = (
         db.query(db.Sources).filter(db.Sources.c.source == "Barnard Star").astropy()
