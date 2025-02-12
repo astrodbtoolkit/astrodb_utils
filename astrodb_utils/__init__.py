@@ -4,12 +4,8 @@ import warnings
 
 from .utils import (  # noqa: F401
     AstroDBError,
-    find_publication,
-    find_source_in_db,
+    exit_function,
     ingest_instrument,
-    ingest_names,
-    ingest_publication,
-    ingest_source,
     internet_connection,
     load_astrodb,
 )
