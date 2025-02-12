@@ -77,8 +77,6 @@ def test_find_source_in_db(db):
         "Pear",
         ra=100,
         dec=17,
-        ra_col_name="ra_deg",
-        dec_col_name="dec_deg",
     )
     assert len(search_result) == 0
 
