@@ -68,8 +68,6 @@ def test_find_source_in_db(db):
         "Apple",
         ra=10.0673755,
         dec=17.352889,
-        ra_col_name="ra_deg",
-        dec_col_name="dec_deg",
     )
     assert len(search_result) == 1
     assert search_result[0] == "Apple"
@@ -84,6 +82,8 @@ def test_find_source_in_db(db):
     )
     assert len(search_result) == 0
 
+
+def test_find_source_in_db_errors(db):
     with pytest.raises(KeyError) as error_message:
         find_source_in_db(
             db,
