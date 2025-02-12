@@ -5,9 +5,8 @@ import sqlalchemy.exc
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
 from astroquery.simbad import Simbad
-from numpy import ma
 
-from astrodb_utils import AstroDBError
+from astrodb_utils import AstroDBError, exit_function
 from astrodb_utils.publications import find_publication
 
 __all__ = [
@@ -267,6 +266,8 @@ def ingest_source(
 
     """
 
+    logger.debug(f"Trying to ingest source: {source}")
+
     # Find out if source is already in database or not
     if search_db:
         logger.debug(f"Checking database for: {source} at ra: {ra}, dec: {dec}")
@@ -283,103 +284,54 @@ def ingest_source(
     else:
         name_matches = []
 
-    logger.debug(f"Source matches in database: {name_matches}")
+    logger.debug(f"   Source matches in database: {name_matches}")
 
-    # Source is already in database
-    # Checking out alternate names
-    if len(name_matches) == 1 and search_db:
-        # Figure out if source name provided is an alternate name
-        db_source_matches = db.search_object(
-            source, output_table="Sources", resolve_simbad=use_simbad, fuzzy_search=False, 
+    # NOT INGESTING. 
+    if len(name_matches) != 0:
+        msg1 = f"   Not ingesting {source}. \n"
+
+         # One source match in the database, ingesting possible alt name
+        if len(name_matches) == 1: 
+            ingest_names(db, name_matches[0], source)
+            msg2 = f"   Already in database as {name_matches[0]}. \n "
+
+        # Multiple source matches in the database, unable to ingest source
+        elif len(name_matches) > 1:
+            msg2 = f"   More than one match for {source}\n {name_matches}\n"
+
+        exit_function(msg1+msg2, raise_error)    
+
+    # Make sure reference is provided and in References table
+    ref_check = find_publication(db, reference=reference)
+    logger.debug(f"ref_check: {ref_check}")
+    if ref_check[0] is False:
+        msg = (
+            f"Skipping: {source}." 
+            f"Discovery reference {reference} is either missing or "
+            " is not in Publications table. \n"
+            f"(Add it with ingest_publication function.)"
         )
+        exit_function(msg, raise_error)
 
-        # Try to add alternate source name to Names table
-        if len(db_source_matches) == 0:
-            alt_names_data = [{"source": name_matches[0], "other_name": source}]
-            try:
-                with db.engine.connect() as conn:
-                    conn.execute(db.Names.insert().values(alt_names_data))
-                    conn.commit()
-                logger.info(f"   Name added to database: {alt_names_data}\n")
-            except sqlalchemy.exc.IntegrityError as e:
-                msg = f"   Could not add {alt_names_data} to database"
-                logger.warning(msg)
-                if raise_error:
-                    raise AstroDBError(msg) from e
-                else:
-                    return
+    # Try to get coordinates from SIMBAD if they were not provided
+    if (ra is None or dec is None) and use_simbad:
+        # Try to get coordinates from SIMBAD
+        simbad_skycoord = coords_from_simbad(source)
 
-        msg = f"Not ingesting {source}. Already in database as {name_matches[0]}. \n "
-        if raise_error:
-            raise AstroDBError(msg)
-        else:
-            logger.info(msg)
-            return  # Source is already in database, nothing new to ingest
-
-    # Multiple source matches in the database so unable to ingest source
-    elif len(name_matches) > 1 and search_db:
-        msg1 = f"   Not ingesting {source}."
-        msg = f"   More than one match for {source}\n {name_matches}\n"
-        logger.warning(msg1 + msg)
-        if raise_error:
-            raise AstroDBError(msg)
-        else:
-            return
-
-    #  No match in the database, INGEST!
-    elif len(name_matches) == 0 or not search_db:
-        # Make sure reference is provided and in References table
-        if reference is None or ma.is_masked(reference):
-            msg = f"Not ingesting {source}. Discovery reference is blank. \n"
-            logger.warning(msg)
-            if raise_error:
-                raise AstroDBError(msg)
-            else:
-                return
-
-        ref_check = find_publication(db, reference=reference)
-        logger.debug(f"ref_check: {ref_check}")
-
-        if ref_check[0] is False:
-            msg = (
-                f"Skipping: {source}. Discovery reference {reference} "
-                "is not in Publications table. \n"
-                f"(Add it with ingest_publication function.)"
-            )
-            logger.warning(msg)
-            if raise_error:
-                raise AstroDBError(msg)
-            else:
-                return
-
-        # Try to get coordinates from SIMBAD if they were not provided
-        if (ra is None or dec is None) and use_simbad:
-            # Try to get coordinates from SIMBAD
-            simbad_skycoord = coords_from_simbad(source)
-
-            if simbad_skycoord is None:
-                msg = f"Not ingesting {source}. Coordinates are needed and could not be retrieved from SIMBAD. \n"
-                logger.warning(msg)
-                if raise_error:
-                    raise AstroDBError(msg)
-                else:
-                    return
-            # One SIMBAD match! Using those coordinates for source.
-            else:
-                ra = simbad_skycoord.to_string(style="decimal").split()[0]
-                dec = simbad_skycoord.to_string(style="decimal").split()[1]
-                epoch = "2000"  # Default coordinates from SIMBAD are epoch 2000.
-                equinox = "J2000"  # Default frame from SIMBAD is IRCS and J2000.
-                msg = f"Coordinates retrieved from SIMBAD {ra}, {dec}"
-                logger.debug(msg)
+        if simbad_skycoord is None:
+            msg = f"Not ingesting {source}. Coordinates are needed and could not be retrieved from SIMBAD. \n"
+            exit_function(msg, raise_error)
+                
+        # Using those coordinates for source.
+        ra = simbad_skycoord.to_string(style="decimal").split()[0]
+        dec = simbad_skycoord.to_string(style="decimal").split()[1]
+        epoch = "2000"  # Default coordinates from SIMBAD are epoch 2000.
+        equinox = "J2000"  # Default frame from SIMBAD is IRCS and J2000.
+        msg = f"Coordinates retrieved from SIMBAD {ra}, {dec}"
+        logger.debug(msg)
             
-    # Just in case other conditionals not met
-    else:
-        msg = f"Unexpected condition encountered ingesting {source}"
-        logger.error(msg)
-        raise AstroDBError(msg)
 
-    logger.debug(f"   Ingesting {source}.")
+    logger.debug(f"   Ingesting {source}....")
 
     # Construct data to be added
     source_data = [
@@ -395,7 +347,6 @@ def ingest_source(
         }
     ]
     logger.debug(f"   Data: {source_data}.")
-    names_data = [{"source": source, "other_name": source}]
 
     # Try to add the source to the database
     try:
@@ -406,11 +357,7 @@ def ingest_source(
         logger.info(f"Added {source}")
         logger.debug(msg)
     except sqlalchemy.exc.IntegrityError as e:
-        msg = (
-            f"Not ingesting {source}. Not sure why. \n"
-            "The reference may not exist in Publications table. \n"
-            "Add it with ingest_publication function. \n"
-        )
+        msg = f"Not ingesting {source}. Not sure why. \n"
         msg2 = f"   {source_data} "
         logger.warning(msg)
         logger.debug(msg2)
@@ -419,19 +366,8 @@ def ingest_source(
         else:
             return
 
-    # Try to add the source name to the Names table
-    try:
-        with db.engine.connect() as conn:
-            conn.execute(db.Names.insert().values(names_data))
-            conn.commit()
-        logger.debug(f"    Name added to database: {names_data}\n")
-    except sqlalchemy.exc.IntegrityError as e:
-        msg = f"   Could not add {names_data} to database"
-        logger.warning(msg)
-        if raise_error:
-            raise AstroDBError(msg) from e
-        else:
-            return
+    # Add the source name to the Names table
+    ingest_names(db, source=source, other_name=source, raise_error=raise_error)
 
     return
 
