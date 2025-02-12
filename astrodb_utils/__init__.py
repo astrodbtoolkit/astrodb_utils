@@ -4,6 +4,7 @@ import warnings
 
 from .utils import (  # noqa: F401
     AstroDBError,
+    exit_function,
     ingest_instrument,
     internet_connection,
     load_astrodb,
@@ -20,4 +21,3 @@ handler.setFormatter(LOGFORMAT)
 logger.addHandler(handler)
 
 warnings.filterwarnings("ignore", module="astroquery.simbad")
-

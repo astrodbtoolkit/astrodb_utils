@@ -15,6 +15,7 @@ __all__ = [
     "load_astrodb",
     "internet_connection",
     "ingest_instrument",
+    "exit_function",
 ]
 
 logger = logging.getLogger('astrodb_utils')
@@ -199,3 +200,25 @@ def ingest_instrument(db, *, telescope=None, instrument=None, mode=None):
             raise AstroDBError(msg) from e
 
     return
+
+
+def exit_function(msg, raise_error=True):
+    """
+    Exit function to handle errors and exceptions
+
+    Parameters
+    ----------
+    msg: str
+        Message to be logged
+    raise_error: bool
+        Flag to raise an error
+
+    Returns
+    -------
+
+    """
+    if raise_error:
+        raise AstroDBError(msg)
+    else:
+        logger.warning(msg)
+        return
