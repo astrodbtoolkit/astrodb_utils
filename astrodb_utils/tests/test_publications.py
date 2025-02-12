@@ -37,6 +37,8 @@ def test_find_publication(db):
     # Fuzzy matching working!
     assert find_publication(db, reference="Wright_2010") == (1, "Wrig10")
 
+    assert find_publication(db, reference=None) == (False, 0)
+
 
 @pytest.mark.skip(reason="Fuzzy matching not perfect yet. #27")
 # TODO: find publication only finds one of the Gaia publications
