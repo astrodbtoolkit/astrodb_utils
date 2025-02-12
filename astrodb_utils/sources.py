@@ -299,7 +299,8 @@ def ingest_source(
         elif len(name_matches) > 1:
             msg2 = f"   More than one match for {source}\n {name_matches}\n"
 
-        exit_function(msg1+msg2, raise_error)    
+        exit_function(msg1+msg2, raise_error)
+        return    
 
     # Make sure reference is provided and in References table
     ref_check = find_publication(db, reference=reference)
@@ -312,6 +313,7 @@ def ingest_source(
             f"(Add it with ingest_publication function.)"
         )
         exit_function(msg, raise_error)
+        return
 
     # Try to get coordinates from SIMBAD if they were not provided
     if (ra is None or dec is None) and use_simbad:

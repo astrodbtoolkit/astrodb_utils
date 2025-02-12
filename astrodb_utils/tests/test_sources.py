@@ -20,33 +20,46 @@ from astrodb_utils.sources import (
             "ra": 10.0673755,
             "dec": 17.352889,
             "reference": "Refr20",
+            "raise_error": True,
         }),
         ({
             "source": "Orange",
             "ra": 12.0673755,
             "dec": -15.352889,
             "reference": "Refr20",
+            "raise_error": True,
         }),
         ({
             "source": "Banana",
             "ra": 119.0673755,
             "dec": -28.352889,
             "reference": "Refr20",
-        })]
+            "raise_error": True,
+        }),
+        ({
+            "source": "Plantain", # should be an alt name for Banana
+            "ra": 119.0673755,
+            "dec": -28.352889,
+            "reference": "Refr20",
+            "raise_error": False,
+        }),
+        ]
 )
 @pytest.mark.filterwarnings(
     "ignore::UserWarning"
 )  # suppress astroquery SIMBAD warnings
 def test_ingest_sources(db, source_data):
-    # TODO: Test adding an alt name
-    print(source_data)
     ingest_source(
         db,
         source_data["source"],
         ra=source_data["ra"],
         dec=source_data["dec"],
         reference=source_data["reference"],
+        raise_error=source_data["raise_error"] 
     )
+
+    in_database = find_source_in_db(db, source_data["source"])
+    assert len(in_database) == 1
 
 
 def test_find_source_in_db(db):
@@ -96,6 +109,8 @@ def test_ingest_source(db):
     assert math.isclose(Barnard_star["ra_deg"][0], 269.452, abs_tol=0.001)
     assert math.isclose(Barnard_star["dec_deg"][0], 4.6933, abs_tol=0.001)
 
+
+def test_ingest_source_errors(db):
     source_data8 = {
         "source": "Fake 8",
         "ra": 9.06799,
