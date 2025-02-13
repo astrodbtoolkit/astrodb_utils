@@ -34,10 +34,11 @@ def load_astrodb(
         "Instruments",
         "Versions",
         "PhotometryFilters",
-        "Regimes"
+        "Regimes",
         "AssociationList",
         "ParameterList",
-        "CompanionList"
+        "CompanionList",
+        "SourceTypeList",
     ],
     felis_schema=None
 ):
@@ -70,7 +71,10 @@ def load_astrodb(
         create_database(db_connection_string, felis_schema=felis_schema)
         # Connect and load the database
         db = Database(db_connection_string, reference_tables=reference_tables)
-        db.load_database(data_path)
+        if logger.level <= 10:
+            db.load_database(data_path, verbose=True)
+        else:
+            db.load_database(data_path)
     else:
         # if database already exists, connects to it
         db = Database(db_connection_string, reference_tables=reference_tables)
