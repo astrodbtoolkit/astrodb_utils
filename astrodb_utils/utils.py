@@ -35,6 +35,9 @@ def load_astrodb(
         "Versions",
         "PhotometryFilters",
         "Regimes"
+        "AssociationList",
+        "ParameterList"
+        "CompanionList"
     ],
     felis_schema=None
 ):
