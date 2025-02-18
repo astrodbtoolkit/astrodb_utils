@@ -13,7 +13,7 @@ from astrodb_utils.photometry import (
 def test_ingest_photometry(db):
     ingest_photometry(
         db,
-        source="Dark energy source 1",
+        source="Crab Nebula",
         band="Generic/Johnson.V",
         regime="optical",
         magnitude=10,
@@ -21,7 +21,7 @@ def test_ingest_photometry(db):
     )
     ingest_photometry(
         db,
-        source="Dark energy source 2",
+        source="WASP-76b",
         band="Generic/Cousins.R",
         regime="optical",
         magnitude=10,
@@ -63,7 +63,7 @@ def test_ingest_photometry_fails(db):
     with pytest.raises(AstroDBError) as error_message:
         ingest_photometry(
             db,
-            source="Dark energy source 1",
+            source="Crab Nebula",
             band="2MASS/2MASS.J",
             magnitude=10,
             reference="ref",
@@ -71,7 +71,7 @@ def test_ingest_photometry_fails(db):
     assert "not found in Publications table" in str(error_message.value)
     result = ingest_photometry(
         db,
-        source="Dark energy source 1",
+        source="Carb Nebula",
         band="2MASS/2MASS.J",
         magnitude=10,
         reference="ref",
@@ -82,7 +82,7 @@ def test_ingest_photometry_fails(db):
     with pytest.raises(AstroDBError) as error_message:
         ingest_photometry(
             db,
-            source="Dark energy source 1",
+            source="Crab Nebula",
             band="Generic/Cousins.R",
             magnitude=10,
             reference="Rubin80",
@@ -91,7 +91,7 @@ def test_ingest_photometry_fails(db):
     assert "not found in Telescopes table" in str(error_message.value)
     result = ingest_photometry(
         db,
-        source="Dark energy source 1",
+        source="Crab Nebula",
         band="Generic/Cousins.R",
         magnitude=10,
         reference="Rubin80",
