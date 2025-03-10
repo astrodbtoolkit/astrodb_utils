@@ -28,7 +28,7 @@ def db():
 
     logger.info("Loaded AstroDB Template database using load_astrodb function in conftest.py")
 
-    ingest_publication(db, doi="10.1086/161442") # Prob83
+   
 
     ingest_publication(
         db,
@@ -37,6 +37,8 @@ def db():
         doi="10.1093/mnras/staa1522",
         ignore_ads=True,
     )
+
+    ingest_publication(db, doi="10.1086/161442", reference="Prob83")
 
     ingest_source(db, "LHS 2924", reference="Prob83")
 
