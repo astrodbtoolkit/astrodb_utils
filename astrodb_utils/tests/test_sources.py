@@ -11,8 +11,6 @@ from astrodb_utils.sources import (
     ingest_source,
 )
 
-# TODO: Ingest publication just for these tests so they can be run independent of test_publications.py
-
 
 @pytest.mark.parametrize(
     "source_data",
@@ -88,6 +86,16 @@ def test_find_source_in_db(db):
         ra=100,
         dec=17,
     )
+    assert len(search_result) == 0
+
+    search_result = find_source_in_db(db,"LHS 2924")
+    # print(f"LHS 2924: {search_result}")
+    assert search_result[0] == "LHS 2924"
+
+    search_result = find_source_in_db(db,"LHS 292")
+    assert search_result[0] == "LHS 2924"  # This is wrong and a result of fuzzy matching
+
+    search_result = find_source_in_db(db,"LHS 292", fuzzy=False)
     assert len(search_result) == 0
 
 
