@@ -298,6 +298,7 @@ def ingest_publication(
         arxiv_id = None
 
     name_add, bibcode_add, doi_add = "", "", ""
+    using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
     # Search ADS uing a provided arxiv id
     if arxiv_id and use_ads:
         arxiv_matches = ads.SearchQuery(
@@ -329,8 +330,6 @@ def ingest_publication(
         bibcode_add = arxiv_id
         doi_add = doi
         using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
-    else:
-        using = "not sure yet, no arxiv id provided"
 
     # Search ADS using a provided DOI
     if doi and use_ads:
@@ -344,7 +343,6 @@ def ingest_publication(
 
         if len(doi_matches_list) == 1:
             logger.debug(f"Publication found in ADS using DOI: {doi}")
-            using = doi
             article = doi_matches_list[0]
             logger.debug(
                 f"{article.first_author}, {article.year},"
@@ -358,6 +356,7 @@ def ingest_publication(
             description = article.title[0]
             bibcode_add = article.bibcode
             doi_add = article.doi[0]
+            using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
     elif doi:
         name_add = reference
         bibcode_add = bibcode
@@ -380,7 +379,6 @@ def ingest_publication(
 
         elif len(bibcode_matches_list) == 1:
             logger.debug(f"Publication found in ADS using bibcode: {bibcode}")
-            using = f"bibcode: {bibcode}"
             article = bibcode_matches_list[0]
             logger.debug(
                 f"{article.first_author}, {article.year}, "
@@ -397,6 +395,7 @@ def ingest_publication(
                 doi_add = None
             else:
                 doi_add = article.doi[0]
+            using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
     elif bibcode:
         name_add = reference
         bibcode_add = bibcode
