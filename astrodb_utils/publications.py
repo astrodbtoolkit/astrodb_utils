@@ -267,8 +267,15 @@ def ingest_publication(
         logger.error("Publication, DOI, or Bibcode is required input")
         return
 
-    if not ignore_ads:
-        use_ads = check_ads_token()
+    use_ads = check_ads_token()
+
+    if not use_ads and not ignore_ads:
+        logger.warning(
+            "An ADS_TOKEN environment variable is not set.\n"
+            "setting ignore_ads=True.")
+        ignore_ads = True
+
+    if not ignore_ads:        
         if not use_ads and (not reference and (not doi or not bibcode)):
             logger.error(
                 "An ADS_TOKEN environment variable must be set"
@@ -279,7 +286,7 @@ def ingest_publication(
     else:
         use_ads = False
 
-    logger.debug(f"Use ADS set to {use_ads}")
+    logger.debug(f"ignore_ads set to {not use_ads}")
 
     if bibcode:
         if "arXiv" in bibcode:
@@ -322,6 +329,8 @@ def ingest_publication(
         bibcode_add = arxiv_id
         doi_add = doi
         using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
+    else:
+        using = "not sure yet, no arxiv id provided"
 
     # Search ADS using a provided DOI
     if doi and use_ads:
@@ -353,6 +362,7 @@ def ingest_publication(
         name_add = reference
         bibcode_add = bibcode
         doi_add = doi
+        using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
 
     if bibcode and use_ads:
         bibcode_matches = ads.SearchQuery(
@@ -370,7 +380,7 @@ def ingest_publication(
 
         elif len(bibcode_matches_list) == 1:
             logger.debug(f"Publication found in ADS using bibcode: {bibcode}")
-            using = str(bibcode)
+            using = f"bibcode: {bibcode}"
             article = bibcode_matches_list[0]
             logger.debug(
                 f"{article.first_author}, {article.year}, "
@@ -395,7 +405,7 @@ def ingest_publication(
 
     if reference and not bibcode and not doi:
         name_add = reference
-        using = "user input"
+        using = "ref: {reference} user input. No bibcode or doi provided."
 
     new_ref = [
         {
