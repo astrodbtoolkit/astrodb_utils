@@ -28,9 +28,11 @@ def find_source_in_db(
     ra_col_name="ra_deg",
     dec_col_name="dec_deg",
     use_simbad=True,
+    fuzzy=False
 ):
     """
     Find a source in the database given a source name and optional coordinates.
+    Uses astrodbkit .search_object and .query_region methods to search the Sources and Names table.
 
     Parameters
     ----------
@@ -50,6 +52,8 @@ def find_source_in_db(
     use_simbad: bool
         Use Simbad to resolve the source name if it is not found in the database. Default is True.
         Set to False if no internet connection.
+    fuzzy: bool
+        Use fuzzy search to find source name in database. Default is False.
 
     Returns
     -------
@@ -74,7 +78,7 @@ def find_source_in_db(
 
     # NO MATCHES
     # If no matches, try fuzzy search
-    if len(db_name_matches) == 0:
+    if len(db_name_matches) == 0 and fuzzy:
         logger.debug(f"{source}: No name matches, trying fuzzy search")
         db_name_matches = db.search_object(
             source,

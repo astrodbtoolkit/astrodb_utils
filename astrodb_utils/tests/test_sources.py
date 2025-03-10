@@ -89,14 +89,13 @@ def test_find_source_in_db(db):
     assert len(search_result) == 0
 
     search_result = find_source_in_db(db,"LHS 2924")
-    # print(f"LHS 2924: {search_result}")
     assert search_result[0] == "LHS 2924"
-
-    search_result = find_source_in_db(db,"LHS 292")
-    assert search_result[0] == "LHS 2924"  # This is wrong and a result of fuzzy matching
 
     search_result = find_source_in_db(db,"LHS 292", fuzzy=False)
     assert len(search_result) == 0
+
+    search_result = find_source_in_db(db,"LHS 292", fuzzy=True)
+    assert search_result[0] == "LHS 2924"  # This is wrong and a result of fuzzy matching
 
 
 def test_find_source_in_db_errors(db):
