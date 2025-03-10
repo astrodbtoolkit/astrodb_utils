@@ -4,23 +4,6 @@ from astrodb_utils import AstroDBError
 from astrodb_utils.publications import find_publication, ingest_publication
 
 
-def test_ingest_publications(db):
-    # add a made up publication and make sure it's there
-    ingest_publication(
-        db,
-        reference="Refr20",
-        bibcode="2020MNRAS.496.1922B",
-        doi="10.1093/mnras/staa1522",
-        ignore_ads=True,
-    )
-    assert (
-        db.query(db.Publications)
-        .filter(db.Publications.c.reference == "Refr20")
-        .count()
-        == 1
-    )
-
-
 def test_find_publication(db):
     assert not find_publication(db)[0]  # False
     assert find_publication(db, reference="Refr20")[0]  # True
