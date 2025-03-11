@@ -83,16 +83,11 @@ def load_astrodb(
 
 
 def internet_connection():
-    """Test internet connection - not clear if that's actually what's happening here"""
-
-    # get current IP address of system
-    ipaddress = socket.gethostbyname(socket.gethostname())
-
-    # checking system IP is the same as "127.0.0.1" or not.
-    if ipaddress == "127.0.0.1":  # no internet
-        return False, ipaddress
-    else:
-        return True, ipaddress
+    try:
+        socket.getaddrinfo('google.com',80)
+        return True
+    except socket.gaierror:
+        return False
 
 
 def check_url_valid(url):
