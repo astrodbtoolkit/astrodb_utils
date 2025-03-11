@@ -228,7 +228,7 @@ def ingest_names(
 def ingest_source(
     db,
     source,
-    reference: str = None,
+    reference: str,
     *,
     ra: float = None,
     dec: float = None,
