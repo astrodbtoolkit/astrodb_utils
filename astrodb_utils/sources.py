@@ -28,9 +28,11 @@ def find_source_in_db(
     ra_col_name="ra_deg",
     dec_col_name="dec_deg",
     use_simbad=True,
+    fuzzy=False
 ):
     """
     Find a source in the database given a source name and optional coordinates.
+    Uses astrodbkit .search_object and .query_region methods to search the Sources and Names table.
 
     Parameters
     ----------
@@ -50,6 +52,8 @@ def find_source_in_db(
     use_simbad: bool
         Use Simbad to resolve the source name if it is not found in the database. Default is True.
         Set to False if no internet connection.
+    fuzzy: bool
+        Use fuzzy search to find source name in database. Default is False.
 
     Returns
     -------
@@ -74,7 +78,7 @@ def find_source_in_db(
 
     # NO MATCHES
     # If no matches, try fuzzy search
-    if len(db_name_matches) == 0:
+    if len(db_name_matches) == 0 and fuzzy:
         logger.debug(f"{source}: No name matches, trying fuzzy search")
         db_name_matches = db.search_object(
             source,
@@ -224,8 +228,8 @@ def ingest_names(
 def ingest_source(
     db,
     source,
+    reference: str,
     *,
-    reference: str = None,
     ra: float = None,
     dec: float = None,
     epoch: str = None,
@@ -282,6 +286,19 @@ def ingest_source(
 
     logger.debug(f"Trying to ingest source: {source}")
 
+    # Make sure reference is provided and in References table
+    ref_check = find_publication(db, reference=reference)
+    logger.debug(f"ref_check: {ref_check}")
+    if ref_check[0] is False:
+        msg = (
+            f"Skipping: {source}."
+            f"Discovery reference {reference} is either missing or "
+            " is not in Publications table. \n"
+            f"(Add it with ingest_publication function.)"
+        )
+        exit_function(msg, raise_error)
+        return
+
     # Find out if source is already in database or not
     if search_db:
         logger.debug(f"Checking database for: {source} at ra: {ra}, dec: {dec}")
@@ -314,19 +331,6 @@ def ingest_source(
             msg2 = f"   More than one match for {source}\n {name_matches}\n"
 
         exit_function(msg1 + msg2, raise_error)
-        return
-
-    # Make sure reference is provided and in References table
-    ref_check = find_publication(db, reference=reference)
-    logger.debug(f"ref_check: {ref_check}")
-    if ref_check[0] is False:
-        msg = (
-            f"Skipping: {source}."
-            f"Discovery reference {reference} is either missing or "
-            " is not in Publications table. \n"
-            f"(Add it with ingest_publication function.)"
-        )
-        exit_function(msg, raise_error)
         return
 
     # Try to get coordinates from SIMBAD if they were not provided

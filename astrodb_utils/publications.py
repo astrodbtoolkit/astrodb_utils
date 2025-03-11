@@ -268,18 +268,23 @@ def ingest_publication(
         return
 
     if not ignore_ads:
-        use_ads = check_ads_token()
-        if not use_ads and (not reference and (not doi or not bibcode)):
-            logger.error(
-                "An ADS_TOKEN environment variable must be set"
-                "in order to auto-populate the fields.\n"
-                "Without an ADS_TOKEN, name and bibcode or DOI must be set explicity."
-            )
-            return
-    else:
-        use_ads = False
+        ads_token = check_ads_token()
 
-    logger.debug(f"Use ADS set to {use_ads}")
+        if not ads_token:
+            logger.warning(
+                "An ADS_TOKEN environment variable is not set.\n"
+                "setting ignore_ads=True.")
+            ignore_ads = True
+
+            if (not reference and (not doi or not bibcode)):
+                logger.error(
+                    "An ADS_TOKEN environment variable must be set"
+                    "in order to auto-populate the fields.\n"
+                    "Without an ADS_TOKEN, name and bibcode or DOI must be set explicity."
+                )
+                return
+   
+    logger.debug(f"ignore_ads set to {ignore_ads}")
 
     if bibcode:
         if "arXiv" in bibcode:
@@ -291,40 +296,15 @@ def ingest_publication(
         arxiv_id = None
 
     name_add, bibcode_add, doi_add = "", "", ""
+    using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
+
     # Search ADS uing a provided arxiv id
-    if arxiv_id and use_ads:
-        arxiv_matches = ads.SearchQuery(
-            q=arxiv_id, fl=["id", "bibcode", "title", "first_author", "year", "doi"]
-        )
-        arxiv_matches_list = list(arxiv_matches)
-        if len(arxiv_matches_list) != 1:
-            logger.error("should only be one matching arxiv id")
-            return
-
-        if len(arxiv_matches_list) == 1:
-            logger.debug(f"Publication found in ADS using arxiv id: , {arxiv_id}")
-            article = arxiv_matches_list[0]
-            logger.debug(
-                f"{article.first_author}, {article.year}, {article.bibcode}, {article.title}"
-            )
-            if not reference:  # generate the name if it was not provided
-                name_stub = article.first_author.replace(",", "").replace(" ", "")
-                name_add = name_stub[0:4] + article.year[-2:]
-            else:
-                name_add = reference
-            description = article.title[0]
-            bibcode_add = article.bibcode
-            doi_add = article.doi[0]
-
-            using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
-    elif arxiv_id:
-        name_add = reference
-        bibcode_add = arxiv_id
-        doi_add = doi
-        using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
+    if arxiv_id:
+        name_add, bibcode_add, doi_add, description = find_pub_using_arxiv_id(arxiv_id, reference, doi, ignore_ads)
+        using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"    
 
     # Search ADS using a provided DOI
-    if doi and use_ads:
+    if doi and not ignore_ads:
         doi_matches = ads.SearchQuery(
             doi=doi, fl=["id", "bibcode", "title", "first_author", "year", "doi"]
         )
@@ -335,7 +315,6 @@ def ingest_publication(
 
         if len(doi_matches_list) == 1:
             logger.debug(f"Publication found in ADS using DOI: {doi}")
-            using = doi
             article = doi_matches_list[0]
             logger.debug(
                 f"{article.first_author}, {article.year},"
@@ -349,12 +328,14 @@ def ingest_publication(
             description = article.title[0]
             bibcode_add = article.bibcode
             doi_add = article.doi[0]
+            using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
     elif doi:
         name_add = reference
         bibcode_add = bibcode
         doi_add = doi
+        using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
 
-    if bibcode and use_ads:
+    if bibcode and not ignore_ads:
         bibcode_matches = ads.SearchQuery(
             bibcode=bibcode,
             fl=["id", "bibcode", "title", "first_author", "year", "doi"],
@@ -370,7 +351,6 @@ def ingest_publication(
 
         elif len(bibcode_matches_list) == 1:
             logger.debug(f"Publication found in ADS using bibcode: {bibcode}")
-            using = str(bibcode)
             article = bibcode_matches_list[0]
             logger.debug(
                 f"{article.first_author}, {article.year}, "
@@ -387,6 +367,7 @@ def ingest_publication(
                 doi_add = None
             else:
                 doi_add = article.doi[0]
+            using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
     elif bibcode:
         name_add = reference
         bibcode_add = bibcode
@@ -395,7 +376,7 @@ def ingest_publication(
 
     if reference and not bibcode and not doi:
         name_add = reference
-        using = "user input"
+        using = "ref: {reference} user input. No bibcode or doi provided."
 
     new_ref = [
         {
@@ -438,3 +419,36 @@ def check_ads_token():
 
     return use_ads
 
+
+def find_pub_using_arxiv_id(arxiv_id, reference, doi, ignore_ads):
+    if not ignore_ads:
+        arxiv_matches = ads.SearchQuery(
+                q=arxiv_id, fl=["id", "bibcode", "title", "first_author", "year", "doi"]
+            )
+        arxiv_matches_list = list(arxiv_matches)
+        if len(arxiv_matches_list) != 1:
+            logger.error("should only be one matching arxiv id")
+            return
+
+        if len(arxiv_matches_list) == 1:
+            logger.debug(f"Publication found in ADS using arxiv id: , {arxiv_id}")
+            article = arxiv_matches_list[0]
+            logger.debug(
+                f"{article.first_author}, {article.year}, {article.bibcode}, {article.title}"
+            )
+            if not reference:  # generate the name if it was not provided
+                name_stub = article.first_author.replace(",", "").replace(" ", "")
+                name_add = name_stub[0:4] + article.year[-2:]
+            else:
+                name_add = reference
+                description = article.title[0]
+                bibcode_add = article.bibcode
+                doi_add = article.doi[0]
+        
+        else:
+            name_add = reference
+            bibcode_add = arxiv_id
+            doi_add = doi
+            description = None
+
+        return name_add, bibcode_add, doi_add, description
