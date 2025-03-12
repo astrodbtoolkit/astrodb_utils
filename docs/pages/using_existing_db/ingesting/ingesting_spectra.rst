@@ -12,8 +12,8 @@ Functions to modify spectra prior to ingestion.
 Example Notebooks
 ~~~~~~~~~~~~~~~~~
 
-How to add a FITS header to a spectrum file: :doc:`fits_header_examples`
-
+How to add a FITS header to a spectrum file: :doc:`fits_header_scratch`
+How to modify a FITS header: :doc:`fits_header_modify`
 
 Useful functions
 ~~~~~~~~~~~~~~~~
