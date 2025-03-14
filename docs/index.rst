@@ -17,6 +17,7 @@ User Guide
    Overview of the AstroDB Toolkit <pages/overview/organization>
    pages/getting_started/index
    Working with an existing database <pages/using_existing_db/index>
+   pages/ingesting/getting_started_ingesting
    Making a new database <pages/make_new_db/getting_started_new_database>
    pages/converting_spectra/converting_spectra
    pages/getting_help/index
