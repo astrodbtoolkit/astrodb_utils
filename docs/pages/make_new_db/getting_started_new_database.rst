@@ -1,4 +1,4 @@
-Getting started with a new database
+Making a New Database
 ======================================
 
 .. toctree::
