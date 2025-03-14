@@ -232,7 +232,6 @@ def check_header(header=None, format='simple-spectrum', ignore_simbad=False):
 
 
 def get_keywords(format):
-    #TODO: What do if RA/DEC is present but not RA_TARG/DEC_TARG?
 
 
     formats = ['simple-spectrum','ivoa-spectrum-dm-1.2']
@@ -253,7 +252,7 @@ def get_keywords(format):
             ("AUTHOR", "Authors of original dataset"),
             ("TITLE", "Dataset title "),
             ("VOREF","URL, DOI, or bibcode of original publication"),
-            ("VOPUB", "Publisher"), # TODO: Set to SIMPLE
+            ("VOPUB", "Publisher"),
             ("CONTRIB1","Contributor who generated this header"),
             ("SPEC_VAL", "[angstrom] Characteristic spectral coordinate"),
             ("SPEC_BW", "[angstrom] width of spectrum"),
@@ -321,10 +320,10 @@ def make_skycoord(header):
     else:
         dec = float(header.get('DEC_TARG'))
 
-    if dec > 90:
-        print("DEC_TARG does not appear to be in degrees")
+    if dec > 90 or dec < -90:
+        print("DEC_TARG value is out of the expected range.")
         print(f"DEC_TARG: {dec}")
-        print("DEC_TARG should be in degrees")
+        print("DEC_TARG should be in degrees in the range -90 to 90")
         return None
 
     logger.debug(f"DEC: {dec}")

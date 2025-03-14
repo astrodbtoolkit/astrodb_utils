@@ -1,6 +1,7 @@
 import astropy.units as u
 import numpy as np
 import pytest
+from astropy.coordinates import SkyCoord
 
 from astrodb_utils.fits import (
     add_missing_keywords,
@@ -8,6 +9,7 @@ from astrodb_utils.fits import (
     add_wavelength_keywords,
     check_header,
     get_keywords,
+    make_skycoord,
 )
 
 
@@ -55,3 +57,17 @@ def test_check_header():
     assert check_header(header) is False
     header.set('DATE-OBS', "2021-01-01")
     assert check_header(header) is True
+
+def test_make_skycoord():
+    header = add_missing_keywords()
+    header.set('RA',"63.831417")
+    assert make_skycoord(header) is None # missing DEC
+    header.set('DEC',"-9.585167")
+    assert isinstance(make_skycoord(header), SkyCoord)
+
+    header2 = add_missing_keywords()
+    header2.set('RA_TARG',"63.831417")
+    header2.set('DEC_TARG',"-90.585167")
+    assert make_skycoord(header2) is None # Dec out of range
+    header2.set('DEC_TARG',"89.585167")
+    assert isinstance(make_skycoord(header2), SkyCoord)
