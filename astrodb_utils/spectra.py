@@ -13,11 +13,7 @@ if matplotlib_check is not None:
     import matplotlib.pyplot as plt
 
 
-__all__ = [
-    "check_spectrum_class", 
-    "check_spectrum_not_nans", 
-    "check_spectrum_wave_units", 
-    "check_spectrum_flux_units", 
+__all__ = [ 
     "check_spectrum_plottable"
     ]
 
@@ -133,9 +129,26 @@ def plot_spectrum(spectrum):
 
 def check_spectrum_plottable(spectrum_path, raise_error=True, show_plot=False):
     """
-    Check if spectrum is plottable
+    Check if spectrum is readable and plottable with specutils.
+    show_plot = True requires matplotlib to be installed.
 
-    show_plot only works if matplotlib is installed. matplotlib is not installed with astrodb_utils.
+    Parameters
+    ----------
+    spectrum_path : str
+        Path to spectrum file
+
+    raise_error : bool. Default=True
+        True: Raise error if spectrum is not plottable
+        False: Do not raise error if spectrum is not plottable. Log warning instead.
+    
+    show_plot : bool. Default=False
+        True: Show plot of spectrum. Matplotlib must be installed.
+
+    Returns
+    -------
+    bool
+        True: Spectrum is plottable
+        False: Spectrum is not plotable
 
     """
     # load the spectrum and make sure it's readable as a Spectrum1D object, has units, is not all NaNs.
