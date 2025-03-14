@@ -1,8 +1,8 @@
-Converting spectra
+Converting Spectra
 ====================================
 Spectral data can be stored in a variety of formats, including FITS files, ASCII files, and other formats.  
 We recommend converting all spectra to FITS files that are readable by `specutils <https://specutils.readthedocs.io/en/stable/>`_ before ingestion into the database.  
-This will ensure that the data (and metadata) is stored in a consistent format and that the data can be easily accessed and visualized.
+This will ensure that the data (and metadata) are stored in a consistent format and that the data can be easily accessed and visualized.
 
 
 How to convert spectra 
@@ -15,7 +15,9 @@ Create or modify the header of the FITS file to include the necessary metadata i
 Then save the spectrum to a FITS file using the `specutils.Spectrum.write`` method.
 
 Here's a basic outline of the steps to convert a spectrum to the `specutils` `tabular-fits`` format:
-.. code-block:: Python
+
+.. code-block:: python
+
     import astropy.units as u
     from astropy.io.fits import getheader
     from specutils import Spectrum
@@ -29,7 +31,11 @@ Here's a basic outline of the steps to convert a spectrum to the `specutils` `ta
     header = getheader(<filename>)
 
     # Create the Spectrum object
-    converted_spectrum = Spectrum(spectral_axis=wave*u.um, flux=flux*u.Jy, uncertainty=err*u.Jy)
+    converted_spectrum = Spectrum(
+        spectral_axis=wave * u.um, 
+        flux=flux * u.Jy, 
+        uncertainty=err * u.Jy
+    )
     converted_spectrum.meta["header"] = header
 
     # Write the Spectrum object to a FITS file
