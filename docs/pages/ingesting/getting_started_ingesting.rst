@@ -3,6 +3,7 @@ Ingesting and Modifying Data
 
 .. toctree::
     ingesting_publications
+    ingest_scripts
 
 
 .. note::
