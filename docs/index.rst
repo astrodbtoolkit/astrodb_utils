@@ -15,10 +15,10 @@ User Guide
    :maxdepth: 1
 
    Overview of the AstroDB Toolkit <pages/overview/organization>
-   pages/getting_started/index
-   Working with an existing database <pages/using_existing_db/index>
+   pages/querying_existing_db/index
    pages/ingesting/getting_started_ingesting
-   Making a new database <pages/make_new_db/getting_started_new_database>
+   pages/make_new_db/getting_started_new_database
+   pages/making_private_version
    pages/converting_spectra/converting_spectra
    pages/getting_help/index
    Developer documentation <pages/dev_docs/developer_installation>
