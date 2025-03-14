@@ -9,6 +9,18 @@ from astroquery.simbad import Simbad
 
 from astrodb_utils.photometry import assign_ucd
 
+__all__ = [
+    "add_missing_keywords",
+    "add_wavelength_keywords",
+    "add_observation_date",
+    "check_header",
+    "get_keywords",
+    "make_skycoord",
+    "check_simbad_name",
+    "check_ra_dec_simbad",
+    "check_date",
+]
+
 logger = logging.getLogger('astrodb_utils')
 
 def add_missing_keywords(header=None, format='simple-spectrum', keywords=None):
@@ -111,7 +123,7 @@ def add_wavelength_keywords(header=None, wavelength_data = None):
    
     #return header    
 
-   
+
 def add_observation_date(header=None, date=None):
     """Adds the observation date to the header
 
@@ -220,7 +232,6 @@ def check_header(header=None, format='simple-spectrum', ignore_simbad=False):
 
 
 def get_keywords(format):
-    #TODO: What do if RA/DEC is present but not RA_TARG/DEC_TARG?
 
 
     formats = ['simple-spectrum','ivoa-spectrum-dm-1.2']
@@ -241,7 +252,7 @@ def get_keywords(format):
             ("AUTHOR", "Authors of original dataset"),
             ("TITLE", "Dataset title "),
             ("VOREF","URL, DOI, or bibcode of original publication"),
-            ("VOPUB", "Publisher"), # TODO: Set to SIMPLE
+            ("VOPUB", "Publisher"),
             ("CONTRIB1","Contributor who generated this header"),
             ("SPEC_VAL", "[angstrom] Characteristic spectral coordinate"),
             ("SPEC_BW", "[angstrom] width of spectrum"),
@@ -284,13 +295,18 @@ def make_skycoord(header):
             print("RA_TARG or RA is required")
             ra = None
             return None
+        else:
+            ra = float(header.get('RA'))
     else:
         ra = float(header.get('RA_TARG'))
-        if ra > 360:
-            print("RA_TARG does not appear to be in degrees")
-            print(f"RA_TARG: {ra}")
-            print("RA_TARG should be in degrees")
-            return None
+        
+    if ra > 360:
+        print("RA_TARG does not appear to be in degrees")
+        print(f"RA_TARG: {ra}")
+        print("RA_TARG should be in degrees")
+        return None
+    
+    logger.debug(f"RA: {ra}")
 
     dec_targ = header.get('DEC_TARG')
     if dec_targ is None:
@@ -299,14 +315,18 @@ def make_skycoord(header):
             print("DEC_TARG or DEC is required")
             dec = None
             return None
+        else:
+            dec = float(header.get('DEC'))
     else:
         dec = float(header.get('DEC_TARG'))
 
-        if dec > 90:
-            print("DEC_TARG does not appear to be in degrees")
-            print(f"DEC_TARG: {dec}")
-            print("DEC_TARG should be in degrees")
-            return None
+    if dec > 90 or dec < -90:
+        print("DEC_TARG value is out of the expected range.")
+        print(f"DEC_TARG: {dec}")
+        print("DEC_TARG should be in degrees in the range -90 to 90")
+        return None
+
+    logger.debug(f"DEC: {dec}")
 
     # Check if ra and dec could be read into SkyCoord object and converted to sexagesimal
     try:
