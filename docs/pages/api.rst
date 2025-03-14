@@ -40,7 +40,7 @@ Fits
     :show-inheritance:
 
 Publications
------------
+------------
 
 .. automodule:: astrodb_utils.publications
     :members:
