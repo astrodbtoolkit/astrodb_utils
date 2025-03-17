@@ -12,14 +12,25 @@ from astrodb_utils.fits import (
     make_skycoord,
 )
 
-
-def test_add_missing_keywords():
-    result = add_missing_keywords() # default is simple-spectrum
-    keywords = get_keywords(format='simple-spectrum')
+@pytest.mark.parametrize("format", ['ivoa-spectrum-dm-1.2', 'simple-spectrum'])
+def test_add_missing_keywords(format):
+    result = add_missing_keywords(format=format) 
+    keywords = get_keywords(format=format)
     assert len(result) == len(keywords)
-    for keyword, comment in keywords:
-        value = result.get(keyword)
-        assert value is None
+
+    # most keywords should be None
+    if format == 'ivoa-spectrum-dm-1.2':
+        for keyword, comment in keywords:
+            value = result.get(keyword)
+            if keyword == 'VOCLASS':
+                assert value.startswith('Spectrum-1.')
+            else:
+                assert value is None
+    elif format == 'simple-spectrum':
+        for keyword, comment in keywords:
+            value = result.get(keyword)
+            assert value is None
+
 
 def test_add_wavelength_keywords():
     header = add_missing_keywords()
