@@ -63,13 +63,20 @@ def add_missing_keywords(header=None, format='ivoa-spectrum-dm-1.2', keywords=No
             header.set(keyword, None, comment)
             missing_keywords.append((keyword, comment))
 
+    if format == 'ivoa-spectrum-dm-1.2':
+        header['VOCLASS'] = 'Spectrum-1.2'
+
     # Loop over missing keywords and print for copy and paste purposes
-    print("COPY AND PASTE THE FOLLOWING COMMANDS INTO YOUR SCRIPT")
-    print("Replace <value> with the appropriate value for your dataset")
-    print("If you're not sure of the correct value, use None")
-    print("If you started with a header object not called `header`, replace 'header' with the name of your header object")
-    print("Use the `astrodb_utils.fits.add_wavelength_keywords` function to add the SPEC_VAL, SPEC_BW, and SPECBAND keywords")
-    print("\n")
+    print(
+        "COPY AND PASTE THE FOLLOWING COMMANDS INTO YOUR SCRIPT \n"
+        "Replace <value> with the appropriate value for your dataset \n"
+        "If you're not sure of the correct value, use None \n"
+        "If you started with a header object not called `header`, \n" 
+        "replace 'header' with the name of your header object \n"
+        "Use the `astrodb_utils.fits.add_wavelength_keywords` function \n"
+        "to add the SPEC_VAL, SPEC_BW, TDMID1, TDMAX1, and SPECBAND keywords \n"
+        )
+
     for keyword, comment in missing_keywords:
         print(f"header.set('{keyword}', \"<value>\")")  # {comment}")
 
@@ -239,35 +246,36 @@ def get_keywords(format):
             ("OBJECT", "Name of observed object"),
             ("RA_TARG", "[deg] target position"),
             ("DEC_TARG", "[deg] target position"),
-            ("DATE-OBS", "Date of observation"),
             ("INSTRUME", "Instrument name"),
             ("TELESCOP", "Telescope name"),
+            ("DATE-OBS", "Date of observation"),
             ("TELAPSE", "[s] Total elapsed time (s)"),
-            ("APERTURE", "[arcsec] slit width"),
             ("AUTHOR", "Authors of original dataset"),
-            ("TITLE", "Dataset title "),
             ("VOREF","URL, DOI, or bibcode of original publication"),
-            ("VOPUB", "Publisher"),
+            ("VOPUB", "Publisher"), # SIMPLE
             ("CONTRIB1","Contributor who generated this header"),
             ("SPEC_VAL", "[angstrom] Characteristic spectral coordinate"),
             ("SPEC_BW", "[angstrom] width of spectrum"),
+            ("TDMIN1", "Start in spectral coordinate"),
+            ("TDMAX1", "Stop in spectral coordinate"),
             ("SPECBAND", "SED.bandpass"),
+            ("APERTURE", "[arcsec] slit width"),
         ]
     elif format == 'ivoa-spectrum-dm-1.2':    
         keywords = [
-            ("VOCLASS","Data model name and version"), # TODO:  'Spectrum-1.2', 
-            ("VOPUB", ""),
-            ("VOREF", "URL, DOI, or bibcode of original publication"),
-            ("TITLE", "Dataset title "),
             ("OBJECT", "Name of observed object"),
             ("RA_TARG", "[deg] target position"),
             ("DEC_TARG", "[deg] target position"),
             ("INSTRUME", ""),
             ("TELESCOP", ""),
             ("OBSERVAT", ""),
-            ("AUTHOR", ""),
-            ("CONTRIB1","Contributor who generated this file"),
-            ("DATE-OBS", "Date of observation"),
+            ("VOCLASS","Data model name and version"),
+            ("VOPUB", "Publisher"),
+            ("VOREF", "URL, DOI, or bibcode of original publication"),
+            ("TITLE", "Dataset title "),
+            ("AUTHOR", "Authors of the original dataset"),
+            ("CONTRIB1","Contributor who generated this file"), #optional
+            ("DATE-OBS", "Date of observation"), #optional
             ("TMID", "[d] MJD of exposure mid-point"),
             ("TELAPSE", "[s] Total elapsed time (s)"),
             ("SPEC_VAL", "[angstrom] Characteristic spectral coordinate"),
