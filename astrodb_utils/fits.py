@@ -287,18 +287,20 @@ def get_keywords(format):
 
 
 def make_skycoord(header):
-    # check RA and Dec are in degrees
-    ra_targ = header.get('RA_TARG')
-    if ra_targ is None:
-        ra_targ = header.get('RA')
-        if ra_targ is None:
-            print("RA_TARG or RA is required")
-            ra = None
-            return None
-        else:
-            ra = float(header.get('RA'))
-    else:
+    """
+    Make a SkyCoord object from the RA and Dec in the header
+    Look for coordinates in either RA_TARG and DEC_TARG or RA and DEC keywords
+    """
+
+    if header.get('RA_TARG') is None and header.get('RA') is None:
+        print("RA_TARG or RA is required")
+        ra = None
+        return None
+
+    if header.get('RA_TARG') is not None:
         ra = float(header.get('RA_TARG'))
+    elif header.get('RA') is not None:
+        ra = float(header.get('RA'))
         
     if ra > 360:
         print("RA_TARG does not appear to be in degrees")
@@ -308,17 +310,15 @@ def make_skycoord(header):
     
     logger.debug(f"RA: {ra}")
 
-    dec_targ = header.get('DEC_TARG')
-    if dec_targ is None:
-        dec_targ = header.get('DEC')
-        if dec_targ is None:
-            print("DEC_TARG or DEC is required")
-            dec = None
-            return None
-        else:
-            dec = float(header.get('DEC'))
-    else:
+    if header.get('DEC_TARG') is None and header.get('DEC') is None:
+        print("DEC_TARG or DEC is required")
+        dec = None
+        return None
+    
+    if header.get('DEC_TARG') is not None:
         dec = float(header.get('DEC_TARG'))
+    elif header.get('DEC') is not None:    
+        dec = float(header.get('DEC'))
 
     if dec > 90 or dec < -90:
         print("DEC_TARG value is out of the expected range.")
