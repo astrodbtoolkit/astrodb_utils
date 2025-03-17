@@ -13,17 +13,12 @@ __all__ = [
     "add_missing_keywords",
     "add_wavelength_keywords",
     "add_observation_date",
-    "check_header",
-    "get_keywords",
-    "make_skycoord",
-    "check_simbad_name",
-    "check_ra_dec_simbad",
-    "check_date",
+    "check_header"
 ]
 
 logger = logging.getLogger('astrodb_utils')
 
-def add_missing_keywords(header=None, format='simple-spectrum', keywords=None):
+def add_missing_keywords(header=None, format='ivoa-spectrum-dm-1.2', keywords=None):
     """Finds the keywords that are missing from a header and adds them with blank values
 
     Inputs
@@ -32,8 +27,7 @@ def add_missing_keywords(header=None, format='simple-spectrum', keywords=None):
         a fits header object or dictionary of header values
 
     format: string
-        header schemas to enforce. options, 'simple-spectrum'. Eventually, `IVOA-spectrumdm-1.2`
-        if provided, keywords is ignored
+        header data models to enforce. Options, 'simple-spectrum' and 'ivoa-spectrum-dm-1.2`
 
     keywords: list
         a list of keywords to check for if format is not specified
@@ -45,9 +39,10 @@ def add_missing_keywords(header=None, format='simple-spectrum', keywords=None):
     Examples
     --------
     Returns a header with keywords but blank values
-    >>> new_header = add_missing_keywords(format='simple-spectrum')
+    >>> new_header = add_missing_keywords()
 
-    Adds missing keywords (with blank values) to an existing header
+    Adds missing keywords (with blank values) to an existing header 
+    using the simple spectrum data model
     >>> new_header = add_missing_keywords(old_header, format='simple-spectrum')
     """
 
@@ -56,7 +51,7 @@ def add_missing_keywords(header=None, format='simple-spectrum', keywords=None):
         header = fits.Header()
 
     if keywords is None and format is None:
-        format = 'simple-spectrum'
+        format = 'ivoa-spectrum-dm-1.2'
 
     keywords = get_keywords(format)
 
@@ -165,7 +160,7 @@ def add_observation_date(header=None, date=None):
         raise e
 
 
-def check_header(header=None, format='simple-spectrum', ignore_simbad=False):
+def check_header(header=None, format='ivoa-spectrum-dm-1.2', ignore_simbad=False):
     """
     Check the header of a FITS file for required keywords and other properties.
 
@@ -174,7 +169,7 @@ def check_header(header=None, format='simple-spectrum', ignore_simbad=False):
     header : astropy.io.fits.Header
         The header object to be checked.
     format : str, optional
-        The format of the FITS file. Default is 'simple-spectrum'.
+        The data model of the FITS file. Default is 'ivoa-spectrum-dm-1.2'.
     ignore_simbad : bool, optional
         Whether to ignore checking SIMBAD coordinates. Default is False.
 
