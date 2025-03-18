@@ -37,7 +37,7 @@ Build the Docs
 
 We use sphinx.
 To build the docs, use `sphinx-autobuild <https://pypi.org/project/sphinx-autobuild/>`_.
-Also need to install `pandoc <https://pandoc.org/installing.html>'_.
+Also need to install `pandoc <https://pandoc.org/installing.html>`_.
 
 .. code-block:: bash
 
