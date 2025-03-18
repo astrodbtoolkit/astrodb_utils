@@ -37,6 +37,15 @@ test = [
     "ruff>0.3.7",
     ]
 
+docs = [
+    "sphinx",
+    "sphinx-autobuild",
+    "sphinx_pyproject",
+    "nbsphinx",
+    "pydata-sphinx-theme",
+    "pandoc",
+    ]
+
 [project.urls]
 Homepage = "https://github.com/astrodbtoolkit/astrodb_utils"
 Issues = "https://github.com/astrodbtoolkit/astrodb_utils/issues"
