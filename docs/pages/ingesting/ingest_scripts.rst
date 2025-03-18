@@ -1,6 +1,6 @@
 Ingest Scripts
 ==============
-
+Ingest scripts can be used to add a bunch of data to the database at once.
 Often ingests are performed by reading in a file (e.g.,csv) that contains a table of data 
 and then ingesting each row of the table into the database.
 Below is an example script for ingesting sources discovered by Rojas et al. 2012 into the SIMPLE Archive from a .csv file 
