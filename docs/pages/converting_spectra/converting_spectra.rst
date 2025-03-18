@@ -7,7 +7,7 @@ This will ensure that the data (and metadata) are stored in a consistent format 
 
 How to convert spectra 
 -------------------------
-To convert a spectrum, get the data into Python arrays. 
+To convert a spectrum into a specutils-readable FITS file, get the data into Python arrays. 
 Add units to those arrays to create Quantity arrays. 
 Use the Quantity arrays to create a `specutils.Spectrum` object. 
 (`Spectrum1D` in `specutils` earlier than v2.0.)
