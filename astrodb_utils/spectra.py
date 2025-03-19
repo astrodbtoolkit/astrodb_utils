@@ -4,7 +4,7 @@ import sys
 
 import astropy.units as u
 import numpy as np
-from specutils import Spectrum1D
+from specutils import Spectrum
 
 from astrodb_utils import AstroDBError
 
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 def check_spectrum_class(spectrum, raise_error=True):
     try:
-        Spectrum1D.read(spectrum)
+        Spectrum.read(spectrum)
         return True
     except Exception as error_message:
         msg = f"Unable to load file as Spectrum1D object:{spectrum}"
@@ -152,7 +152,7 @@ def check_spectrum_plottable(spectrum_path, raise_error=True, show_plot=False):
 
     """
     # load the spectrum and make sure it's readable as a Spectrum1D object, has units, is not all NaNs.
-    if isinstance(spectrum_path, Spectrum1D):
+    if isinstance(spectrum_path, Spectrum):
         spectrum = spectrum_path
         class_check = True
     else:
@@ -160,7 +160,7 @@ def check_spectrum_plottable(spectrum_path, raise_error=True, show_plot=False):
         if not class_check:
             return False
         else:
-            spectrum = Spectrum1D.read(spectrum_path)
+            spectrum = Spectrum.read(spectrum_path)
 
     # checking spectrum has good units
     wave_unit_check = check_spectrum_wave_units(spectrum, raise_error=raise_error)
