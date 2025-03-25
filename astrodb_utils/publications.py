@@ -140,23 +140,7 @@ def find_publication(
             if logger.level == 10:  # debug
                 pub_search_table.pprint_all()
 
-            #  Try to find numbers in the reference which might be a date
-            dates = re.findall(r"\d+", reference)
-            # try to find a two digit date
-            if len(dates) == 0:
-                logger.debug(f"Could not find a date in {reference}")
-                two_digit_date = None
-            elif len(dates) == 1:
-                if len(dates[0]) == 4:
-                    two_digit_date = dates[0][2:]
-                elif len(dates[0]) == 2:
-                    two_digit_date = dates[0]
-                else:
-                    logger.debug(f"Could not find a two digit date using {dates}")
-                    two_digit_date = None
-            else:
-                logger.debug(f"Could not find a two digit date using {dates}")
-                two_digit_date = None
+            two_digit_date = find_dates_in_reference(reference)            
 
             if two_digit_date:
                 logger.debug(f"Trying to limit using {two_digit_date}")
@@ -182,38 +166,31 @@ def find_publication(
                     return False, n_pubs_found_short_date
             else:
                 return False, n_pubs_found_short
+
     if n_pubs_found == 0 and bibcode and "arXiv" in bibcode and use_ads:
         logger.debug(f"Using ADS to find alt name for {bibcode}")
-        arxiv_id = bibcode
-        arxiv_matches = ads.SearchQuery(
-            q=arxiv_id, fl=["id", "bibcode", "title", "first_author", "year", "doi"]
+        results = find_pub_using_arxiv_id(
+            bibcode, reference=None, doi=None, ignore_ads=~use_ads
         )
-        arxiv_matches_list = list(arxiv_matches)
-        if len(arxiv_matches_list) == 1:
-            logger.debug(f"Publication found in ADS using arxiv id: , {arxiv_id}")
-            article = arxiv_matches_list[0]
-            logger.debug(
-                f"{article.first_author}, {article.year}, {article.bibcode}, {article.title}"
+        bibcode_alt = results[1]
+        not_null_pub_filters = []
+        not_null_pub_filters.append(db.Publications.c.bibcode.ilike(bibcode_alt))
+        print(not_null_pub_filters)
+        pub_search_table = Table()
+        pub_search_table = (
+            db.query(db.Publications).filter(or_(*not_null_pub_filters)).table()
             )
-            bibcode_alt = article.bibcode
-            not_null_pub_filters = []
-            not_null_pub_filters.append(db.Publications.c.bibcode.ilike(bibcode_alt))
-            print(not_null_pub_filters)
-            pub_search_table = Table()
-            pub_search_table = (
-                db.query(db.Publications).filter(or_(*not_null_pub_filters)).table()
-                )
-            if len(pub_search_table) == 1:
-                logger.debug(
-                    f"Found {len(pub_search_table)} matching publications for "
-                    f"{reference} or {doi} or {bibcode}: {pub_search_table['reference'].data}"
-                )
-                if logger.level <= 10:  # debug
-                    pub_search_table.pprint_all()
-                
-                return True, pub_search_table["reference"].data[0]
-            else: 
-                return False, len(pub_search_table)
+        if len(pub_search_table) == 1:
+            logger.debug(
+                f"Found {len(pub_search_table)} matching publications for "
+                f"{reference} or {doi} or {bibcode}: {pub_search_table['reference'].data}"
+            )
+            if logger.level <= 10:  # debug
+                pub_search_table.pprint_all()
+
+            return True, pub_search_table["reference"].data[0]
+        else: 
+            return False, len(pub_search_table)
     else:
         return False, n_pubs_found
 
@@ -267,23 +244,15 @@ def ingest_publication(
         logger.error("Publication, DOI, or Bibcode is required input")
         return
 
-    if not ignore_ads:
-        ads_token = check_ads_token()
-
-        if not ads_token:
-            logger.warning(
-                "An ADS_TOKEN environment variable is not set.\n"
-                "setting ignore_ads=True.")
-            ignore_ads = True
-
-            if (not reference and (not doi or not bibcode)):
-                logger.error(
-                    "An ADS_TOKEN environment variable must be set"
-                    "in order to auto-populate the fields.\n"
-                    "Without an ADS_TOKEN, name and bibcode or DOI must be set explicity."
-                )
-                return
-   
+    if ignore_ads is False and check_ads_token() is False:
+        ignore_ads = True
+        if (not reference and (not doi or not bibcode)):
+            logger.error(
+                "An ADS_TOKEN environment variable must be set"
+                "in order to auto-populate the fields.\n"
+                "Without an ADS_TOKEN, name and bibcode or DOI must be set explicity."
+            )
+            return
     logger.debug(f"ignore_ads set to {ignore_ads}")
 
     if bibcode:
@@ -416,6 +385,9 @@ def check_ads_token():
     if ads.config.token:
         use_ads = True
     else:
+        logger.warning(
+                "An ADS_TOKEN environment variable is not set.\n"
+                "setting ignore_ads=True/use_ads=False")
         use_ads = False
 
     return use_ads
@@ -454,3 +426,24 @@ def find_pub_using_arxiv_id(arxiv_id, reference, doi, ignore_ads):
             description = None
 
         return name_add, bibcode_add, doi_add, description
+
+def find_dates_in_reference(reference):
+    #  Try to find numbers in the reference which might be a date
+    dates = re.findall(r"\d+", reference)
+    # try to find a two digit date
+    if len(dates) == 0:
+        logger.debug(f"Could not find a date in {reference}")
+        two_digit_date = None
+    elif len(dates) == 1:
+        if len(dates[0]) == 4:
+            two_digit_date = dates[0][2:]
+        elif len(dates[0]) == 2:
+            two_digit_date = dates[0]
+        else:
+            logger.debug(f"Could not find a two digit date using {dates}")
+            two_digit_date = None
+    else:
+        logger.debug(f"Could not find a two digit date using {dates}")
+        two_digit_date = None
+
+    return two_digit_date

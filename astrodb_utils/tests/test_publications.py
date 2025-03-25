@@ -2,9 +2,10 @@ import pytest
 
 from astrodb_utils import AstroDBError
 from astrodb_utils.publications import (
+    find_dates_in_reference,
+    find_pub_using_arxiv_id,
     find_publication,
     ingest_publication,
-    find_pub_using_arxiv_id,
 )
 
 
@@ -26,6 +27,7 @@ def test_find_publication(db):
 
     assert find_publication(db, reference=None) == (False, 0)
 
+    #find_publication(db,bibcode="2022arXiv220800211G" )
 
 @pytest.mark.skip(reason="Fuzzy matching not perfect yet. #27")
 # TODO: find publication only finds one of the Gaia publications
@@ -46,8 +48,8 @@ def test_ingest_publication_errors(db):
 
 def test_ingest_publication(db):
     ingest_publication(db, bibcode="2023arXiv230812107B")
-
     assert find_publication(db, reference="Burg24")[0]  # True
+
 
 def test_find_pub_using_arxix_id(db):
     name_add, bibcode_add, doi_add, description = find_pub_using_arxiv_id(
@@ -58,3 +60,13 @@ def test_find_pub_using_arxix_id(db):
     assert bibcode_add == "2024ApJ...962..177B"
     assert doi_add == "10.3847/1538-4357/ad206f"
     assert description == "UNCOVER: JWST Spectroscopy of Three Cold Brown Dwarfs at Kiloparsec-scale Distances"
+
+    results = find_pub_using_arxiv_id("2022arXiv220800211G", reference=None, doi=None, ignore_ads=False)
+    print(results)
+    assert results[0] == "Gaia23"
+    assert results[1] == "2023A&A...674A...1G"
+
+
+def test_find_dates_in_reference():
+    assert find_dates_in_reference("Wright_2010") == "10"
+    assert find_dates_in_reference("Refr20") == "20"
