@@ -46,11 +46,13 @@ def test_ingest_publication_errors(db):
     # TODO - Mock environment  where ADS_TOKEN is not set. #117
 
 
+@pytest.mark.skip(reason="Need to set up mock environment for ADS_TOKEN")
 def test_ingest_publication(db):
     ingest_publication(db, bibcode="2023arXiv230812107B")
     assert find_publication(db, reference="Burg24")[0]  # True
 
 
+@pytest.mark.skip(reason="Need to set up mock environment for ADS_TOKEN")
 def test_find_pub_using_arxix_id(db):
     name_add, bibcode_add, doi_add, description = find_pub_using_arxiv_id(
         "2023arXiv230812107B", reference=None, doi=None, ignore_ads=False
