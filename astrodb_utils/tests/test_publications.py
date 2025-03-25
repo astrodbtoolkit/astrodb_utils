@@ -1,7 +1,11 @@
 import pytest
 
 from astrodb_utils import AstroDBError
-from astrodb_utils.publications import find_publication, ingest_publication
+from astrodb_utils.publications import (
+    find_publication,
+    ingest_publication,
+    find_pub_using_arxiv_id,
+)
 
 
 def test_find_publication(db):
@@ -39,3 +43,18 @@ def test_ingest_publication_errors(db):
     assert " similar publication already exists" in str(error_message.value)
     # TODO - Mock environment  where ADS_TOKEN is not set. #117
 
+
+def test_ingest_publication(db):
+    ingest_publication(db, bibcode="2023arXiv230812107B")
+
+    assert find_publication(db, reference="Burg24")[0]  # True
+
+def test_find_pub_using_arxix_id(db):
+    name_add, bibcode_add, doi_add, description = find_pub_using_arxiv_id(
+        "2023arXiv230812107B", reference=None, doi=None, ignore_ads=False
+    )
+
+    assert name_add == "Burg24"
+    assert bibcode_add == "2024ApJ...962..177B"
+    assert doi_add == "10.3847/1538-4357/ad206f"
+    assert description == "UNCOVER: JWST Spectroscopy of Three Cold Brown Dwarfs at Kiloparsec-scale Distances"

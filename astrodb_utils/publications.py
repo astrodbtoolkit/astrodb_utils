@@ -300,6 +300,7 @@ def ingest_publication(
 
     # Search ADS uing a provided arxiv id
     if arxiv_id:
+        logger.debug(f"Searching ADS using arxiv id: {arxiv_id}, reference: {reference}, doi: {doi}, ignore_ads: {ignore_ads}")
         name_add, bibcode_add, doi_add, description = find_pub_using_arxiv_id(arxiv_id, reference, doi, ignore_ads)
         using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"    
 
@@ -434,16 +435,17 @@ def find_pub_using_arxiv_id(arxiv_id, reference, doi, ignore_ads):
             logger.debug(f"Publication found in ADS using arxiv id: , {arxiv_id}")
             article = arxiv_matches_list[0]
             logger.debug(
-                f"{article.first_author}, {article.year}, {article.bibcode}, {article.title}"
+                f"{article.first_author}, {article.year}, {article.bibcode}, {article.doi}, {article.title}"
             )
             if not reference:  # generate the name if it was not provided
                 name_stub = article.first_author.replace(",", "").replace(" ", "")
                 name_add = name_stub[0:4] + article.year[-2:]
             else:
                 name_add = reference
-                description = article.title[0]
-                bibcode_add = article.bibcode
-                doi_add = article.doi[0]
+
+            description = article.title[0]
+            bibcode_add = article.bibcode
+            doi_add = article.doi[0]
         
         else:
             name_add = reference
