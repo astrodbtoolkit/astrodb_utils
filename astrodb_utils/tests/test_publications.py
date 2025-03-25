@@ -27,7 +27,8 @@ def test_find_publication(db):
 
     assert find_publication(db, reference=None) == (False, 0)
 
-    #find_publication(db,bibcode="2022arXiv220800211G" )
+    # find_publication(db,bibcode="2022arXiv220800211G" )
+
 
 @pytest.mark.skip(reason="Fuzzy matching not perfect yet. #27")
 # TODO: find publication only finds one of the Gaia publications
@@ -61,9 +62,14 @@ def test_find_pub_using_arxix_id(db):
     assert name_add == "Burg24"
     assert bibcode_add == "2024ApJ...962..177B"
     assert doi_add == "10.3847/1538-4357/ad206f"
-    assert description == "UNCOVER: JWST Spectroscopy of Three Cold Brown Dwarfs at Kiloparsec-scale Distances"
+    assert (
+        description
+        == "UNCOVER: JWST Spectroscopy of Three Cold Brown Dwarfs at Kiloparsec-scale Distances"
+    )
 
-    results = find_pub_using_arxiv_id("2022arXiv220800211G", reference=None, doi=None, ignore_ads=False)
+    results = find_pub_using_arxiv_id(
+        "2022arXiv220800211G", reference=None, doi=None, ignore_ads=False
+    )
     print(results)
     assert results[0] == "Gaia23"
     assert results[1] == "2023A&A...674A...1G"
