@@ -1,7 +1,13 @@
 import pytest
 
 from astrodb_utils import AstroDBError
-from astrodb_utils.publications import find_dates_in_reference, find_publication, ingest_publication, search_ads, check_ads_token
+from astrodb_utils.publications import (
+    check_ads_token,
+    find_dates_in_reference,
+    find_publication,
+    ingest_publication,
+    search_ads,
+)
 
 
 def test_find_publication(db):
@@ -45,12 +51,9 @@ def test_ingest_publication_errors(db):
 
 
 def test_ingest_publication(db):
-    if check_ads_token() is False:
-        pytest.skip("ADS_TOKEN not set")
-        ingest_publication(db, bibcode="2023arXiv230812107B")
-        assert find_publication(db, reference="Burg24")[0]  # True
-
-    ingest_publication(db, reference="test05", bibcode="2024ApJ...962..177B", ignore_ads=True)
+    ingest_publication(
+        db, reference="test05", bibcode="2024ApJ...962..177B", ignore_ads=True
+    )
     assert find_publication(db, reference="test05")[0]  # True
 
     ingest_publication(db, reference="test10", doi="10.1086/513700", ignore_ads=True)
@@ -60,7 +63,9 @@ def test_ingest_publication(db):
 @pytest.mark.skipif(check_ads_token() is False, reason="ADS_TOKEN not set")
 def test_search_ads_using_arxix_id(db):
     name_add, bibcode_add, doi_add, description = search_ads(
-        "2023arXiv230812107B", query_type="arxiv", reference=None, 
+        "2023arXiv230812107B",
+        query_type="arxiv",
+        reference=None,
     )
 
     assert name_add == "Burg24"
@@ -72,7 +77,9 @@ def test_search_ads_using_arxix_id(db):
     )
 
     results = search_ads(
-        "2022arXiv220800211G", query_type="arxiv", reference=None,
+        "2022arXiv220800211G",
+        query_type="arxiv",
+        reference=None,
     )
     assert results[0] == "Gaia23"
     assert results[1] == "2023A&A...674A...1G"
@@ -86,16 +93,23 @@ def test_search_ads_using_doi():
     assert results[2] == "10.1093/mnras/staa1522"
     assert results[3] == "Unresolved stellar companions with Gaia DR2 astrometry"
 
-    results = search_ads("10.3847/1538-4357/ad206f", query_type="doi", reference="test03")
+    results = search_ads(
+        "10.3847/1538-4357/ad206f", query_type="doi", reference="test03"
+    )
     assert results[0] == "test03"
     assert results[1] == "2024ApJ...962..177B"
     assert results[2] == "10.3847/1538-4357/ad206f"
-    assert results[3] == "UNCOVER: JWST Spectroscopy of Three Cold Brown Dwarfs at Kiloparsec-scale Distances"
+    assert (
+        results[3]
+        == "UNCOVER: JWST Spectroscopy of Three Cold Brown Dwarfs at Kiloparsec-scale Distances"
+    )
 
 
 @pytest.mark.skipif(check_ads_token() is False, reason="ADS_TOKEN not set")
 def test_search_ads_using_bibcode():
-    results = search_ads("2020MNRAS.496.1922B", query_type="bibcode", reference="Blah98")
+    results = search_ads(
+        "2020MNRAS.496.1922B", query_type="bibcode", reference="Blah98"
+    )
     assert results[0] == "Blah98"
     assert results[1] == "2020MNRAS.496.1922B"
     assert results[2] == "10.1093/mnras/staa1522"
