@@ -28,7 +28,7 @@ def find_source_in_db(
     ra_col_name="ra_deg",
     dec_col_name="dec_deg",
     use_simbad=True,
-    fuzzy=False
+    fuzzy=False,
 ):
     """
     Find a source in the database given a source name and optional coordinates.
@@ -477,15 +477,15 @@ def find_survey_name_in_simbad(sources, desig_prefix, source_id_index=None):
 
 def strip_unicode_dashes(source):
     """
-    Function to remove unicode dashes from source names
+    Function to remove unicode dashes from source names and replace with `-`
     """
 
     unicode_list = [
         ("\u2013", "en dash"),
-        ("\u2014", "em dash",),
+        ("\u2014", "em dash"),
         ("\u2212", "minus sign"),
         ("\u2012", "figure dash"),
-    ]  
+    ]
 
     for char, char_name in unicode_list:
         if char in source:

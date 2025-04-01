@@ -5,7 +5,13 @@ import pytest
 from astrodb_utils import (
     AstroDBError,
 )
-from astrodb_utils.sources import coords_from_simbad, find_source_in_db, ingest_name, ingest_source, strip_unicode_dashes
+from astrodb_utils.sources import (
+    coords_from_simbad,
+    find_source_in_db,
+    ingest_name,
+    ingest_source,
+    strip_unicode_dashes,
+)
 
 
 @pytest.mark.parametrize(
