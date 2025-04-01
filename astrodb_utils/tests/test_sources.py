@@ -5,7 +5,7 @@ import pytest
 from astrodb_utils import (
     AstroDBError,
 )
-from astrodb_utils.sources import coords_from_simbad, find_source_in_db, ingest_name, ingest_source
+from astrodb_utils.sources import coords_from_simbad, find_source_in_db, ingest_name, ingest_source, strip_unicode_dashes
 
 
 @pytest.mark.parametrize(
@@ -204,3 +204,15 @@ def test_ingest_name(db):
     with pytest.raises(AstroDBError) as error_message:
         ingest_name(db, "Gl 229b", "HD 42581b", raise_error=True)
         assert "Other name is already present." in str(error_message.value)
+
+
+@pytest.mark.parametrize('input,expected', [
+    ('CWISE J221706.28–145437.6', 'CWISE J221706.28-145437.6'), #en dash 2013
+    ('2MASS J20115649—6201127', '2MASS J20115649-6201127'), # em dash 2014
+    ('1234−5678', '1234-5678'),  # minus sign 2212
+    ('9W34‒aou', '9W34-aou'), # figure dash 2012
+    ('should-work', 'should-work'), # no unicode dashes➖➖
+])
+def test_strip_unicode_dashes(input, expected):
+    result = strip_unicode_dashes(input)
+    assert result == expected

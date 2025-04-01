@@ -212,6 +212,8 @@ def ingest_name(
     or None if name was not ingested
 
     """
+    source = strip_unicode_dashes(source)
+    other_name = strip_unicode_dashes(other_name)
     name_data = [{"source": source, "other_name": other_name}]
     try:
         with db.engine.connect() as conn:
@@ -291,6 +293,9 @@ def ingest_source(
     """
 
     logger.debug(f"Trying to ingest source: {source}")
+
+    # change unicode dashes characters to `-`
+    source = strip_unicode_dashes(source)
 
     # Make sure reference is provided and in References table
     ref_check = find_publication(db, reference=reference)
@@ -468,3 +473,23 @@ def find_survey_name_in_simbad(sources, desig_prefix, source_id_index=None):
         )
 
     return result_table
+
+
+def strip_unicode_dashes(source):
+    """
+    Function to remove unicode dashes from source names
+    """
+
+    unicode_list = [
+        ("\u2013", "en dash"),
+        ("\u2014", "em dash",),
+        ("\u2212", "minus sign"),
+        ("\u2012", "figure dash"),
+    ]  
+
+    for char, char_name in unicode_list:
+        if char in source:
+            source = source.replace(char, "-")
+            logger.info(f"replaced {char_name}({char}) with - in {source}")
+
+    return source
