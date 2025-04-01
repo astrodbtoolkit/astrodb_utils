@@ -225,11 +225,7 @@ def ingest_name(
         msg = f"Could not add {name_data} to Names."
         if "UNIQUE constraint failed: " in str(e):
             msg += "Other name is already present."
-        if raise_error:
-            raise AstroDBError(msg) from e
-        else:
-            logger.warning(msg)
-            return None
+        exit_function(msg, raise_error)
 
 
 # SOURCES
@@ -386,15 +382,12 @@ def ingest_source(
         msg = f"Added {source_data}"
         logger.info(f"Added {source}")
         logger.debug(msg)
-    except sqlalchemy.exc.IntegrityError as e:
+    except sqlalchemy.exc.IntegrityError:
         msg = f"Not ingesting {source}. Not sure why. \n"
         msg2 = f"   {source_data} "
         logger.warning(msg)
         logger.debug(msg2)
-        if raise_error:
-            raise AstroDBError(msg + msg2) from e
-        else:
-            return
+        exit_function(msg + msg2, raise_error)
 
     # Add the source name to the Names table
     ingest_name(db, source=source, other_name=source, raise_error=raise_error)
