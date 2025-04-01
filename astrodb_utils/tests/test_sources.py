@@ -116,11 +116,8 @@ def test_find_source_in_db_with_coords(db):
         source,
         ra=ra_wrong,
         dec=dec_wrong,
-        ra_col_name="ra",
-        dec_col_name="dec",
     )
     assert len(search_result) == 0
-    print(search_result)
 
 
 def test_find_source_in_db_errors(db):
