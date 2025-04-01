@@ -5,7 +5,6 @@ import pytest
 
 from astrodb_utils import load_astrodb, logger
 from astrodb_utils.publications import ingest_publication
-from astrodb_utils.sources import ingest_source
 
 logger.setLevel("DEBUG")
 
@@ -28,8 +27,6 @@ def db():
 
     logger.info("Loaded AstroDB Template database using load_astrodb function in conftest.py")
 
-   
-
     ingest_publication(
         db,
         reference="Refr20",
@@ -39,8 +36,6 @@ def db():
     )
 
     ingest_publication(db, doi="10.1086/161442", reference="Prob83")
-
-    ingest_source(db, "LHS 2924", reference="Prob83")
 
     return db
 
