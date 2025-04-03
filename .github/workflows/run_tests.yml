@@ -13,26 +13,25 @@ on:
 permissions:
   contents: read
 
+env: 
+    ADS_TOKEN: ${{ secrets.ADS_TOKEN }} 
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
 
     steps:
-    - name: Set ADS_TOKEN
+    - name: Check ADS_TOKEN
       shell: bash
-      env:
-        ADS_TOKEN: ${{ secrets.ADS_TOKEN }} 
       run: |
         if [[ -z "${ADS_TOKEN}" ]]; then
-          echo "ADS_TOKEN is not set, skipping ADS tests"
+          echo "ADS_TOKEN is not set, ADS tests will be skipped"
         else
           echo "ADS_TOKEN is set"
         fi
-    - uses: actions/checkout@v4
     
     - name: Checkout template database repo
       uses: actions/checkout@v4
