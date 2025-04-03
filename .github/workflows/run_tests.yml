@@ -22,6 +22,16 @@ jobs:
         python-version: ["3.11", "3.12", "3.13"]
 
     steps:
+    - name: Set ADS_TOKEN
+      shell: bash
+      env:
+        ADS_TOKEN: ${{ secrets.ADS_TOKEN }} 
+      run: |
+        if [[ -z "${ADS_TOKEN}" ]]; then
+          echo "ADS_TOKEN is not set, skipping ADS tests"
+        else
+          echo "ADS_TOKEN is set"
+        fi
     - uses: actions/checkout@v4
     
     - name: Checkout template database repo
