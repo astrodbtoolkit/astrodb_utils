@@ -33,17 +33,6 @@ jobs:
           echo "ADS_TOKEN is set"
         fi
     
-    - name: Check ADS_TOKEN
-      shell: bash
-      env: 
-        ADS_TOKEN: ${{ secrets.ADS_TOKEN }} 
-      run: |
-        if [[ -z "${ADS_TOKEN}" ]]; then
-          echo "ADS_TOKEN is not set, ADS tests will be skipped"
-        else
-          echo "ADS_TOKEN is set"
-        fi
-    
     - name: Checkout template database repo
       uses: actions/checkout@v4
       with:
