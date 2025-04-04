@@ -1,6 +1,7 @@
 import logging
 
 import astropy.units as u
+import numpy as np
 import sqlalchemy.exc
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
@@ -28,7 +29,7 @@ def find_source_in_db(
     ra_col_name="ra_deg",
     dec_col_name="dec_deg",
     use_simbad=True,
-    fuzzy=False
+    fuzzy=False,
 ):
     """
     Find a source in the database given a source name and optional coordinates.
@@ -54,6 +55,7 @@ def find_source_in_db(
         Set to False if no internet connection.
     fuzzy: bool
         Use fuzzy search to find source name in database. Default is False.
+
 
     Returns
     -------
@@ -127,6 +129,23 @@ def find_source_in_db(
     if len(db_name_matches) == 1:
         db_names = db_name_matches["source"].tolist()
         logger.debug(f"One match found for {source}: {db_names[0]}")
+
+        # check coords of the match make sense
+        coord_check = (
+            ra
+            and dec
+            and np.isclose(ra, db_name_matches[ra_col_name][0])
+            and np.isclose(dec, db_name_matches[dec_col_name][0])
+        )
+        if ra and dec and not coord_check:
+            msg = (
+                f"Coordinates do not match for {source} and {db_names[0]}.\n"
+                f"Coordinates provided: {ra}, {dec}\n"
+                f"Coordinates in database: {db_name_matches[ra_col_name][0]}, {db_name_matches[dec_col_name][0]}\n"
+            )
+            logger.info(msg)
+            return []  # return empty list if coordinates do not match
+
     elif len(db_name_matches) > 1:
         db_names = db_name_matches["source"].tolist()
         logger.debug(f"More than one match found for {source}: {db_names}")
