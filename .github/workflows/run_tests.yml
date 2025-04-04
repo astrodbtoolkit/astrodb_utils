@@ -13,9 +13,8 @@ on:
 permissions:
   contents: read
 
-jobs:
+jobs:  
   build:
-
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -23,7 +22,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
     - name: Check ADS_TOKEN
       shell: bash
       env: 
