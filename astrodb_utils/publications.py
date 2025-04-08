@@ -39,6 +39,7 @@ def find_publication(
 
     Returns
     -------
+    # TODO:  Return three things: Boolean, n_pubs_found, string result
     True, str: if only one match
     False, 0: No matches
     False, N_matches: Multiple matches
@@ -173,25 +174,30 @@ def find_publication(
         results = _search_ads(
             bibcode, query_type="arxiv"
         )
-        bibcode_alt = results[1]
-        not_null_pub_filters = []
-        not_null_pub_filters.append(db.Publications.c.bibcode.ilike(bibcode_alt))
-        print(not_null_pub_filters)
-        pub_search_table = Table()
-        pub_search_table = (
-            db.query(db.Publications).filter(or_(*not_null_pub_filters)).table()
-            )
-        if len(pub_search_table) == 1:
-            logger.debug(
-                f"Found {len(pub_search_table)} matching publications for "
-                f"{reference} or {doi} or {bibcode}: {pub_search_table['reference'].data}"
-            )
-            if logger.level <= 10:  # debug
-                pub_search_table.pprint_all()
+        
+        if results is not None:
+            bibcode_alt = results[1]
+            not_null_pub_filters = []
+            not_null_pub_filters.append(db.Publications.c.bibcode.ilike(bibcode_alt))
+            print(not_null_pub_filters)
+            pub_search_table = Table()
+            pub_search_table = (
+                db.query(db.Publications).filter(or_(*not_null_pub_filters)).table()
+                )
+            if len(pub_search_table) == 1:
+                logger.debug(
+                    f"Found {len(pub_search_table)} matching publications for "
+                    f"{reference} or {doi} or {bibcode}: {pub_search_table['reference'].data}"
+                )
+                if logger.level <= 10:  # debug
+                    pub_search_table.pprint_all()
 
-            return True, pub_search_table["reference"].data[0]
-        else: 
-            return False, len(pub_search_table)
+                return True, pub_search_table["reference"].data[0]
+            else: 
+                return False, len(pub_search_table)
+        else:
+            return False, 0  # No matches found using arxiv in bibcode
+
     else:
         return False, n_pubs_found
 
@@ -335,7 +341,7 @@ def check_ads_token():
     return use_ads
 
 
-def _search_ads(value: str, query_type: Literal["arxiv","bibcode","doi"], reference):
+def _search_ads(value: str, query_type: Literal["arxiv","bibcode","doi"], reference=None):
     """
     Search ADS for a publication using the provided string and query type.
     The query type indicates if the string provided is an arXiv ID, bibcode, or DOI.

@@ -28,6 +28,9 @@ def test_find_publication(db):
 
     assert find_publication(db, reference=None) == (False, 0)
 
+    # Test with a non-existent arxiv ID
+    assert find_publication(db, bibcode="2023arXiv2308121074B") == (False, 0)
+
     # find_publication(db,bibcode="2022arXiv220800211G" )
 
 
