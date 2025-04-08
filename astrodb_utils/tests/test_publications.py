@@ -2,11 +2,11 @@ import pytest
 
 from astrodb_utils import AstroDBError
 from astrodb_utils.publications import (
+    _find_dates_in_reference,
+    _search_ads,
     check_ads_token,
-    find_dates_in_reference,
     find_publication,
     ingest_publication,
-    search_ads,
 )
 
 
@@ -62,7 +62,7 @@ def test_ingest_publication(db):
 
 @pytest.mark.skipif(check_ads_token() is False, reason="ADS_TOKEN not set")
 def test_search_ads_using_arxix_id(db):
-    name_add, bibcode_add, doi_add, description = search_ads(
+    name_add, bibcode_add, doi_add, description = _search_ads(
         "2023arXiv230812107B",
         query_type="arxiv",
         reference=None,
@@ -76,7 +76,7 @@ def test_search_ads_using_arxix_id(db):
         == "UNCOVER: JWST Spectroscopy of Three Cold Brown Dwarfs at Kiloparsec-scale Distances"
     )
 
-    results = search_ads(
+    results = _search_ads(
         "2022arXiv220800211G",
         query_type="arxiv",
         reference=None,
@@ -87,13 +87,13 @@ def test_search_ads_using_arxix_id(db):
 
 @pytest.mark.skipif(check_ads_token() is False, reason="ADS_TOKEN not set")
 def test_search_ads_using_doi():
-    results = search_ads("10.1093/mnras/staa1522", query_type="doi", reference=None)
+    results = _search_ads("10.1093/mnras/staa1522", query_type="doi", reference=None)
     assert results[0] == "Belo20"
     assert results[1] == "2020MNRAS.496.1922B"
     assert results[2] == "10.1093/mnras/staa1522"
     assert results[3] == "Unresolved stellar companions with Gaia DR2 astrometry"
 
-    results = search_ads(
+    results = _search_ads(
         "10.3847/1538-4357/ad206f", query_type="doi", reference="test03"
     )
     assert results[0] == "test03"
@@ -107,7 +107,7 @@ def test_search_ads_using_doi():
 
 @pytest.mark.skipif(check_ads_token() is False, reason="ADS_TOKEN not set")
 def test_search_ads_using_bibcode():
-    results = search_ads(
+    results = _search_ads(
         "2020MNRAS.496.1922B", query_type="bibcode", reference="Blah98"
     )
     assert results[0] == "Blah98"
@@ -117,5 +117,5 @@ def test_search_ads_using_bibcode():
 
 
 def test_find_dates_in_reference():
-    assert find_dates_in_reference("Wright_2010") == "10"
-    assert find_dates_in_reference("Refr20") == "20"
+    assert _find_dates_in_reference("Wright_2010") == "10"
+    assert _find_dates_in_reference("Refr20") == "20"

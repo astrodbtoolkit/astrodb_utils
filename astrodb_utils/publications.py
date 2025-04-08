@@ -141,7 +141,7 @@ def find_publication(
             if logger.level == 10:  # debug
                 pub_search_table.pprint_all()
 
-            two_digit_date = find_dates_in_reference(reference)            
+            two_digit_date = _find_dates_in_reference(reference)            
 
             if two_digit_date:
                 logger.debug(f"Trying to limit using {two_digit_date}")
@@ -170,7 +170,7 @@ def find_publication(
 
     if n_pubs_found == 0 and bibcode and "arXiv" in bibcode and use_ads:
         logger.debug(f"Using ADS to find alt name for {bibcode}")
-        results = search_ads(
+        results = _search_ads(
             bibcode, query_type="arxiv"
         )
         bibcode_alt = results[1]
@@ -282,7 +282,7 @@ def ingest_publication(
             return
         
         logger.debug(f"Searching ADS using {query_type}: {value}, reference: {reference}")
-        name_add, bibcode_add, doi_add, description = search_ads(value, query_type=query_type, reference=reference)
+        name_add, bibcode_add, doi_add, description = _search_ads(value, query_type=query_type, reference=reference)
     else:
         name_add = reference
         bibcode_add = bibcode
@@ -335,7 +335,43 @@ def check_ads_token():
     return use_ads
 
 
-def search_ads(value: str, query_type: Literal["arxiv","bibcode","doi"], reference):
+def _search_ads(value: str, query_type: Literal["arxiv","bibcode","doi"], reference):
+    """
+    Search ADS for a publication using the provided string and query type.
+    The query type indicates if the string provided is an arXiv ID, bibcode, or DOI.
+    The function will return the name, bibcode, doi, and description of the publication
+    if found. 
+    
+    It will return None if no match or multiple matches are found.
+
+    Parameters  
+    ----------
+    value: str
+        The value to search for in ADS.
+    query_type: str
+        The type of query to perform. Can be one of the following:
+        - arxiv
+        - bibcode
+        - doi
+    reference: str
+        The reference name to use if the publication is found.
+        If not provided, it will be generated from the first author and year.
+
+    Returns 
+    ------- 
+    If no match or multiple matches are found, it returns None.
+
+    If one match is found, it returns a tuple with the following elements:
+    name_add: str
+        The name of the publication.
+    bibcode_add: str
+        The bibcode of the publication. 
+    doi_add: str    
+        The DOI of the publication.
+    description: str
+        The description of the publication (usually the title).
+
+    """
     if check_ads_token() is False:  
         logger.error("An ADS_TOKEN environment variable must be set")
         return
@@ -387,7 +423,7 @@ def search_ads(value: str, query_type: Literal["arxiv","bibcode","doi"], referen
         return name_add, bibcode_add, doi_add, description
 
 
-def find_dates_in_reference(reference):
+def _find_dates_in_reference(reference):
     #  Try to find numbers in the reference which might be a date
     dates = re.findall(r"\d+", reference)
     # try to find a two digit date
