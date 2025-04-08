@@ -21,15 +21,15 @@ logger = logging.getLogger("astrodb_utils")
 
 def find_source_in_db(
     db,
-    source,
+    source: str,
     *,
-    ra=None,
-    dec=None,
-    search_radius=60.0*u.arcsec,
-    ra_col_name="ra_deg",
-    dec_col_name="dec_deg",
-    use_simbad=True,
-    fuzzy=False,
+    ra: float = None,
+    dec: float = None,
+    search_radius: u.Quantity = 60.0 * u.arcsec,
+    ra_col_name: str = "ra_deg",
+    dec_col_name: str = "dec_deg",
+    use_simbad: bool = True,
+    fuzzy: bool = False,
 ):
     """
     Find a source in the database given a source name and optional coordinates.
@@ -44,7 +44,7 @@ def find_source_in_db(
         Right ascensions of sources. Decimal degrees.
     dec: float
         Declinations of sources. Decimal degrees.
-    search_radius: Quantity
+    search_radius: u.Quantity
         Search radius. Default is 60 arcseconds.
     ra_col_name: str
         Name of the column in the database table that contains the right ascension
