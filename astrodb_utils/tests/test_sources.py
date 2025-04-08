@@ -1,5 +1,6 @@
 import math
 
+import astropy.units as u
 import pytest
 
 from astrodb_utils import (
@@ -118,6 +119,23 @@ def test_find_source_in_db_with_coords(db):
         dec=dec_wrong,
     )
     assert len(search_result) == 0
+
+    search_result = find_source_in_db(
+        db,
+        source,
+        ra=71.8, 
+        dec=-19.8 
+    )
+    assert len(search_result) == 0  # coords not within 60 arcsec
+
+    search_result = find_source_in_db(
+        db,
+        source,
+        ra=71.8, 
+        dec=-19.8,
+        search_radius=83*u.arcsec,
+    )
+    assert len(search_result) == 1  # coords are within 83 arcsec
 
 
 def test_find_source_in_db_errors(db):
