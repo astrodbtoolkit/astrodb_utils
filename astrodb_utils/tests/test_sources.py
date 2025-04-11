@@ -9,7 +9,9 @@ from astrodb_utils import (
 from astrodb_utils.sources import (
     coords_from_simbad,
     find_source_in_db,
+    ingest_name,
     ingest_source,
+    strip_unicode_dashes,
 )
 
 
@@ -52,6 +54,14 @@ from astrodb_utils.sources import (
                 "raise_error": False,
             }
         ),
+             {
+                "source": "LHS 2924", # needed for test_find_source_in_db
+                "ra": None,
+                "dec": None,
+                "reference": "Prob83",
+                "raise_error": False,
+            }
+            
     ],
 )
 @pytest.mark.filterwarnings(
@@ -227,3 +237,28 @@ def test_coords_from_simbad():
     coords = coords_from_simbad("Barnard Star")
     assert math.isclose(coords.ra.deg, 269.452, abs_tol=0.001)
     assert math.isclose(coords.dec.deg, 4.6933, abs_tol=0.001)
+
+
+def test_ingest_name(db):
+    result = ingest_name(db, "TWA 26", "WISE J113951.07-315921.6")
+    assert result == "WISE J113951.07-315921.6"
+
+    # try to ingest names that are already in the database
+    result = ingest_name(db, "Gl 229b", "HD 42581b", raise_error=False)
+    assert result is None
+
+    with pytest.raises(AstroDBError) as error_message:
+        ingest_name(db, "Gl 229b", "HD 42581b", raise_error=True)
+        assert "Other name is already present." in str(error_message.value)
+
+
+@pytest.mark.parametrize('input,expected', [
+    ('CWISE J221706.28–145437.6', 'CWISE J221706.28-145437.6'), #en dash 2013
+    ('2MASS J20115649—6201127', '2MASS J20115649-6201127'), # em dash 2014
+    ('1234−5678', '1234-5678'),  # minus sign 2212
+    ('9W34‒aou', '9W34-aou'), # figure dash 2012
+    ('should-work', 'should-work'), # no unicode dashes➖➖
+])
+def test_strip_unicode_dashes(input, expected):
+    result = strip_unicode_dashes(input)
+    assert result == expected

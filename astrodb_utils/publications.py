@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+from typing import Literal
 
 import ads
 import sqlalchemy.exc
@@ -38,6 +39,7 @@ def find_publication(
 
     Returns
     -------
+    # TODO:  Return three things: Boolean, n_pubs_found, string result
     True, str: if only one match
     False, 0: No matches
     False, N_matches: Multiple matches
@@ -140,23 +142,7 @@ def find_publication(
             if logger.level == 10:  # debug
                 pub_search_table.pprint_all()
 
-            #  Try to find numbers in the reference which might be a date
-            dates = re.findall(r"\d+", reference)
-            # try to find a two digit date
-            if len(dates) == 0:
-                logger.debug(f"Could not find a date in {reference}")
-                two_digit_date = None
-            elif len(dates) == 1:
-                if len(dates[0]) == 4:
-                    two_digit_date = dates[0][2:]
-                elif len(dates[0]) == 2:
-                    two_digit_date = dates[0]
-                else:
-                    logger.debug(f"Could not find a two digit date using {dates}")
-                    two_digit_date = None
-            else:
-                logger.debug(f"Could not find a two digit date using {dates}")
-                two_digit_date = None
+            two_digit_date = _find_dates_in_reference(reference)            
 
             if two_digit_date:
                 logger.debug(f"Trying to limit using {two_digit_date}")
@@ -182,20 +168,15 @@ def find_publication(
                     return False, n_pubs_found_short_date
             else:
                 return False, n_pubs_found_short
+
     if n_pubs_found == 0 and bibcode and "arXiv" in bibcode and use_ads:
         logger.debug(f"Using ADS to find alt name for {bibcode}")
-        arxiv_id = bibcode
-        arxiv_matches = ads.SearchQuery(
-            q=arxiv_id, fl=["id", "bibcode", "title", "first_author", "year", "doi"]
+        results = _search_ads(
+            bibcode, query_type="arxiv"
         )
-        arxiv_matches_list = list(arxiv_matches)
-        if len(arxiv_matches_list) == 1:
-            logger.debug(f"Publication found in ADS using arxiv id: , {arxiv_id}")
-            article = arxiv_matches_list[0]
-            logger.debug(
-                f"{article.first_author}, {article.year}, {article.bibcode}, {article.title}"
-            )
-            bibcode_alt = article.bibcode
+        
+        if results is not None:
+            bibcode_alt = results[1]
             not_null_pub_filters = []
             not_null_pub_filters.append(db.Publications.c.bibcode.ilike(bibcode_alt))
             print(not_null_pub_filters)
@@ -210,10 +191,13 @@ def find_publication(
                 )
                 if logger.level <= 10:  # debug
                     pub_search_table.pprint_all()
-                
+
                 return True, pub_search_table["reference"].data[0]
             else: 
                 return False, len(pub_search_table)
+        else:
+            return False, 0  # No matches found using arxiv in bibcode
+
     else:
         return False, n_pubs_found
 
@@ -222,6 +206,7 @@ def find_publication(
 
 def ingest_publication(
     db,
+    *,
     doi: str = None,
     bibcode: str = None,
     reference: str = None,
@@ -249,11 +234,9 @@ def ingest_publication(
             (e.g, Xu__21 or LiYB21)
     description: str, optional
         Description of the paper, typically the title of the papre [optional]
-    ignore_ads: bool
-
-    Returns
-    -------
-    publication: str
+    ignore_ads: bool (default=False)
+        If True, do not use ADS to search for the publication [optional]
+        If False, an ADS_TOKEN environment variable must be set.
 
     See Also
     --------
@@ -267,117 +250,52 @@ def ingest_publication(
         logger.error("Publication, DOI, or Bibcode is required input")
         return
 
-    if not ignore_ads:
-        ads_token = check_ads_token()
-
-        if not ads_token:
-            logger.warning(
-                "An ADS_TOKEN environment variable is not set.\n"
-                "setting ignore_ads=True.")
-            ignore_ads = True
-
-            if (not reference and (not doi or not bibcode)):
-                logger.error(
-                    "An ADS_TOKEN environment variable must be set"
-                    "in order to auto-populate the fields.\n"
-                    "Without an ADS_TOKEN, name and bibcode or DOI must be set explicity."
-                )
-                return
-   
-    logger.debug(f"ignore_ads set to {ignore_ads}")
-
-    if bibcode:
-        if "arXiv" in bibcode:
-            arxiv_id = bibcode
-            bibcode = None
-        else:
-            arxiv_id = None
-    else:
-        arxiv_id = None
-
-    name_add, bibcode_add, doi_add = "", "", ""
-    using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
-
-    # Search ADS uing a provided arxiv id
-    if arxiv_id:
-        name_add, bibcode_add, doi_add, description = find_pub_using_arxiv_id(arxiv_id, reference, doi, ignore_ads)
-        using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"    
-
-    # Search ADS using a provided DOI
-    if doi and not ignore_ads:
-        doi_matches = ads.SearchQuery(
-            doi=doi, fl=["id", "bibcode", "title", "first_author", "year", "doi"]
-        )
-        doi_matches_list = list(doi_matches)
-        if len(doi_matches_list) != 1:
-            logger.error("should only be one matching DOI")
-            return
-
-        if len(doi_matches_list) == 1:
-            logger.debug(f"Publication found in ADS using DOI: {doi}")
-            article = doi_matches_list[0]
-            logger.debug(
-                f"{article.first_author}, {article.year},"
-                f"{article.bibcode}, {article.title}"
-            )
-            if not reference:  # generate the name if it was not provided
-                name_stub = article.first_author.replace(",", "").replace(" ", "")
-                name_add = name_stub[0:4] + article.year[-2:]
-            else:
-                name_add = reference
-            description = article.title[0]
-            bibcode_add = article.bibcode
-            doi_add = article.doi[0]
-            using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
-    elif doi:
-        name_add = reference
-        bibcode_add = bibcode
-        doi_add = doi
-        using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
-
-    if bibcode and not ignore_ads:
-        bibcode_matches = ads.SearchQuery(
-            bibcode=bibcode,
-            fl=["id", "bibcode", "title", "first_author", "year", "doi"],
-        )
-        bibcode_matches_list = list(bibcode_matches)
-        if len(bibcode_matches_list) == 0:
-            msg = f"Not a valid bibcode: {bibcode}"
-            raise AstroDBError(msg)
-
-        elif len(bibcode_matches_list) > 1:
-            msg = f"Should only be one matching bibcode for: {bibcode}"
-            raise AstroDBError(msg)
-
-        elif len(bibcode_matches_list) == 1:
-            logger.debug(f"Publication found in ADS using bibcode: {bibcode}")
-            article = bibcode_matches_list[0]
-            logger.debug(
-                f"{article.first_author}, {article.year}, "
-                f"{article.bibcode}, {article.doi}, {article.title}"
-            )
-            if not reference:  # generate the name if it was not provided
-                name_stub = article.first_author.replace(",", "").replace(" ", "")
-                name_add = name_stub[0:4] + article.year[-2:]
-            else:
-                name_add = reference
-            description = article.title[0]
-            bibcode_add = article.bibcode
-            if article.doi is None:
-                doi_add = None
-            else:
-                doi_add = article.doi[0]
-            using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
-    elif bibcode:
-        name_add = reference
-        bibcode_add = bibcode
-        doi_add = doi
-        using = f"ref: {name_add}, bibcode: {bibcode_add}, doi: {doi_add}"
-
     if reference and not bibcode and not doi:
         name_add = reference
-        using = "ref: {reference} user input. No bibcode or doi provided."
+        using = f"ref: {reference} user input. No bibcode or DOI provided."
 
+    if ignore_ads is False and check_ads_token() is False:
+        ignore_ads = True
+        if (not reference and (not doi or not bibcode)):
+            logger.error(
+                "An ADS_TOKEN environment variable must be set"
+                "in order to auto-populate the fields.\n"
+                "Without an ADS_TOKEN, name and bibcode or DOI must be set explicity."
+            )
+            return
+    logger.debug(f"ignore_ads set to {ignore_ads}")
+
+    if ignore_ads is True and reference is None:
+        logger.error("A reference must be provided if ignore_ads is set to True")
+        return
+
+    name_add, bibcode_add, doi_add = "", "", ""
+    using = f"ref: {name_add}, bibcode: {bibcode_add}, DOI: {doi_add}"
+
+    if ignore_ads is False:
+        # Figure out how to search ADS
+        if doi: # Search ADS using a provided DOI
+            query_type = "doi"
+            value = doi
+        elif bibcode:
+            if "arXiv" in bibcode:
+                query_type = "arxiv"  # Search ADS using an arXiv ID
+            else:
+                query_type = "bibcode"  # Search ADS using a provided bibcode
+            value = bibcode
+        else:
+            logger.error("Unexpected error. No doi or bibcode provided")
+            return
+        
+        logger.debug(f"Searching ADS using {query_type}: {value}, reference: {reference}")
+        name_add, bibcode_add, doi_add, description = _search_ads(value, query_type=query_type, reference=reference)
+    else:
+        name_add = reference
+        bibcode_add = bibcode
+        doi_add = doi
+        
+    using = f"ref: {name_add}, bibcode: {bibcode_add}, DOI: {doi_add}"
+    
     new_ref = [
         {
             "reference": name_add,
@@ -415,40 +333,119 @@ def check_ads_token():
     if ads.config.token:
         use_ads = True
     else:
+        logger.warning(
+                "An ADS_TOKEN environment variable is not set.\n"
+                "setting ignore_ads=True/use_ads=False")
         use_ads = False
 
     return use_ads
 
 
-def find_pub_using_arxiv_id(arxiv_id, reference, doi, ignore_ads):
-    if not ignore_ads:
-        arxiv_matches = ads.SearchQuery(
-                q=arxiv_id, fl=["id", "bibcode", "title", "first_author", "year", "doi"]
-            )
-        arxiv_matches_list = list(arxiv_matches)
-        if len(arxiv_matches_list) != 1:
-            logger.error("should only be one matching arxiv id")
-            return
+def _search_ads(value: str, query_type: Literal["arxiv","bibcode","doi"], reference=None):
+    """
+    Search ADS for a publication using the provided string and query type.
+    The query type indicates if the string provided is an arXiv ID, bibcode, or DOI.
+    The function will return the name, bibcode, doi, and description of the publication
+    if found. 
+    
+    It will return None if no match or multiple matches are found.
 
-        if len(arxiv_matches_list) == 1:
-            logger.debug(f"Publication found in ADS using arxiv id: , {arxiv_id}")
-            article = arxiv_matches_list[0]
-            logger.debug(
-                f"{article.first_author}, {article.year}, {article.bibcode}, {article.title}"
+    Parameters  
+    ----------
+    value: str
+        The value to search for in ADS.
+    query_type: str
+        The type of query to perform. Can be one of the following:
+        - arxiv
+        - bibcode
+        - doi
+    reference: str
+        The reference name to use if the publication is found.
+        If not provided, it will be generated from the first author and year.
+
+    Returns 
+    ------- 
+    If no match or multiple matches are found, it returns None.
+
+    If one match is found, it returns a tuple with the following elements:
+    name_add: str
+        The name of the publication.
+    bibcode_add: str
+        The bibcode of the publication. 
+    doi_add: str    
+        The DOI of the publication.
+    description: str
+        The description of the publication (usually the title).
+
+    """
+    if check_ads_token() is False:  
+        logger.error("An ADS_TOKEN environment variable must be set")
+        return
+
+    if query_type == "arxiv":
+        ads_matches = ads.SearchQuery(
+                q=value, fl=["id", "bibcode", "title", "first_author", "year", "doi"]
             )
-            if not reference:  # generate the name if it was not provided
-                name_stub = article.first_author.replace(",", "").replace(" ", "")
-                name_add = name_stub[0:4] + article.year[-2:]
-            else:
-                name_add = reference
-                description = article.title[0]
-                bibcode_add = article.bibcode
-                doi_add = article.doi[0]
-        
+    elif query_type == "bibcode":
+        ads_matches = ads.SearchQuery(
+            bibcode=value,
+            fl=["id", "bibcode", "title", "first_author", "year", "doi"],
+        )
+    elif query_type == "doi":
+        ads_matches = ads.SearchQuery(
+            doi=value, fl=["id", "bibcode", "title", "first_author", "year", "doi"]
+        )
+    else:
+        logger.error(f"Invalid query type: {query_type}. Valid types are 'arxiv', 'bibcode', or 'doi'")
+        return
+
+    ads_matches_list = list(ads_matches)
+
+    if len(ads_matches_list) == 0:
+        msg = f"No ADS matches for {query_type}: {value}"
+        logger.warning(msg)
+        return
+
+    if len(ads_matches_list) > 1:
+        logger.warning(f"More than one matching ADS record for {query_type}: {value}")
+        return
+
+    if len(ads_matches_list) == 1:
+        logger.debug(f"Publication found in ADS for {query_type}: {value}")
+        article = ads_matches_list[0]
+        logger.debug(
+            f"{article.first_author}, {article.year}, {article.bibcode}, {article.doi}, {article.title}"
+        )
+        if not reference:  # generate the name if it was not provided
+            name_stub = article.first_author.replace(",", "").replace(" ", "")
+            name_add = name_stub[0:4] + article.year[-2:]
         else:
             name_add = reference
-            bibcode_add = arxiv_id
-            doi_add = doi
-            description = None
+
+        description = article.title[0]
+        bibcode_add = article.bibcode
+        doi_add = article.doi[0]
 
         return name_add, bibcode_add, doi_add, description
+
+
+def _find_dates_in_reference(reference):
+    #  Try to find numbers in the reference which might be a date
+    dates = re.findall(r"\d+", reference)
+    # try to find a two digit date
+    if len(dates) == 0:
+        logger.debug(f"Could not find a date in {reference}")
+        two_digit_date = None
+    elif len(dates) == 1:
+        if len(dates[0]) == 4:
+            two_digit_date = dates[0][2:]
+        elif len(dates[0]) == 2:
+            two_digit_date = dates[0]
+        else:
+            logger.debug(f"Could not find a two digit date using {dates}")
+            two_digit_date = None
+    else:
+        logger.debug(f"Could not find a two digit date using {dates}")
+        two_digit_date = None
+
+    return two_digit_date
