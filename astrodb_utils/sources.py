@@ -11,7 +11,7 @@ from astrodb_utils.publications import find_publication
 
 __all__ = [
     "find_source_in_db",
-    "ingest_names",
+    "ingest_name",
     "ingest_source",
 ]
 
@@ -28,7 +28,7 @@ def find_source_in_db(
     ra_col_name="ra_deg",
     dec_col_name="dec_deg",
     use_simbad=True,
-    fuzzy=False
+    fuzzy=False,
 ):
     """
     Find a source in the database given a source name and optional coordinates.
@@ -187,7 +187,7 @@ def coords_from_simbad(source):
 
 
 # NAMES
-def ingest_names(
+def ingest_name(
     db, source: str = None, other_name: str = None, raise_error: bool = None
 ):
     """
@@ -206,22 +206,26 @@ def ingest_names(
 
     Returns
     -------
-    None
+    other_name: str
+        Name of the source as it appears in the Names table
+
+    or None if name was not ingested
+
     """
-    names_data = [{"source": source, "other_name": other_name}]
+    source = strip_unicode_dashes(source)
+    other_name = strip_unicode_dashes(other_name)
+    name_data = [{"source": source, "other_name": other_name}]
     try:
         with db.engine.connect() as conn:
-            conn.execute(db.Names.insert().values(names_data))
+            conn.execute(db.Names.insert().values(name_data))
             conn.commit()
-        logger.info(f"Name added to database: {names_data}\n")
+        logger.info(f"Name added to database: {name_data}\n")
+        return other_name
     except sqlalchemy.exc.IntegrityError as e:
-        msg = f"Could not add {names_data} to Names."
-        if "UNIQUE constraint failed:" in str(e):
-            msg += " Other name is already present."
-        if raise_error:
-            raise AstroDBError(msg) from e
-        else:
-            logger.warning(msg)
+        msg = f"Could not add {name_data} to Names."
+        if "UNIQUE constraint failed: " in str(e):
+            msg += "Other name is already present."
+        exit_function(msg, raise_error)
 
 
 # SOURCES
@@ -286,6 +290,9 @@ def ingest_source(
 
     logger.debug(f"Trying to ingest source: {source}")
 
+    # change unicode dashes characters to `-`
+    source = strip_unicode_dashes(source)
+
     # Make sure reference is provided and in References table
     ref_check = find_publication(db, reference=reference)
     logger.debug(f"ref_check: {ref_check}")
@@ -323,7 +330,7 @@ def ingest_source(
 
         # One source match in the database, ingesting possible alt name
         if len(name_matches) == 1:
-            ingest_names(db, name_matches[0], source)
+            ingest_name(db, name_matches[0], source)
             msg2 = f"   Already in database as {name_matches[0]}. \n "
 
         # Multiple source matches in the database, unable to ingest source
@@ -375,18 +382,15 @@ def ingest_source(
         msg = f"Added {source_data}"
         logger.info(f"Added {source}")
         logger.debug(msg)
-    except sqlalchemy.exc.IntegrityError as e:
+    except sqlalchemy.exc.IntegrityError:
         msg = f"Not ingesting {source}. Not sure why. \n"
         msg2 = f"   {source_data} "
         logger.warning(msg)
         logger.debug(msg2)
-        if raise_error:
-            raise AstroDBError(msg + msg2) from e
-        else:
-            return
+        exit_function(msg + msg2, raise_error)
 
     # Add the source name to the Names table
-    ingest_names(db, source=source, other_name=source, raise_error=raise_error)
+    ingest_name(db, source=source, other_name=source, raise_error=raise_error)
 
     return
 
@@ -462,3 +466,23 @@ def find_survey_name_in_simbad(sources, desig_prefix, source_id_index=None):
         )
 
     return result_table
+
+
+def strip_unicode_dashes(source):
+    """
+    Function to remove unicode dashes from source names and replace with `-`
+    """
+
+    unicode_list = [
+        ("\u2013", "en dash"),
+        ("\u2014", "em dash"),
+        ("\u2212", "minus sign"),
+        ("\u2012", "figure dash"),
+    ]
+
+    for char, char_name in unicode_list:
+        if char in source:
+            source = source.replace(char, "-")
+            logger.info(f"replaced {char_name}({char}) with - in {source}")
+
+    return source
