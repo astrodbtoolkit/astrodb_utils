@@ -133,7 +133,7 @@ def find_source_in_db(
             ra
             and dec
             and u.isclose(ra*u.degree, db_name_matches[ra_col_name][0]*u.degree,atol=search_radius)
-            and np.isclose(dec*u.degree, db_name_matches[dec_col_name][0]*u.degree, atol=search_radius)
+            and u.isclose(dec*u.degree, db_name_matches[dec_col_name][0]*u.degree, atol=search_radius)
         )
         if ra and dec and not coord_check:
             msg = (
