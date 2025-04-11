@@ -1,6 +1,7 @@
 import logging
 
 import astropy.units as u
+import numpy as np
 import sqlalchemy.exc
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
@@ -20,15 +21,15 @@ logger = logging.getLogger("astrodb_utils")
 
 def find_source_in_db(
     db,
-    source,
+    source: str,
     *,
-    ra=None,
-    dec=None,
-    search_radius=60.0,
-    ra_col_name="ra_deg",
-    dec_col_name="dec_deg",
-    use_simbad=True,
-    fuzzy=False,
+    ra: float = None,
+    dec: float = None,
+    search_radius: u.Quantity = 60.0 * u.arcsec,
+    ra_col_name: str = "ra_deg",
+    dec_col_name: str = "dec_deg",
+    use_simbad: bool = True,
+    fuzzy: bool = False,
 ):
     """
     Find a source in the database given a source name and optional coordinates.
@@ -43,8 +44,8 @@ def find_source_in_db(
         Right ascensions of sources. Decimal degrees.
     dec: float
         Declinations of sources. Decimal degrees.
-    search_radius
-        radius in arcseconds to use for source matching
+    search_radius: u.Quantity
+        Search radius. Default is 60 arcseconds.
     ra_col_name: str
         Name of the column in the database table that contains the right ascension
     dec_col_name: str
@@ -54,6 +55,7 @@ def find_source_in_db(
         Set to False if no internet connection.
     fuzzy: bool
         Use fuzzy search to find source name in database. Default is False.
+
 
     Returns
     -------
@@ -100,13 +102,12 @@ def find_source_in_db(
     # if still no matches, try spatial search using coordinates, if provided
     if len(db_name_matches) == 0 and ra and dec:
         location = SkyCoord(ra, dec, frame="icrs", unit="deg")
-        radius = u.Quantity(search_radius, unit="arcsec")
         logger.debug(
             f"{source}: Trying coord in database search around "
             f"{location.ra.degree}, {location.dec}"
         )
         db_name_matches = db.query_region(
-            location, radius=radius, ra_col=ra_col_name, dec_col=dec_col_name
+            location, radius=search_radius, ra_col=ra_col_name, dec_col=dec_col_name
         )
 
     # If still no matches, try to get the coords from SIMBAD using source name
@@ -114,19 +115,37 @@ def find_source_in_db(
         simbad_skycoord = coords_from_simbad(source)
         # Search database around that coordinate
         if simbad_skycoord is not None:
-            radius = u.Quantity(search_radius, unit="arcsec")
             msg2 = (
-                f"Finding sources around {simbad_skycoord} with radius {radius} "
+                f"Finding sources around {simbad_skycoord} with radius {search_radius} "
                 f"using ra_col_name: {ra_col_name}, dec_col_name: {dec_col_name}"
             )
             logger.debug(msg2)
             db_name_matches = db.query_region(
-                simbad_skycoord, radius=radius, ra_col=ra_col_name, dec_col=dec_col_name
+                simbad_skycoord, radius=search_radius, ra_col=ra_col_name, dec_col=dec_col_name
             )
 
     if len(db_name_matches) == 1:
         db_names = db_name_matches["source"].tolist()
         logger.debug(f"One match found for {source}: {db_names[0]}")
+
+        # check coords of the match make sense
+        coord_check = (
+            ra
+            and dec
+            and u.isclose(ra*u.degree, db_name_matches[ra_col_name][0]*u.degree,atol=search_radius)
+            and u.isclose(dec*u.degree, db_name_matches[dec_col_name][0]*u.degree, atol=search_radius)
+        )
+        if ra and dec and not coord_check:
+            msg = (
+                f"Coordinates do not match for {source} and {db_names[0]} within {search_radius}.\n"
+                f"Coordinates provided: {ra}, {dec}\n"
+                f"Coordinates in database: {db_name_matches[ra_col_name][0]}, {db_name_matches[dec_col_name][0]}\n"
+                f"Separation RA: {(ra*u.degree - db_name_matches[ra_col_name][0]*u.degree).to(u.arcsec)}\n"
+                f"Separation dec: {(dec*u.degree - db_name_matches[dec_col_name][0]*u.degree).to(u.arcsec)}\n"
+            )
+            logger.info(msg)
+            return []  # return empty list if coordinates do not match
+
     elif len(db_name_matches) > 1:
         db_names = db_name_matches["source"].tolist()
         logger.debug(f"More than one match found for {source}: {db_names}")

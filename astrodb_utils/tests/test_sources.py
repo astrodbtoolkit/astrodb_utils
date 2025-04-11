@@ -1,5 +1,6 @@
 import math
 
+import astropy.units as u
 import pytest
 
 from astrodb_utils import (
@@ -98,14 +99,53 @@ def test_find_source_in_db(db):
     )
     assert len(search_result) == 0
 
-    search_result = find_source_in_db(db,"LHS 2924")
+    search_result = find_source_in_db(db, "LHS 2924")
     assert search_result[0] == "LHS 2924"
 
-    search_result = find_source_in_db(db,"LHS 292", fuzzy=False)
+    search_result = find_source_in_db(db, "LHS 292", fuzzy=False)
     assert len(search_result) == 0
 
-    search_result = find_source_in_db(db,"LHS 292", fuzzy=True)
-    assert search_result[0] == "LHS 2924"  # This is wrong and a result of fuzzy matching
+    search_result = find_source_in_db(db, "LHS 292", fuzzy=True)
+    assert (
+        search_result[0] == "LHS 2924"
+    )  # This is wrong and a result of fuzzy matching
+
+
+def test_find_source_in_db_with_coords(db):
+    ingest_source(
+        db,
+        "2MASS J04470652-1946392",
+        reference="Cutr03",
+    )
+
+    source = "2MASS J04470652-1946392"
+    ra_wrong = 68.8966272
+    dec_wrong = 21.2552596
+
+    search_result = find_source_in_db(
+        db,
+        source,
+        ra=ra_wrong,
+        dec=dec_wrong,
+    )
+    assert len(search_result) == 0
+
+    search_result = find_source_in_db(
+        db,
+        source,
+        ra=71.8, 
+        dec=-19.8 
+    )
+    assert len(search_result) == 0  # coords not within 60 arcsec
+
+    search_result = find_source_in_db(
+        db,
+        source,
+        ra=71.8, 
+        dec=-19.8,
+        search_radius=83*u.arcsec,
+    )
+    assert len(search_result) == 1  # coords are within 83 arcsec
 
 
 def test_find_source_in_db_errors(db):
