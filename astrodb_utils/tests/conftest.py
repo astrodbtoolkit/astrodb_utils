@@ -3,6 +3,7 @@ import sys
 
 import pytest
 
+import astrodb_utils
 from astrodb_utils import load_astrodb, logger
 from astrodb_utils.publications import ingest_publication
 
@@ -15,9 +16,12 @@ DB_PATH = "tests/astrodb-template-db/data"
 SCHEMA_PATH = "tests/astrodb-template-db/schema/schema.yaml"
 CONNECTION_STRING = "sqlite:///" + DB_NAME
 
+
 # load the template database for use by the tests
 @pytest.fixture(scope="session", autouse=True)
 def db():
+    logger.info(f"Using version {astrodb_utils.__version__} of astrodb_utils")
+
     db = load_astrodb(
         DB_NAME, data_path=DB_PATH, recreatedb=True, felis_schema=SCHEMA_PATH
     )
