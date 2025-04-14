@@ -1,7 +1,7 @@
 import os
 
 import pytest
-from specutils import Spectrum1D
+from specutils import Spectrum
 
 from astrodb_utils import AstroDBError
 from astrodb_utils.spectra import (
@@ -20,7 +20,7 @@ def good_spectrum_path():
 
 @pytest.fixture(scope="module")
 def good_spectrum(good_spectrum_path):
-    return Spectrum1D.read(good_spectrum_path)
+    return Spectrum.read(good_spectrum_path)
 
 
 @pytest.mark.filterwarnings(
