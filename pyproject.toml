@@ -53,6 +53,7 @@ Documentation = "https://astrodb-utils.readthedocs.io/en/latest/"
 
 [tool.setuptools_scm]
 root = '.'
+write_to = "astrodb_utils/version.py"
 
 [tool.pytest.ini_options]
 testpaths = ["astrodb_utils/tests"]

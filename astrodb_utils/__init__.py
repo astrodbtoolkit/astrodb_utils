@@ -9,6 +9,9 @@ from .utils import (  # noqa: F401
     internet_connection,
     load_astrodb,
 )
+from .version import version as __version__
+
+__all__ = ["__version__"]
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
