@@ -21,8 +21,6 @@ from importlib.metadata import version
 
 from sphinx_pyproject import SphinxConfig
 
-import astrodb_utils
-
 astrodb_utils_version = version("astrodb_utils")
 
 config = SphinxConfig(
@@ -82,7 +80,8 @@ master_doc = "index"
 # General information about the project.
 project = "astrodb_utils"
 copyright = "2024, Kelle Cruz, Arjun B. Savel, David Rodriguez"
-# author = "Kelle Cruz, Arjun B. Savel, David Rodriguez"
+author = "Kelle Cruz, Arjun B. Savel, David Rodriguez"
+description = "Scripts for interacting with the AstroDB Toolkit"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -131,9 +130,7 @@ html_theme = "pydata_sphinx_theme"
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-html_theme_options = {
-  "show_nav_level": 2
-}
+html_theme_options = {"show_nav_level": 2}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
