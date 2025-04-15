@@ -19,9 +19,8 @@ __all__ = [
 logger = logging.getLogger(__name__)
 
 
-def find_publication(
-    db, *, reference: str = None, doi: str = None, bibcode: str = None
-):
+# ruff: noqa: C901 (function complexity check)
+def find_publication(db, *, reference: str = None, doi: str = None, bibcode: str = None):
     """
     Find publications in the database by matching
     on the publication name,  doi, or bibcode
@@ -87,9 +86,7 @@ def find_publication(
         not_null_pub_filters.append(db.Publications.c.bibcode.ilike(bibcode))
     pub_search_table = Table()
     if len(not_null_pub_filters) > 0:
-        pub_search_table = (
-            db.query(db.Publications).filter(or_(*not_null_pub_filters)).table()
-        )
+        pub_search_table = db.query(db.Publications).filter(or_(*not_null_pub_filters)).table()
 
     n_pubs_found = len(pub_search_table)
 
@@ -103,10 +100,7 @@ def find_publication(
         return True, pub_search_table["reference"].data[0]
 
     if n_pubs_found > 1:
-        logger.warning(
-            f"Found {n_pubs_found} matching publications"
-            f"for {reference} or {doi} or {bibcode}"
-        )
+        logger.warning(f"Found {n_pubs_found} matching publicationsfor {reference} or {doi} or {bibcode}")
         if logger.level <= 30:  # warning
             pub_search_table.pprint_all()
         return False, n_pubs_found
@@ -118,31 +112,23 @@ def find_publication(
     # If no matches found, search using first four characters of input name
     if n_pubs_found == 0 and reference:
         shorter_name = reference[:4]
-        logger.debug(
-            f"No matching publications for {reference}, Trying {shorter_name}."
-        )
+        logger.debug(f"No matching publications for {reference}, Trying {shorter_name}.")
         fuzzy_query_shorter_name = "%" + shorter_name + "%"
         pub_search_table = (
-            db.query(db.Publications)
-            .filter(db.Publications.c.reference.ilike(fuzzy_query_shorter_name))
-            .table()
+            db.query(db.Publications).filter(db.Publications.c.reference.ilike(fuzzy_query_shorter_name)).table()
         )
         n_pubs_found_short = len(pub_search_table)
         if n_pubs_found_short == 0:
-            logger.warning(
-                f"No matching publications for {reference} or {shorter_name}"
-            )
+            logger.warning(f"No matching publications for {reference} or {shorter_name}")
             logger.warning("Use add_publication() to add it to the database.")
             return False, 0
 
         if n_pubs_found_short > 0:
-            logger.debug(
-                f"Found {n_pubs_found_short} matching publications for {shorter_name}"
-            )
+            logger.debug(f"Found {n_pubs_found_short} matching publications for {shorter_name}")
             if logger.level == 10:  # debug
                 pub_search_table.pprint_all()
 
-            two_digit_date = _find_dates_in_reference(reference)            
+            two_digit_date = _find_dates_in_reference(reference)
 
             if two_digit_date:
                 logger.debug(f"Trying to limit using {two_digit_date}")
@@ -171,19 +157,15 @@ def find_publication(
 
     if n_pubs_found == 0 and bibcode and "arXiv" in bibcode and use_ads:
         logger.debug(f"Using ADS to find alt name for {bibcode}")
-        results = _search_ads(
-            bibcode, query_type="arxiv"
-        )
-        
+        results = _search_ads(bibcode, query_type="arxiv")
+
         if results is not None:
             bibcode_alt = results[1]
             not_null_pub_filters = []
             not_null_pub_filters.append(db.Publications.c.bibcode.ilike(bibcode_alt))
             print(not_null_pub_filters)
             pub_search_table = Table()
-            pub_search_table = (
-                db.query(db.Publications).filter(or_(*not_null_pub_filters)).table()
-                )
+            pub_search_table = db.query(db.Publications).filter(or_(*not_null_pub_filters)).table()
             if len(pub_search_table) == 1:
                 logger.debug(
                     f"Found {len(pub_search_table)} matching publications for "
@@ -193,7 +175,7 @@ def find_publication(
                     pub_search_table.pprint_all()
 
                 return True, pub_search_table["reference"].data[0]
-            else: 
+            else:
                 return False, len(pub_search_table)
         else:
             return False, 0  # No matches found using arxiv in bibcode
@@ -256,7 +238,7 @@ def ingest_publication(
 
     if ignore_ads is False and check_ads_token() is False:
         ignore_ads = True
-        if (not reference and (not doi or not bibcode)):
+        if not reference and (not doi or not bibcode):
             logger.error(
                 "An ADS_TOKEN environment variable must be set"
                 "in order to auto-populate the fields.\n"
@@ -274,7 +256,7 @@ def ingest_publication(
 
     if ignore_ads is False:
         # Figure out how to search ADS
-        if doi: # Search ADS using a provided DOI
+        if doi:  # Search ADS using a provided DOI
             query_type = "doi"
             value = doi
         elif bibcode:
@@ -286,16 +268,16 @@ def ingest_publication(
         else:
             logger.error("Unexpected error. No doi or bibcode provided")
             return
-        
+
         logger.debug(f"Searching ADS using {query_type}: {value}, reference: {reference}")
         name_add, bibcode_add, doi_add, description = _search_ads(value, query_type=query_type, reference=reference)
     else:
         name_add = reference
         bibcode_add = bibcode
         doi_add = doi
-        
+
     using = f"ref: {name_add}, bibcode: {bibcode_add}, DOI: {doi_add}"
-    
+
     new_ref = [
         {
             "reference": name_add,
@@ -333,24 +315,22 @@ def check_ads_token():
     if ads.config.token:
         use_ads = True
     else:
-        logger.warning(
-                "An ADS_TOKEN environment variable is not set.\n"
-                "setting ignore_ads=True/use_ads=False")
+        logger.warning("An ADS_TOKEN environment variable is not set.\nsetting ignore_ads=True/use_ads=False")
         use_ads = False
 
     return use_ads
 
 
-def _search_ads(value: str, query_type: Literal["arxiv","bibcode","doi"], reference=None):
+def _search_ads(value: str, query_type: Literal["arxiv", "bibcode", "doi"], reference=None):
     """
     Search ADS for a publication using the provided string and query type.
     The query type indicates if the string provided is an arXiv ID, bibcode, or DOI.
     The function will return the name, bibcode, doi, and description of the publication
-    if found. 
-    
+    if found.
+
     It will return None if no match or multiple matches are found.
 
-    Parameters  
+    Parameters
     ----------
     value: str
         The value to search for in ADS.
@@ -363,38 +343,34 @@ def _search_ads(value: str, query_type: Literal["arxiv","bibcode","doi"], refere
         The reference name to use if the publication is found.
         If not provided, it will be generated from the first author and year.
 
-    Returns 
-    ------- 
+    Returns
+    -------
     If no match or multiple matches are found, it returns None.
 
     If one match is found, it returns a tuple with the following elements:
     name_add: str
         The name of the publication.
     bibcode_add: str
-        The bibcode of the publication. 
-    doi_add: str    
+        The bibcode of the publication.
+    doi_add: str
         The DOI of the publication.
     description: str
         The description of the publication (usually the title).
 
     """
-    if check_ads_token() is False:  
+    if check_ads_token() is False:
         logger.error("An ADS_TOKEN environment variable must be set")
         return
 
     if query_type == "arxiv":
-        ads_matches = ads.SearchQuery(
-                q=value, fl=["id", "bibcode", "title", "first_author", "year", "doi"]
-            )
+        ads_matches = ads.SearchQuery(q=value, fl=["id", "bibcode", "title", "first_author", "year", "doi"])
     elif query_type == "bibcode":
         ads_matches = ads.SearchQuery(
             bibcode=value,
             fl=["id", "bibcode", "title", "first_author", "year", "doi"],
         )
     elif query_type == "doi":
-        ads_matches = ads.SearchQuery(
-            doi=value, fl=["id", "bibcode", "title", "first_author", "year", "doi"]
-        )
+        ads_matches = ads.SearchQuery(doi=value, fl=["id", "bibcode", "title", "first_author", "year", "doi"])
     else:
         logger.error(f"Invalid query type: {query_type}. Valid types are 'arxiv', 'bibcode', or 'doi'")
         return
@@ -413,9 +389,7 @@ def _search_ads(value: str, query_type: Literal["arxiv","bibcode","doi"], refere
     if len(ads_matches_list) == 1:
         logger.debug(f"Publication found in ADS for {query_type}: {value}")
         article = ads_matches_list[0]
-        logger.debug(
-            f"{article.first_author}, {article.year}, {article.bibcode}, {article.doi}, {article.title}"
-        )
+        logger.debug(f"{article.first_author}, {article.year}, {article.bibcode}, {article.doi}, {article.title}")
         if not reference:  # generate the name if it was not provided
             name_stub = article.first_author.replace(",", "").replace(" ", "")
             name_add = name_stub[0:4] + article.year[-2:]
