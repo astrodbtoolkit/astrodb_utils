@@ -16,7 +16,7 @@ __all__ = [
     "check_header",
 ]
 
-logger = logging.getLogger("astrodb_utils")
+logger = logging.getLogger(__name__)
 
 
 def add_missing_keywords(header=None, format="ivoa-spectrum-dm-1.2", keywords=None):

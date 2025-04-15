@@ -1,12 +1,13 @@
+import logging
 import os
 import sys
 
 import pytest
 
-from astrodb_utils import load_astrodb, logger
+from astrodb_utils import load_astrodb
 from astrodb_utils.publications import ingest_publication
 
-logger.setLevel("DEBUG")
+logger = logging.getLogger(__name__)
 
 sys.path.append("./tests/astrodb-template-db/")
 
@@ -18,6 +19,7 @@ CONNECTION_STRING = "sqlite:///" + DB_NAME
 # load the template database for use by the tests
 @pytest.fixture(scope="session", autouse=True)
 def db():
+
     db = load_astrodb(
         DB_NAME, data_path=DB_PATH, recreatedb=True, felis_schema=SCHEMA_PATH
     )
