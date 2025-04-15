@@ -3,10 +3,8 @@ import sys
 
 import pytest
 
-from astrodb_utils import load_astrodb, logger
+from astrodb_utils import load_astrodb
 from astrodb_utils.publications import ingest_publication
-
-logger.setLevel("DEBUG")
 
 sys.path.append("./tests/astrodb-template-db/")
 
@@ -18,6 +16,7 @@ CONNECTION_STRING = "sqlite:///" + DB_NAME
 # load the template database for use by the tests
 @pytest.fixture(scope="session", autouse=True)
 def db():
+
     db = load_astrodb(
         DB_NAME, data_path=DB_PATH, recreatedb=True, felis_schema=SCHEMA_PATH
     )
@@ -25,7 +24,7 @@ def db():
     # Confirm file was created
     assert os.path.exists(DB_NAME)
 
-    logger.info("Loaded AstroDB Template database using load_astrodb function in conftest.py")
+    print("Loaded AstroDB Template database using load_astrodb function in conftest.py")
 
     ingest_publication(
         db,

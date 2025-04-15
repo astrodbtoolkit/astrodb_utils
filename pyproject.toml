@@ -57,6 +57,12 @@ root = '.'
 [tool.pytest.ini_options]
 testpaths = ["astrodb_utils/tests"]
 norecursedirs = "astrodb-template-db"
+addopts = "-ra" # show extra summary info
+log_cli = false
+log_cli_level= "INFO"  
+log_cli_format = "%(asctime)s %(name)-15s: %(levelname)s %(message)s"  
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+filterwarnings = "ignore"
 
 [tool.ruff.lint]
 # Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
