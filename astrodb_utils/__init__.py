@@ -10,10 +10,19 @@ from .utils import (  # noqa: F401
     load_astrodb,
 )
 
+
+
 logger = logging.getLogger(__name__)
 
 LOGFORMAT = logging.Formatter(
-    "%(name)-15s: %(levelname)-8s %(message)s")
+    "%(levelname)-8s - %(name)-15s - %(message)s")
+
+# To prevent duplicate handlers, clear all existing handlers and re-add them
+# Keeping this here in case we need it
+# for handler in logger.handlers:
+#    logger.removeHandler(handler)
+# logger.addHandler(ch)
+
 handler = logging.StreamHandler(stream=sys.stdout)
 handler.setFormatter(LOGFORMAT)
 logger.addHandler(handler)
