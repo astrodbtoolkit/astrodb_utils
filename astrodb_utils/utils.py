@@ -18,7 +18,8 @@ __all__ = [
     "exit_function",
 ]
 
-logger = logging.getLogger('astrodb_utils')
+logger = logging.getLogger(__name__)
+
 
 class AstroDBError(Exception):
     """Custom error for AstroDB"""
