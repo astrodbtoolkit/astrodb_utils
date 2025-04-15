@@ -58,11 +58,13 @@ root = '.'
 testpaths = ["astrodb_utils/tests"]
 norecursedirs = "astrodb-template-db"
 addopts = "-ra" # show extra summary info
-log_cli = false
-log_cli_level= "INFO"  
-log_cli_format = "%(asctime)s %(name)-15s: %(levelname)s %(message)s"  
-log_cli_date_format = "%Y-%m-%d %H:%M:%S"
-filterwarnings = "ignore"
+log_cli = false # override on the command line with: pytest -o log_cli=1
+log_cli_level= "INFO"  # pytest -o log_cli=1 --log-cli-level=DEBUG
+log_cli_format = "%(name)-15s: %(levelname)s %(message)s"  
+filterwarnings = [
+    "ignore:.*Parsing dates*:DeprecationWarning",  # ignore deprecation warnings from dateparser
+    "ignore::astroquery.exceptions.NoResultsWarning" # ignore astroquery warnings
+]
 
 [tool.ruff.lint]
 # Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
