@@ -16,7 +16,7 @@ __all__ = [
     "check_ads_token",
 ]
 
-logger = logging.getLogger('astrodb_utils')
+logger = logging.getLogger(__name__)
 
 
 def find_publication(
