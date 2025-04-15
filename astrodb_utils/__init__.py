@@ -12,9 +12,8 @@ from .utils import (  # noqa: F401
 
 logger = logging.getLogger(__name__)
 
-
 LOGFORMAT = logging.Formatter(
-    "%(name)-12s: %(levelname)-8s %(message)s")
+    "%(name)-15s: %(levelname)-8s %(message)s")
 handler = logging.StreamHandler(stream=sys.stdout)
 handler.setFormatter(LOGFORMAT)
 logger.addHandler(handler)
