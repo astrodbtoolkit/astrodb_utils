@@ -1,7 +1,6 @@
 import logging
 
 import astropy.units as u
-import numpy as np
 import sqlalchemy.exc
 from astropy.coordinates import SkyCoord
 from astropy.table import Table
@@ -16,7 +15,7 @@ __all__ = [
     "ingest_source",
 ]
 
-logger = logging.getLogger("astrodb_utils")
+logger = logging.getLogger(__name__)
 
 
 def find_source_in_db(

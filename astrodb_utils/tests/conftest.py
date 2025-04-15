@@ -1,13 +1,14 @@
+import logging
 import os
 import sys
 
 import pytest
 
 import astrodb_utils
-from astrodb_utils import load_astrodb, logger
+from astrodb_utils import load_astrodb
 from astrodb_utils.publications import ingest_publication
 
-logger.setLevel("DEBUG")
+logger = logging.getLogger(__name__)
 
 sys.path.append("./tests/astrodb-template-db/")
 
