@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 
@@ -5,6 +6,8 @@ import pytest
 
 from astrodb_utils import load_astrodb
 from astrodb_utils.publications import ingest_publication
+
+logger = logging.getLogger(__name__)
 
 sys.path.append("./tests/astrodb-template-db/")
 
@@ -24,7 +27,7 @@ def db():
     # Confirm file was created
     assert os.path.exists(DB_NAME)
 
-    print("Loaded AstroDB Template database using load_astrodb function in conftest.py")
+    logger.info("Loaded AstroDB Template database using load_astrodb function in conftest.py")
 
     ingest_publication(
         db,
