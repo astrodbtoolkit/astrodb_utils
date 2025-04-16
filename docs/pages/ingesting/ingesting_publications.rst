@@ -28,7 +28,11 @@ Ingesting publications
 Fill this in...
 
 
-API documentation
------------------
-:py:mod:`astrodb_utils.find_publication`
-:py:mod:`astrodb_utils.ingest_publication`
+.. seealso::
+
+  :doc:`../template_schema/publications`
+      Documentation on the Publications table
+
+  :py:mod:`find publication <astrodb_utils.publications.find_publication>` function
+        
+  :py:mod:`ingest_publication <astrodb_utils.publications.ingest_publication>` function

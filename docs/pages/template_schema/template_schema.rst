@@ -25,6 +25,9 @@ Additional tables can be added using these as templates.
 Lookup tables
 -----------
 These tables are expected and used by other tables
+
 .. toctree::
    :glob:
    :maxdepth: 1
+
+   publications
