@@ -21,7 +21,9 @@ Additional tables can be added using these as templates.
    :maxdepth: 1
 
    photometry
+   spectra
    companion_relationships
+
 
 Lookup tables
 -----------
