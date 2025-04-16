@@ -20,6 +20,7 @@ Additional tables can be added using these as templates.
    :glob:
    :maxdepth: 1
 
+   photometry
    companion_relationships
 
 Lookup tables
@@ -30,4 +31,5 @@ These tables are expected and used by other tables
    :glob:
    :maxdepth: 1
 
+   photometryfilters
    publications
