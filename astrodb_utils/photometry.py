@@ -109,11 +109,7 @@ def ingest_photometry(
             return flags
 
     # TODO: Make sure band exists in the PhotometryFilters table
-    band_match = (
-        db.query(db.PhotometryFilters)
-        .filter(db.PhotometryFilters.c.band == band)
-        .table()
-    )
+    band_match = db.query(db.PhotometryFilters).filter(db.PhotometryFilters.c.band == band).table()
     if len(band_match) == 0:
         msg = f"Band {band} not found in PhotometryFilters table."
         if raise_error:
@@ -125,11 +121,7 @@ def ingest_photometry(
 
     # If telescope is provided, make sure it exists in the Telescopes table
     if telescope is not None:
-        telescope_match = (
-            db.query(db.Telescopes)
-            .filter(db.Telescopes.c.telescope == telescope)
-            .table()
-        )
+        telescope_match = db.query(db.Telescopes).filter(db.Telescopes.c.telescope == telescope).table()
         if len(telescope_match) == 0:
             msg = f"Telescope {telescope} not found in Telescopes table."
             if raise_error:
@@ -154,9 +146,7 @@ def ingest_photometry(
             "source": db_name,
             "band": band,
             "regime": regime,
-            "magnitude": str(
-                magnitude
-            ),  # Convert to string to maintain significant digits
+            "magnitude": str(magnitude),  # Convert to string to maintain significant digits
             "magnitude_error": mag_error,
             "telescope": telescope,
             "epoch": epoch,
@@ -171,7 +161,7 @@ def ingest_photometry(
             conn.execute(db.Photometry.insert().values(photometry_data))
             conn.commit()
         flags["added"] = True
-        logger.info(f"Photometry measurement added: \n" f"{photometry_data}")
+        logger.info(f"Photometry measurement added: \n{photometry_data}")
     except sqlalchemy.exc.IntegrityError as e:
         if "UNIQUE constraint failed:" in str(e):
             msg = "The measurement may be a duplicate."
@@ -188,24 +178,20 @@ def ingest_photometry(
                 "Add it with add_publication function."
             )
             if raise_error:
-                logger.error(msg+str(e))
-                raise AstroDBError(msg+str(e))
+                logger.error(msg + str(e))
+                raise AstroDBError(msg + str(e))
             else:
-                logger.warning(f"{msg}/n{str(e)}")
+                logger.warning(f"{msg}/n{e}")
 
     return flags
 
 
-def ingest_photometry_filter(
-    db, *, telescope=None, instrument=None, filter_name=None, ucd=None
-):
+def ingest_photometry_filter(db, *, telescope=None, instrument=None, filter_name=None, ucd=None):
     """
     Add a new photometry filter to the database
     """
     # Fetch existing telescopes, add if missing
-    existing = (
-        db.query(db.Telescopes).filter(db.Telescopes.c.telescope == telescope).table()
-    )
+    existing = db.query(db.Telescopes).filter(db.Telescopes.c.telescope == telescope).table()
     if len(existing) == 0:
         with db.engine.connect() as conn:
             conn.execute(db.Telescopes.insert().values({"telescope": telescope}))
@@ -215,23 +201,15 @@ def ingest_photometry_filter(
         logger.info(f"Telescope {telescope} already exists.")
 
     # Fetch existing instruments, add if missing
-    existing = (
-        db.query(db.Instruments)
-        .filter(db.Instruments.c.instrument == instrument)
-        .table()
-    )
+    existing = db.query(db.Instruments).filter(db.Instruments.c.instrument == instrument).table()
     if len(existing) == 0:
-        ingest_instrument(
-            db, telescope=telescope, instrument=instrument, mode="Imaging"
-        )
+        ingest_instrument(db, telescope=telescope, instrument=instrument, mode="Imaging")
         logger.info(f"Added instrument {instrument}.")
     else:
         logger.info(f"Instrument {instrument} already exists.")
 
     # Get data from SVO
-    filter_id, wave_eff, fwhm, width_effective = fetch_svo(
-        telescope, instrument, filter_name
-    )
+    filter_id, wave_eff, fwhm, width_effective = fetch_svo(telescope, instrument, filter_name)
     logger.info(
         f"From SVO: Filter {filter_id} has effective wavelength {wave_eff} "
         f"and FWHM {fwhm} and width_effective {width_effective}."
@@ -256,8 +234,7 @@ def ingest_photometry_filter(
             )
             conn.commit()
         logger.info(
-            f"Added filter {filter_id} with effective wavelength {wave_eff}, "
-            f"width {width_effective}, and UCD {ucd}."
+            f"Added filter {filter_id} with effective wavelength {wave_eff}, width {width_effective}, and UCD {ucd}."
         )
     except sqlalchemy.exc.IntegrityError as e:
         if "UNIQUE constraint failed:" in str(e):
@@ -307,17 +284,11 @@ def fetch_svo(telescope: str = None, instrument: str = None, filter_name: str = 
     """
 
     if internet_connection() is False:
-        msg = (
-            "No internet connection. "
-            "Cannot fetch photometry filter information from the SVO website."
-        )
+        msg = "No internet connection. Cannot fetch photometry filter information from the SVO website."
         logger.error(msg)
         raise AstroDBError(msg)
 
-    url = (
-        f"http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID="
-        f"{telescope}/{instrument}.{filter_name}"
-    )
+    url = f"http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID={telescope}/{instrument}.{filter_name}"
     r = requests.get(url)
 
     if r.status_code != 200:

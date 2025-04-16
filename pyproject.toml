@@ -35,8 +35,8 @@ dynamic = ["version"]
 test = [
     "pytest",
     "ruff>0.3.7",
+    "pre-commit",
     ]
-
 docs = [
     "sphinx",
     "sphinx-autobuild",
@@ -45,6 +45,7 @@ docs = [
     "pydata-sphinx-theme",
     "pandoc",
     ]
+all = ["astrodb_utils[test, docs]"]
 
 [project.urls]
 Homepage = "https://github.com/astrodbtoolkit/astrodb_utils"
@@ -82,3 +83,8 @@ unfixable = []
 
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint.mccabe]
+# Flag errors (`C901`) whenever the complexity level exceeds this number.
+# Default is 10
+max-complexity = 20
