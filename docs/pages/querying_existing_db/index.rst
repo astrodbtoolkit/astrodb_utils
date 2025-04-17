@@ -1,5 +1,5 @@
 Querying an Existing Database
-==========================
+=============================
 
 .. toctree::
     :maxdepth: 2
