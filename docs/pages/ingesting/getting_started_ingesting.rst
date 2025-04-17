@@ -2,8 +2,10 @@ Ingesting and Modifying Data
 ====================================
 
 .. toctree::
+    :glob:
     ingesting_publications
     ingest_scripts
+    spectra
 
 
 .. note::
