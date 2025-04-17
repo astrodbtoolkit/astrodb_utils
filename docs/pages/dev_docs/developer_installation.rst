@@ -30,7 +30,8 @@ All contributions should include tests. To run the tests, use the command
 Linting and Formatting
 ---------------------
 
-Use `ruff <https://docs.astral.sh/ruff/>`_ for linting and formatting. (TODO: add something about pre-commit hook.)
+Use `ruff <https://docs.astral.sh/ruff/>`_ for linting and formatting.    
+A pre-commit hook is provided for automatic linting and formatting with ruff. To use it, run `pip install pre-commit` and then `pre-commit install --allow-missing-config`.
 
 VSCode setup instructions: `Formatting Python in VSCode <https://code.visualstudio.com/docs/python/formatting>`_
 
