@@ -1,8 +1,8 @@
 Developer Documentation
-================================
+=======================
 
 Installation
----------------------
+------------
 
 If you'd like to run tests, make sure to install the package with the optional test dependencies. E.g.,
 
@@ -28,7 +28,7 @@ All contributions should include tests. To run the tests, use the command
     pytest
 
 Linting and Formatting
----------------------
+----------------------
 
 Use `ruff <https://docs.astral.sh/ruff/>`_ for linting and formatting.    
 A pre-commit hook is provided for automatic linting and formatting with ruff. To use it, run `pip install pre-commit` and then `pre-commit install --allow-missing-config`.
