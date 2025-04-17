@@ -211,9 +211,9 @@ def ingest_publication(
     publication: str, optional
         The publication shortname, otherwise it will be generated [optional]
         Convention is the first four letters of first authors last name and
-            two digit year (e.g., Smit21)
+        two digit year (e.g., Smit21).
         For last names which are less than four letters, use '_' or first name initial(s).
-            (e.g, Xu__21 or LiYB21)
+        (e.g, Xu__21 or LiYB21).
     description: str, optional
         Description of the paper, typically the title of the papre [optional]
     ignore_ads: bool (default=False)
