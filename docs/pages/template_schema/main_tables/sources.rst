@@ -14,6 +14,14 @@ Notes
 * In the case of multiple discovery references, for example independent discovery, choose one
   reference for the `reference` column and put the rest in the `other_references` column.
 
+.. seealso::
+  
+  :py:mod:`ingest_source<astrodb_utils.sources.ingest_source>`
+    Function to ingest source data
+
+  :py:mod:`find_source_in_db<astrodb_utils.sources.find_source_in_db>`
+    Function to find sources in the database
+
 
 Table documentation
 -------------------

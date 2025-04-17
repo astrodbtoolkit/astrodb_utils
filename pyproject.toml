@@ -44,6 +44,7 @@ docs = [
     "nbsphinx",
     "pydata-sphinx-theme",
     "pandoc",
+    "sphinx_mdinclude",
     ]
 all = ["astrodb_utils[test, docs]"]
 

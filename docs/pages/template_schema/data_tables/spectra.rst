@@ -9,6 +9,9 @@ Spectra
     :doc:`../lookup_tables/regimelist`
         Documentation for the RegimeList table`
 
+    :py:mod:`check_spectrum_plottable<astrodb_utils.spectra.check_spectrum_plottable>`
+        Function to check if a spectrum is plottable
+
 
 Relevant functions: `spectra.ingest_spectrum`, `spectra.spectrum_plottable`, `spectra.find_spectra`
 
