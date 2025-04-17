@@ -17,9 +17,11 @@ Notes
     :ref:`ingesting_publications`
         Documenation on ingesting publications 
 
-    :py:mod:`find publication <astrodb_utils.publications.find_publication>` function
-        
-    :py:mod:`ingest_publication <astrodb_utils.publications.ingest_publication>` function
+    :py:mod:`ingest_publication <astrodb_utils.publications.ingest_publication>`
+        Function to ingest publication data
+
+    :py:mod:`find publication <astrodb_utils.publications.find_publication>`
+        Function to find publications in the database
 
 
 Table documentation

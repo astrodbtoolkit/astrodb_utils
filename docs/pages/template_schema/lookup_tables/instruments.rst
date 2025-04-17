@@ -3,6 +3,9 @@ Instruments
 
 .. seealso::
 
+    :py:mod:`ingest_instrument<astrodb_utils.utils.ingest_instrument>`
+        Function to ingest instrument data
+
     :doc:`../lookup_tables/telescopes`
         Documentation for the Telescopes table
 
