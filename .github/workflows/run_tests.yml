@@ -22,6 +22,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: true
+                
     - name: Check ADS_TOKEN
       shell: bash
       env: 
@@ -33,12 +36,6 @@ jobs:
           echo "ADS_TOKEN is set"
         fi
     
-    - name: Checkout template database repo
-      uses: actions/checkout@v4
-      with:
-        repository: astrodbtoolkit/astrodb-template-db
-        path: tests/astrodb-template-db
-        submodules: true
     
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5

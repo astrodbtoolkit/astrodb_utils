@@ -10,13 +10,11 @@ If you'd like to run tests, make sure to install the package with the optional t
 
     pip install -e ".[test]"
 
-Then, in the `astrodb_utils/tests/` directory, run
-
+Make sure you get the `astrodb-template-db`` submodule. This is required for running tests and building the documentation.
 .. code-block:: bash
 
-    git clone git@github.com:astrodbtoolkit/astrodb-template-db.git
+    git submodule update --init --recursive
 
-This step installs a template database repository. Tests can then be run in the top-level directory, with the command
 
 Running Tests
 ---------------------
@@ -31,13 +29,14 @@ Linting and Formatting
 ---------------------
 
 Use `ruff <https://docs.astral.sh/ruff/>`_ for linting and formatting.    
-A pre-commit hook is provided for automatic linting and formatting with ruff. To use it, run `pip install pre-commit` and then `pre-commit install --allow-missing-config`.
+A pre-commit hook is provided for automatic linting and formatting with ruff. 
+To use it, run `pip install pre-commit` and then `pre-commit install --allow-missing-config`.
 
 VSCode setup instructions: `Formatting Python in VSCode <https://code.visualstudio.com/docs/python/formatting>`_
 
 Build the Docs
 ---------------------
-The documentation is build using files in the `astrodb-template-db` submodule. 
+The documentation is built using files in the `astrodb-template-db` submodule. 
 Be sure to update the submodule before building the docs.
 .. code-block:: bash
 
