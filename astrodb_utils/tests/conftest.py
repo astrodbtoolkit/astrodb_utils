@@ -12,6 +12,21 @@ logger = logging.getLogger(__name__)
 
 sys.path.append("./tests/astrodb-template-db/")
 
+# TODO: Figure out how to import ReferenceTables
+REFERENCE_TABLES = [
+    "Publications",
+    "Telescopes",
+    "Instruments",
+    "PhotometryFilters",
+    "Versions",
+    "RegimeList",
+    "AssociationList",
+    "SourceTypeList",
+    "ParameterList",
+    "CompanionList",
+]
+
+
 DB_NAME = "tests/test-template-db.sqlite"
 DB_PATH = "tests/astrodb-template-db/data"
 SCHEMA_PATH = "tests/astrodb-template-db/schema/schema.yaml"
@@ -24,7 +39,7 @@ def db():
     logger.info(f"Using version {astrodb_utils.__version__} of astrodb_utils")
 
     db = load_astrodb(
-        DB_NAME, data_path=DB_PATH, recreatedb=True, felis_schema=SCHEMA_PATH
+        DB_NAME, data_path=DB_PATH, recreatedb=True, felis_schema=SCHEMA_PATH, reference_tables=REFERENCE_TABLES
     )
 
     # Confirm file was created
