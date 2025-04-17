@@ -10,7 +10,7 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pip install -e .[test] && git clone https://github.com/astrodbtoolkit/astrodb-template-db.git tests/astrodb-template-db",
+	"postCreateCommand": "pip install -e .[test] && git submodule update --init",
 	// Configure tool-specific properties.
 	"customizations": {
 		"codespaces": {
