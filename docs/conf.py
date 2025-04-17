@@ -54,6 +54,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "nbsphinx",
     "pydata_sphinx_theme",
+    'sphinx_mdinclude',
 ]
 
 

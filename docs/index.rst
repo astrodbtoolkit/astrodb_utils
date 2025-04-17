@@ -18,6 +18,7 @@ User Guide
    pages/querying_existing_db/index
    pages/ingesting/getting_started_ingesting
    pages/make_new_db/getting_started_new_database
+   pages/template_schema/template_schema
    pages/making_private_version
    pages/converting_spectra/converting_spectra
    pages/getting_help/index
