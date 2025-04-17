@@ -1,8 +1,5 @@
 Publications
-=================
-
-.. mdinclude:: https://github.com/astrodbtoolkit/astrodb-template-db/blob/main/docs/schema/Publications.md
-
+############
 
 Notes
 -----
@@ -17,9 +14,17 @@ Notes
 
 .. seealso::
 
-    :doc:`../ingesting/ingesting_publications`
+    :ref:`ingesting_publications`
         Documenation on ingesting publications 
 
     :py:mod:`find publication <astrodb_utils.publications.find_publication>` function
         
     :py:mod:`ingest_publication <astrodb_utils.publications.ingest_publication>` function
+
+
+Table documentation
+-------------------
+
+.. mdinclude:: ../../../../astrodb-template-db/docs/schema/Publications.md
+
+

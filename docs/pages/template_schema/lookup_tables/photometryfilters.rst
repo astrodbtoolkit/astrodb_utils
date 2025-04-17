@@ -1,9 +1,8 @@
 PhotometryFilters
-=========================
-
+##################
 
 Notes
------
+======
 * Band names are listed at the `SVO filter profile service <http://svo2.cab.inta-csic.es/svo/theory/fps3/index.php?mode=browse&gname=Spitzer&asttype=>`_.
 
 * UCDs are listed in the `IVOA controlled vocabulary <https://www.ivoa.net/documents/UCD1+/20200212/PEN-UCDlist-1.4-20200212.html#tth_sEcB>`_.
@@ -23,6 +22,9 @@ Notes
 
 .. seealso::
 
+    :doc:`../data_tables/photometry`
+        Documentation for the Photometry table
+
     :py:mod:`ingest_photometry_filter <astrodb_utils.photometry.ingest_photometry_filter>` function
         Function to ingest photometry filters
 
@@ -31,3 +33,13 @@ Notes
 
     :py:mod:`assign_ucd <astrodb_utils.photometry.assign_ucd>` function
         Function to assign UCDs to photometry filters
+
+Table documentation
+====================
+.. _source: https://github.com/astrodbtoolkit/astrodb-template-db/blob/main/docs/schema/PhotometryFilters.md
+
+The below table is built directly from the schema and is
+included here from the `astrodb-template-db` documentation: `source`_.
+
+
+.. mdinclude:: ../../../../astrodb-template-db/docs/schema/PhotometryFilters.md

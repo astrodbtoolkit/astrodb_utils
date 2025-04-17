@@ -1,3 +1,5 @@
+.. _ingesting_publications:
+
 Ingesting publications
 =======================
 Ingesting a publication is a process of creating a new publication in the database.
@@ -30,7 +32,7 @@ Fill this in...
 
 .. seealso::
 
-  :doc:`../template_schema/publications`
+  :doc:`../template_schema/lookup_tables/publications`
       Documentation on the Publications table
 
   :py:mod:`find publication <astrodb_utils.publications.find_publication>` function

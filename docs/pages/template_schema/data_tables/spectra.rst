@@ -1,6 +1,14 @@
 Spectra
 =======
 
+.. seealso::
+
+    :doc:`../lookup_tables/telescopes`
+        Documentation for the Telescopes table
+
+    :doc:`../lookup_tables/regimelist`
+        Documentation for the RegimeList table`
+
 
 Relevant functions: `spectra.ingest_spectrum`, `spectra.spectrum_plottable`, `spectra.find_spectra`
 
