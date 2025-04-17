@@ -38,6 +38,7 @@ jobs:
       with:
         repository: astrodbtoolkit/astrodb-template-db
         path: tests/astrodb-template-db
+        submodules: true
     
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
