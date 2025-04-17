@@ -1,5 +1,5 @@
 Spectra
-=======
+#######
 
 .. seealso::
 
@@ -20,7 +20,7 @@ environment variable to define part of the path (so it can be shared among other
 For example: `$ASTRODB_SPECTRA/infrared/filename.fits`
 
 Notes
------
+=====
 * An accurate observation date is required for a spectrum to be ingested.
   
 * Data based on data from multiple observation dates has 'Multiple observation dates' 
