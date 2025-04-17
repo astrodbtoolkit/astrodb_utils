@@ -10,10 +10,17 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pip install -e .[test] && git clone https://github.com/astrodbtoolkit/astrodb-template-db.git tests/astrodb-template-db"
-
+	"postCreateCommand": "pip install -e .[test] && git clone https://github.com/astrodbtoolkit/astrodb-template-db.git tests/astrodb-template-db",
 	// Configure tool-specific properties.
-	// "customizations": {},
+	"customizations": {
+		"codespaces": {
+			"repositories": {
+				"astrodbtoolkit/astrodb_utils": {
+					"permissions": "write-all"
+				}
+			}
+		}
+	}
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	// "remoteUser": "root"
