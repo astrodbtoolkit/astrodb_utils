@@ -209,11 +209,17 @@ def ingest_photometry_filter(db, *, telescope=None, instrument=None, filter_name
         logger.info(f"Instrument {instrument} already exists.")
 
     # Get data from SVO
-    filter_id, wave_eff, fwhm, width_effective = fetch_svo(telescope, instrument, filter_name)
-    logger.info(
-        f"From SVO: Filter {filter_id} has effective wavelength {wave_eff} "
-        f"and FWHM {fwhm} and width_effective {width_effective}."
-    )
+    try:
+        filter_id, wave_eff, fwhm, width_effective = fetch_svo(telescope, instrument, filter_name)
+        logger.info(
+            f"From SVO: Filter {filter_id} has effective wavelength {wave_eff} "
+            f"and FWHM {fwhm} and width_effective {width_effective}."
+        )
+    except AstroDBError as e:
+        msg = f"Error fetching filter data from SVO: {e}"
+        logger.error(msg)
+        raise AstroDBError(msg)
+
 
     if ucd is None:
         ucd = assign_ucd(wave_eff)
@@ -289,7 +295,13 @@ def fetch_svo(telescope: str = None, instrument: str = None, filter_name: str = 
         raise AstroDBError(msg)
 
     url = f"http://svo2.cab.inta-csic.es/svo/theory/fps3/fps.php?ID={telescope}/{instrument}.{filter_name}"
-    r = requests.get(url)
+
+    try:
+        r = requests.get(url)
+    except requests.exceptions.ConnectTimeout as e:
+        msg = f"Connection timed out while trying to reach {url}. {e}"
+        logger.error(msg)
+        raise AstroDBError(msg)
 
     if r.status_code != 200:
         msg = f"Error retrieving {url}. Status code: {r.status_code}"

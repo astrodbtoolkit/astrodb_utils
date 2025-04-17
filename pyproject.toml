@@ -36,6 +36,7 @@ test = [
     "pytest",
     "ruff>0.3.7",
     "pre-commit",
+    "pytest-dependency",
     ]
 docs = [
     "sphinx",
