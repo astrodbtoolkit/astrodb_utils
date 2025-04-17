@@ -15,7 +15,7 @@ from astrodb_utils.spectra import (
 
 @pytest.fixture(scope="module")
 def good_spectrum_path():
-    return "./astrodb_utils/tests/data/2MASS+J21442847+1446077.fits"
+    return "tests/data/2MASS+J21442847+1446077.fits"
 
 
 @pytest.fixture(scope="module")
@@ -29,8 +29,8 @@ def good_spectrum(good_spectrum_path):
 @pytest.mark.parametrize(
     "spectrum_path, result",
     [
-        ("./astrodb_utils/tests/data/2MASS+J21442847+1446077.fits", True),
-        ("./astrodb_utils/tests/data/U50184_1022+4114_HD89744B_BUR08B.fits", False),
+        ("tests/data/2MASS+J21442847+1446077.fits", True),
+        ("tests/data/U50184_1022+4114_HD89744B_BUR08B.fits", False),
     ],
 )
 def test_check_spectrum_class(spectrum_path, result):
@@ -42,7 +42,7 @@ def test_check_spectrum_class(spectrum_path, result):
 @pytest.mark.parametrize(
     "spectrum_path",
     [
-        ("./astrodb_utils/tests/data/U50184_1022+4114_HD89744B_BUR08B.fits"),
+        ("tests/data/U50184_1022+4114_HD89744B_BUR08B.fits"),
     ],
 )
 def test_check_spectrum_class_errors(spectrum_path):
