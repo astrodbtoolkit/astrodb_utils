@@ -3,7 +3,7 @@ CompanionParameters
 
 .. seealso::
 
-    :doc:`../lookup_tables/paramaterlist`
+    :doc:`../lookup_tables/parameterlist`
         Documentation for the ParamaterList table
 
     :doc:`companion_relationships`
