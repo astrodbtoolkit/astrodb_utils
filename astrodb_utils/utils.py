@@ -41,10 +41,10 @@ def load_astrodb(
         "CompanionList",
         "SourceTypeList",
     ],
-    felis_schema=None
+    felis_schema=None,
 ):
     """Utility function to load the database
-    
+
     Parameters
     ----------
     db_file : str
@@ -54,7 +54,7 @@ def load_astrodb(
     recreatedb : bool
         Flag whether or not the database file should be recreated
     reference_tables : list
-        List of tables to consider as reference tables.   
+        List of tables to consider as reference tables.
         Default: Publications, Telescopes, Instruments, Versions, PhotometryFilters
     felis_schema : str
         Path to Felis schema; default None
@@ -65,7 +65,7 @@ def load_astrodb(
 
     # removes the current .db file if one already exists
     if recreatedb and db_file_path.exists():
-        os.remove(db_file)  
+        os.remove(db_file)
 
     if not db_file_path.exists():
         # Create database, using Felis if provided
@@ -85,7 +85,7 @@ def load_astrodb(
 
 def internet_connection():
     try:
-        socket.getaddrinfo('google.com',80)
+        socket.getaddrinfo("google.com", 80)
         return True
     except socket.gaierror:
         return False
@@ -102,11 +102,7 @@ def check_url_valid(url):
     status_code = request_response.status_code
     if status_code != 200:  # The website is up if the status code is 200
         status = "skipped"  # instead of incrememnting n_skipped, just skip this one
-        msg = (
-            "The spectrum location does not appear to be valid: \n"
-            f"spectrum: {url} \n"
-            f"status code: {status_code}"
-        )
+        msg = f"The spectrum location does not appear to be valid: \nspectrum: {url} \nstatus code: {status_code}"
         logger.error(msg)
     else:
         msg = f"The spectrum location appears up: {url}"
@@ -145,9 +141,7 @@ def ingest_instrument(db, *, telescope=None, instrument=None, mode=None):
     logger.info(msg_search)
 
     # Search for the inputs in the database
-    telescope_db = (
-        db.query(db.Telescopes).filter(db.Telescopes.c.telescope == telescope).table()
-    )
+    telescope_db = db.query(db.Telescopes).filter(db.Telescopes.c.telescope == telescope).table()
     mode_db = (
         db.query(db.Instruments)
         .filter(
@@ -161,9 +155,7 @@ def ingest_instrument(db, *, telescope=None, instrument=None, mode=None):
     )
 
     if len(telescope_db) == 1 and len(mode_db) == 1:
-        msg_found = (
-            f"{telescope}, {instrument}, and {mode} are already in the database."
-        )
+        msg_found = f"{telescope}, {instrument}, and {mode} are already in the database."
         logger.info(msg_found)
         return
 
@@ -182,15 +174,8 @@ def ingest_instrument(db, *, telescope=None, instrument=None, mode=None):
             raise AstroDBError(msg) from e
 
     # Ingest instrument+mode (requires telescope) if not already present
-    if (
-        telescope is not None
-        and instrument is not None
-        and mode is not None
-        and len(mode_db) == 0
-    ):
-        instrument_add = [
-            {"instrument": instrument, "mode": mode, "telescope": telescope}
-        ]
+    if telescope is not None and instrument is not None and mode is not None and len(mode_db) == 0:
+        instrument_add = [{"instrument": instrument, "mode": mode, "telescope": telescope}]
         try:
             with db.engine.connect() as conn:
                 conn.execute(db.Instruments.insert().values(instrument_add))
@@ -225,3 +210,30 @@ def exit_function(msg, raise_error=True):
     else:
         logger.warning(msg)
         return
+
+
+def check_in_database(db, table, constraints):
+    """
+    Helper function to check that the result of the query is found in the database
+
+    Parameters
+    ----------
+    db: astrodbkit.astrodb.Database
+        Database object created by astrodbkit
+    table: astrodbkit.astrodb.Table
+        Table to be queried
+    constraints: list
+        List of constraints to be used in the query as filter input in db syntax
+    """
+
+    t = db.query(table).filter(and_(*constraints)).table()
+    if len(t) == 0:
+        msg = "Could not find in the database"
+        logger.error(msg)
+        raise AstroDBError(msg)
+    elif len(t) > 1:
+        msg = "Found multiple entries in the database"
+        logger.error(msg)
+        raise AstroDBError(msg)
+    else:
+        return t

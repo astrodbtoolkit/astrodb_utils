@@ -5,6 +5,7 @@ from astrodb_utils import (
     AstroDBError,
     ingest_instrument,
 )
+from astrodb_utils.utils import check_in_database
 
 
 def test_ingest_instrument(db):
@@ -12,9 +13,7 @@ def test_ingest_instrument(db):
 
     #  test adding just telescope
     ingest_instrument(db, telescope="test")
-    telescope_db = (
-        db.query(db.Telescopes).filter(db.Telescopes.c.telescope == "test").table()
-    )
+    telescope_db = db.query(db.Telescopes).filter(db.Telescopes.c.telescope == "test").table()
     assert len(telescope_db) == 1
     assert telescope_db["telescope"][0] == "test"
 
@@ -23,9 +22,7 @@ def test_ingest_instrument(db):
     inst_test = "test5"
     mode_test = "test6"
     ingest_instrument(db, telescope=tel_test, instrument=inst_test, mode=mode_test)
-    telescope_db = (
-        db.query(db.Telescopes).filter(db.Telescopes.c.telescope == tel_test).table()
-    )
+    telescope_db = db.query(db.Telescopes).filter(db.Telescopes.c.telescope == tel_test).table()
     instrument_db = (
         db.query(db.Instruments)
         .filter(
@@ -68,13 +65,17 @@ def test_ingest_instrument(db):
     #  test with no variables provided
     with pytest.raises(AstroDBError) as error_message:
         ingest_instrument(db)
-    assert "Telescope, Instrument, and Mode must be provided" in str(
-        error_message.value
-    )
+    assert "Telescope, Instrument, and Mode must be provided" in str(error_message.value)
 
     #  test with mode but no instrument or telescope
     with pytest.raises(AstroDBError) as error_message:
         ingest_instrument(db, mode="test")
-    assert "Telescope, Instrument, and Mode must be provided" in str(
-        error_message.value
-    )
+    assert "Telescope, Instrument, and Mode must be provided" in str(error_message.value)
+
+
+def test_check_in_database(db):
+    t = check_in_database(db, db.Telescopes, [db.Telescopes.c.telescope == "Gaia"])
+    assert len(t) == 1
+    with pytest.raises(AstroDBError) as error_message:
+        _ = check_in_database(db, db.Telescopes, [db.Telescopes.c.telescope == "FAKE TELESCOPE"])
+    assert "Could not find in the database" in str(error_message.value)
