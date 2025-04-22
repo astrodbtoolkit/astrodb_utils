@@ -91,4 +91,4 @@ def test_check_in_database(db):
     # Tests which should fail
     with pytest.raises(AstroDBError) as error_message:
         _ = check_in_database(db, db.Telescopes, [db.Telescopes.c.telescope == "FAKE TELESCOPE"])
-    assert "Could not find in the database" in str(error_message.value)
+    assert "Could not find in Telescopes" in str(error_message.value)

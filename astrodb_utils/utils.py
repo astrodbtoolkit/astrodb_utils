@@ -228,11 +228,11 @@ def check_in_database(db, table, constraints):
 
     t = db.query(table).filter(and_(*constraints)).table()
     if len(t) == 0:
-        msg = "Could not find in the database"
+        msg = f"Could not find in {table.name}"
         logger.error(msg)
         raise AstroDBError(msg)
     elif len(t) > 1:
-        msg = "Found multiple entries in the database"
+        msg = f"Found multiple entries in {table.name}"
         logger.error(msg)
         raise AstroDBError(msg)
     else:
