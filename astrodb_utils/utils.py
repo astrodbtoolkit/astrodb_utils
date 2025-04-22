@@ -220,10 +220,10 @@ def check_in_database(db, table, constraints):
     ----------
     db: astrodbkit.astrodb.Database
         Database object created by astrodbkit
-    table: astrodbkit.astrodb.Table
-        Table to be queried
+    table: astrodbkit.astrodb.Database.table
+        Table to be queried as an astrodbkit.astrodb.Database.table object
     constraints: list
-        List of constraints to be used in the query as filter input in db syntax
+        List of constraints to be used in the query as filter input in astrdbkit.astrodb.Database syntax
     """
 
     t = db.query(table).filter(and_(*constraints)).table()

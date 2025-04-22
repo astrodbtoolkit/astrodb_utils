@@ -74,8 +74,21 @@ def test_ingest_instrument(db):
 
 
 def test_check_in_database(db):
+    # Tests which should work
     t = check_in_database(db, db.Telescopes, [db.Telescopes.c.telescope == "Gaia"])
     assert len(t) == 1
+    t = check_in_database(
+        db,
+        db.Instruments,
+        [
+            db.Instruments.c.telescope == "WISE",
+            db.Instruments.c.instrument == "WISE",
+            db.Instruments.c.mode == "Imaging",
+        ],
+    )
+    assert len(t) == 1
+
+    # Tests which should fail
     with pytest.raises(AstroDBError) as error_message:
         _ = check_in_database(db, db.Telescopes, [db.Telescopes.c.telescope == "FAKE TELESCOPE"])
     assert "Could not find in the database" in str(error_message.value)
