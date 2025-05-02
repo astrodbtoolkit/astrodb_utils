@@ -144,36 +144,49 @@ def _check_spectrum_wave_units(spectrum, raise_error=True):
 
 
 def _check_spectrum_flux_units(spectrum, raise_error=True):
-    try:
-        spectrum.flux.to(u.erg / u.s / u.cm**2 / u.AA).value
-        return True
-    except AttributeError as e:
-        logger.debug(f"{e}")
-        msg = f"Unable to parse flux: {spectrum}"
+    expected_units = [u.get_physical_type(u.erg / u.s / u.cm**2 / u.AA), u.get_physical_type(u.Jy)]
+
+    unit_type = u.get_physical_type(spectrum.flux.unit)
+    
+    if unit_type not in expected_units:
+        msg = f"flux units are not expected: {spectrum.flux.unit}. Expecting {expected_units}."
         if raise_error:
             logger.error(msg)
             raise AstroDBError(msg)
         else:
             logger.warning(msg)
             return False
-    except u.UnitConversionError as e:
-        logger.debug(f"{e}")
-        msg = f"Unable to convert flux to erg/s/cm^2/Angstrom:  {spectrum}"
-        if raise_error:
-            logger.error(msg)
-            raise AstroDBError(msg)
-        else:
-            logger.warning(msg)
-            return False
-    except ValueError as e:
-        logger.debug(f"{e}")
-        msg = f"Value error: {spectrum}:"
-        if raise_error:
-            logger.error(msg)
-            raise AstroDBError(msg)
-        else:
-            logger.warning(msg)
-            return False
+    
+    # try:
+    #     spectrum.flux.to(u.erg / u.s / u.cm**2 / u.AA).value
+    #     return True
+    # except AttributeError as e:
+    #     logger.debug(f"{e}")
+    #     msg = f"Unable to parse flux: {spectrum}"
+    #     if raise_error:
+    #         logger.error(msg)
+    #         raise AstroDBError(msg)
+    #     else:
+    #         logger.warning(msg)
+    #         return False
+    # except u.UnitConversionError as e:
+    #     logger.debug(f"{e}")
+    #     msg = f"Unable to convert flux to erg/s/cm^2/Angstrom:  {spectrum}"
+    #     if raise_error:
+    #         logger.error(msg)
+    #         raise AstroDBError(msg)
+    #     else:
+    #         logger.warning(msg)
+    #         return False
+    # except ValueError as e:
+    #     logger.debug(f"{e}")
+    #     msg = f"Value error: {spectrum}:"
+    #     if raise_error:
+    #         logger.error(msg)
+    #         raise AstroDBError(msg)
+    #     else:
+    #         logger.warning(msg)
+    #         return False
 
 
 def _plot_spectrum(spectrum):
