@@ -85,7 +85,7 @@ def _check_spectrum_class(spectrum, raise_error=True, format=None):
         Spectrum1D.read(spectrum, format=format)
         return True
     except Exception as error_message:
-        msg = f"Unable to load file as Spectrum1D object:{spectrum}"
+        msg = f"Unable to load file as Spectrum object:{spectrum}"
         logger.debug(f"{error_message}")
         if raise_error:
             logger.error(msg)
@@ -148,7 +148,9 @@ def _check_spectrum_flux_units(spectrum, raise_error=True):
 
     unit_type = u.get_physical_type(spectrum.flux.unit)
     
-    if unit_type not in expected_units:
+    if unit_type in expected_units:
+        return True
+    else:
         msg = f"flux units are not expected: {spectrum.flux.unit}. Expecting {expected_units}."
         if raise_error:
             logger.error(msg)
