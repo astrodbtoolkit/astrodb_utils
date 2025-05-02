@@ -13,16 +13,76 @@ if matplotlib_check is not None:
     import matplotlib.pyplot as plt
 
 
-__all__ = [ 
-    "check_spectrum_plottable"
-    ]
+__all__ = ["check_spectrum_plottable"]
 
 logger = logging.getLogger(__name__)
 
 
-def check_spectrum_class(spectrum, raise_error=True):
+def check_spectrum_plottable(
+    spectrum_path, raise_error: bool = True, show_plot: bool = False, format: str = None
+):
+    """
+    Check if spectrum is readable and plottable with specutils.
+    show_plot = True requires matplotlib to be installed.
+
+    Parameters
+    ----------
+    spectrum_path : str
+        Path to spectrum file
+
+    raise_error : bool. Default=True
+        True: Raise error if spectrum is not plottable
+        False: Do not raise error if spectrum is not plottable. Log warning instead.
+
+    show_plot : bool. Default=False
+        True: Show plot of spectrum. Matplotlib must be installed.
+
+    format : str, optional
+        Format of the spectrum file. If not provided, the format will be inferred by specutils.
+
+    Returns
+    -------
+    bool
+        True: Spectrum is plottable
+        False: Spectrum is not plotable
+
+    """
+    # load the spectrum and make sure it's readable as a Spectrum1D object, has units, is not all NaNs.
+    if isinstance(spectrum_path, Spectrum1D):
+        spectrum = spectrum_path
+        class_check = True
+    else:
+        class_check = _check_spectrum_class(
+            spectrum_path, raise_error=raise_error, format=format
+        )
+        if not class_check:
+            return False
+        else:
+            spectrum = Spectrum1D.read(spectrum_path, format=format)
+
+    # checking spectrum has good units
+    wave_unit_check = _check_spectrum_wave_units(spectrum, raise_error=raise_error)
+    if not wave_unit_check:
+        return False
+
+    flux_unit_check = _check_spectrum_flux_units(spectrum, raise_error=raise_error)
+    if not flux_unit_check:
+        return False
+
+    # check for NaNs
+    nan_check = _check_spectrum_not_nans(spectrum, raise_error=raise_error)
+    if not nan_check:
+        return False
+
+    if show_plot:
+        _plot_spectrum(spectrum)
+
+    return True
+
+
+def _check_spectrum_class(spectrum, raise_error=True, format=None):
     try:
-        Spectrum1D.read(spectrum)
+        Spectrum1D.read(spectrum, format=format)
         return True
     except Exception as error_message:
         msg = f"Unable to load file as Spectrum1D object:{spectrum}"
@@ -35,7 +95,7 @@ def check_spectrum_class(spectrum, raise_error=True):
             return False
 
 
-def check_spectrum_not_nans(spectrum, raise_error=True):
+def _check_spectrum_not_nans(spectrum, raise_error=True):
     nan_check: np.ndarray = ~np.isnan(spectrum.flux) & ~np.isnan(spectrum.spectral_axis)
     wave = spectrum.spectral_axis[nan_check]
     if not len(wave):
@@ -50,7 +110,7 @@ def check_spectrum_not_nans(spectrum, raise_error=True):
         return True
 
 
-def check_spectrum_wave_units(spectrum, raise_error=True):
+def _check_spectrum_wave_units(spectrum, raise_error=True):
     try:
         spectrum.spectral_axis.to(u.micron).value
         return True
@@ -83,7 +143,7 @@ def check_spectrum_wave_units(spectrum, raise_error=True):
             return False
 
 
-def check_spectrum_flux_units(spectrum, raise_error=True):
+def _check_spectrum_flux_units(spectrum, raise_error=True):
     try:
         spectrum.flux.to(u.erg / u.s / u.cm**2 / u.AA).value
         return True
@@ -116,7 +176,7 @@ def check_spectrum_flux_units(spectrum, raise_error=True):
             return False
 
 
-def plot_spectrum(spectrum):
+def _plot_spectrum(spectrum):
     if "matplotlib" in sys.modules:
         plt.plot(spectrum.spectral_axis, spectrum.flux)
         plt.xlabel("Dispersion ({spectrum.spectral_axis.unit})")
@@ -127,56 +187,4 @@ def plot_spectrum(spectrum):
         logger.warning(msg)
 
 
-def check_spectrum_plottable(spectrum_path, raise_error=True, show_plot=False):
-    """
-    Check if spectrum is readable and plottable with specutils.
-    show_plot = True requires matplotlib to be installed.
 
-    Parameters
-    ----------
-    spectrum_path : str
-        Path to spectrum file
-
-    raise_error : bool. Default=True
-        True: Raise error if spectrum is not plottable
-        False: Do not raise error if spectrum is not plottable. Log warning instead.
-    
-    show_plot : bool. Default=False
-        True: Show plot of spectrum. Matplotlib must be installed.
-
-    Returns
-    -------
-    bool
-        True: Spectrum is plottable
-        False: Spectrum is not plotable
-
-    """
-    # load the spectrum and make sure it's readable as a Spectrum1D object, has units, is not all NaNs.
-    if isinstance(spectrum_path, Spectrum1D):
-        spectrum = spectrum_path
-        class_check = True
-    else:
-        class_check = check_spectrum_class(spectrum_path, raise_error=raise_error)
-        if not class_check:
-            return False
-        else:
-            spectrum = Spectrum1D.read(spectrum_path)
-
-    # checking spectrum has good units
-    wave_unit_check = check_spectrum_wave_units(spectrum, raise_error=raise_error)
-    if not wave_unit_check:
-        return False
-
-    flux_unit_check = check_spectrum_flux_units(spectrum, raise_error=raise_error)
-    if not flux_unit_check:
-        return False
-
-    # check for NaNs
-    nan_check = check_spectrum_not_nans(spectrum, raise_error=raise_error)
-    if not nan_check:
-        return False
-
-    if show_plot:
-        plot_spectrum(spectrum)
-
-    return True
