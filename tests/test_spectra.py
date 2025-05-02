@@ -43,6 +43,7 @@ def test_check_spectrum_class(spectrum_path, result):
     "spectrum_path",
     [
         ("tests/data/U50184_1022+4114_HD89744B_BUR08B.fits"),
+        ("tests/data/WISEAJ2018-74MIRI.fits"),
     ],
 )
 def test_check_spectrum_class_errors(spectrum_path):
@@ -58,12 +59,25 @@ def test_spectrum_not_nans(good_spectrum):
     check = check_spectrum_not_nans(good_spectrum)
     assert check is True
 
-
+@pytest.mark.parametrize(
+    "spectrum_path",
+    [
+        ("tests/data/U50184_1022+4114_HD89744B_BUR08B.fits"),
+        ("tests/data/WISEAJ2018-74MIRI.fits"),
+    ],
+)
 def test_check_spectrum_wave_units(good_spectrum):
     check = check_spectrum_wave_units(good_spectrum)
     assert check is True
 
 
+@pytest.mark.parametrize(
+    "spectrum_path",
+    [
+        ("tests/data/U50184_1022+4114_HD89744B_BUR08B.fits"),
+        ("tests/data/WISEAJ2018-74MIRI.fits"),
+    ],
+)
 def test_check_spectrum_flux_units(good_spectrum):
     check = check_spectrum_flux_units(good_spectrum)
     assert check is True
