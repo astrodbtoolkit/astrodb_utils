@@ -479,8 +479,7 @@ def get_db_publication(db, reference: str, raise_error: bool = True):
 
     if len(pubs_table) == 1:
         logger.debug(f"Found {reference} in database as {pubs_table['reference'][0]}")
-        result = pubs_table["reference"][0]
-        return result
+        return pubs_table["reference"][0]
 
     if len(pubs_table) == 0:
         msg = f"Reference {reference} not found in database. Please add it to the Publications table."

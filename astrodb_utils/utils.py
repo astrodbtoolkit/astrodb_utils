@@ -250,7 +250,8 @@ def get_db_regime(db, regime:str, raise_error=True):
 
     if len(regime_table) == 1:
         return regime_table["regime"][0]
-    elif len(regime_table) == 0:
+
+    if len(regime_table) == 0:
         msg = (
             f"Regime {regime} not found in database. "
             f"Please add it to the RegimesList table or use an existing regime.\n"
