@@ -16,6 +16,7 @@ __all__ = [
     "internet_connection",
     "ingest_instrument",
     "exit_function",
+    "get_db_regime",
 ]
 
 logger = logging.getLogger(__name__)
@@ -205,7 +206,7 @@ def ingest_instrument(db, *, telescope=None, instrument=None, mode=None):
     return
 
 
-def exit_function(msg, raise_error=True):
+def exit_function(msg, raise_error=True, return_value=None):
     """
     Exit function to handle errors and exceptions
 
@@ -215,13 +216,49 @@ def exit_function(msg, raise_error=True):
         Message to be logged
     raise_error: bool
         Flag to raise an error
+    return_value: any
+        Value to be returned if raise_error is False
 
     Returns
     -------
 
     """
     if raise_error:
+        logger.error(msg)
         raise AstroDBError(msg)
     else:
         logger.warning(msg)
-        return
+        return return_value
+
+
+def get_db_regime(db, regime:str, raise_error=True):
+    """
+    Check if a regime is in the Regimes table using ilike matching.
+    This minimizes problems with case sensitivity.
+
+    If it is not found or there are multiple matches, raise an error or return None.
+    If it is found, return the reference as a string.
+
+    Returns
+    -------
+    str: The regime found
+    None: If the regime is not found or there are multiple matches.
+    """
+    regime_table = (
+        db.query(db.RegimeList).filter(db.RegimeList.c.regime.ilike(regime)).table()
+    )
+
+    if len(regime_table) == 1:
+        return regime_table["regime"][0]
+    elif len(regime_table) == 0:
+        msg = (
+            f"Regime {regime} not found in database. "
+            f"Please add it to the RegimesList table or use an existing regime.\n"
+            f"Available regimes:\n {db.query(db.RegimeList).table()}"
+        )
+    elif len(regime_table) > 1:
+        msg = f"Multiple entries for regime {regime} found in database. Please check the Regimes table. Matches: {regime_table}"
+    else:
+        msg = f"Unexpected condition while searching for regime {regime} in database."
+
+    exit_function(msg, raise_error=raise_error, return_value=None)
