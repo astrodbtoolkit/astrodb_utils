@@ -142,7 +142,7 @@ def ingest_instrument(db, *, telescope=None, instrument=None, mode=None):
         raise AstroDBError(msg)
 
     msg_search = f"Searching for {telescope}, {instrument}, {mode} in database"
-    logger.info(msg_search)
+    logger.debug(msg_search)
 
     # Search for the inputs in the database
     telescope_db = (
@@ -162,7 +162,7 @@ def ingest_instrument(db, *, telescope=None, instrument=None, mode=None):
 
     if len(telescope_db) == 1 and len(mode_db) == 1:
         msg_found = (
-            f"{telescope}, {instrument}, and {mode} are already in the database."
+            f"{telescope}, {instrument}, and {mode} are already in the database. Nothing added."
         )
         logger.info(msg_found)
         return
@@ -174,10 +174,10 @@ def ingest_instrument(db, *, telescope=None, instrument=None, mode=None):
             with db.engine.connect() as conn:
                 conn.execute(db.Telescopes.insert().values(telescope_add))
                 conn.commit()
-            msg_telescope = f"{telescope} was successfully ingested in the database"
+            msg_telescope = f"{telescope} was successfully added to the Telescopes table."
             logger.info(msg_telescope)
         except sqlalchemy.exc.IntegrityError as e:  # pylint: disable=invalid-name
-            msg = "Telescope could not be ingested"
+            msg = f"{telescope} could not be added to the Telescopes table."
             logger.error(msg)
             raise AstroDBError(msg) from e
 
@@ -195,10 +195,10 @@ def ingest_instrument(db, *, telescope=None, instrument=None, mode=None):
             with db.engine.connect() as conn:
                 conn.execute(db.Instruments.insert().values(instrument_add))
                 conn.commit()
-            msg_instrument = f"{instrument} was successfully ingested in the database."
+            msg_instrument = f"{telescope}-{instrument}-{mode} was successfully added to the Instruments table."
             logger.info(msg_instrument)
         except sqlalchemy.exc.IntegrityError as e:  # pylint: disable=invalid-name
-            msg = "Instrument/Mode could not be ingested"
+            msg = f"{telescope}-{instrument}-{mode} could not be added to the Instruments table."
             logger.error(msg)
             raise AstroDBError(msg) from e
 
