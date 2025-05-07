@@ -1,14 +1,17 @@
-import logging
+import logging  # noqa: I001
 import sys
 import warnings
 
 from .utils import (  # noqa: F401
     AstroDBError,
     exit_function,
-    ingest_instrument,
     internet_connection,
     load_astrodb,
 )
+from .instruments import (  # noqa: F401
+    ingest_instrument,
+)
+
 from .version import version as __version__
 
 __all__ = ["__version__"]
