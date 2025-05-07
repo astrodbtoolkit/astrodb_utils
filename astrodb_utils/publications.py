@@ -8,7 +8,7 @@ import sqlalchemy.exc
 from astropy.table import Table
 from sqlalchemy import or_
 
-from astrodb_utils import AstroDBError
+from astrodb_utils import AstroDBError, exit_function
 
 __all__ = [
     "find_publication",
@@ -477,22 +477,16 @@ def get_db_publication(db, reference: str, raise_error: bool = True):
         .table()
     )
 
+    if len(pubs_table) == 1:
+        logger.debug(f"Found {reference} in database as {pubs_table['reference'][0]}")
+        result = pubs_table["reference"][0]
+        return result
+
     if len(pubs_table) == 0:
         msg = f"Reference {reference} not found in database. Please add it to the Publications table."
-        result = None
     elif len(pubs_table) > 1:
         msg = f"Multiple entries for reference {reference} found in database. Please check the Publications table. \n  Matches: \n {pubs_table}"
-        result = None
     else:
-        result = pubs_table["reference"][0]
+        msg = f"Unexpected condition while searching for reference {reference} in database."
 
-    if result is None:
-        if raise_error is True:
-            logger.error(msg)
-            raise AstroDBError(msg)
-        else:
-            logger.warning(msg)
-            return result
-    else:
-        logger.debug(f"Found {reference} in database as {result}")
-        return result
+    exit_function(msg, raise_error=raise_error, return_value=None)
