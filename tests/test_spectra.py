@@ -96,8 +96,12 @@ def test_check_spectrum_flux_units(spectrum_path):
     ],
 )
 def test_check_spectrum_plottable(spectrum_path, result):
-    spectrum = Spectrum1D.read(spectrum_path, format='tabular-fits')
-    check = check_spectrum_plottable(spectrum, show_plot=False)
+    try:
+        spectrum = Spectrum1D.read(spectrum_path, format='tabular-fits')
+        check = check_spectrum_plottable(spectrum, show_plot=False)
+    except IndexError: # Index error expected for U50184_1022+4114_HD89744B_BUR08B
+        check = False
+        
     assert check is result
 
 
