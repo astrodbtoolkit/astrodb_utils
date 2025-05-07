@@ -1,7 +1,7 @@
 import os
 
 import pytest
-from specutils import Spectrum1D
+from specutils import Spectrum
 
 from astrodb_utils import AstroDBError
 from astrodb_utils.spectra import (
@@ -53,7 +53,7 @@ def test_check_spectrum_class_errors(spectrum_path):
     ],
 )
 def test_spectrum_not_nans(spectrum_path):
-    spectrum = Spectrum1D.read(spectrum_path, format='tabular-fits')
+    spectrum = Spectrum.read(spectrum_path, format='tabular-fits')
     check = _check_spectrum_not_nans(spectrum)
     assert check is True
 
@@ -66,7 +66,7 @@ def test_spectrum_not_nans(spectrum_path):
     ],
 )
 def test_check_spectrum_wave_units(spectrum_path):
-    spectrum = Spectrum1D.read(spectrum_path, format='tabular-fits')
+    spectrum = Spectrum.read(spectrum_path, format='tabular-fits')
     check = _check_spectrum_wave_units(spectrum)
     assert check is True
 
@@ -79,7 +79,7 @@ def test_check_spectrum_wave_units(spectrum_path):
     ],
 )
 def test_check_spectrum_flux_units(spectrum_path):
-    spectrum = Spectrum1D.read(spectrum_path, format='tabular-fits')
+    spectrum = Spectrum.read(spectrum_path, format='tabular-fits')
     check = _check_spectrum_flux_units(spectrum)
     assert check is True
 
@@ -97,7 +97,7 @@ def test_check_spectrum_flux_units(spectrum_path):
 )
 def test_check_spectrum_plottable(spectrum_path, result):
     try:
-        spectrum = Spectrum1D.read(spectrum_path, format='tabular-fits')
+        spectrum = Spectrum.read(spectrum_path, format='tabular-fits')
         check = check_spectrum_plottable(spectrum, show_plot=False)
     except IndexError: # Index error expected for U50184_1022+4114_HD89744B_BUR08B
         check = False
