@@ -166,8 +166,8 @@ def _check_spectrum_flux_units(spectrum, raise_error=True):
 def _plot_spectrum(spectrum):
     if "matplotlib" in sys.modules:
         plt.plot(spectrum.spectral_axis, spectrum.flux)
-        plt.xlabel("Dispersion ({spectrum.spectral_axis.unit})")
-        plt.ylabel("Flux ({spectrum.flux.unit})")
+        plt.xlabel(f"Dispersion ({spectrum.spectral_axis.unit})")
+        plt.ylabel(f"Flux ({spectrum.flux.unit})")
         plt.show()
     else:
         msg = "To display the spectrum, matplotlib most be installed."
