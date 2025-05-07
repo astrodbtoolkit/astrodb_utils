@@ -162,7 +162,7 @@ def ingest_instrument(db, *, telescope=None, instrument=None, mode=None):
 
     if len(telescope_db) == 1 and len(mode_db) == 1:
         msg_found = (
-            f"{telescope}, {instrument}, and {mode} are already in the database. Nothing added."
+            f"{telescope}-{instrument}-{mode} is already in the database. Nothing added."
         )
         logger.info(msg_found)
         return
