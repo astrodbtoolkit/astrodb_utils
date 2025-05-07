@@ -52,7 +52,7 @@ def db():
         ignore_ads=True,
     )
 
-    ingest_publication(db, doi="10.1086/161442", reference="Prob83")
+    ingest_publication(db, doi="10.1086/161442", reference="Prob83", ignore_ads=True)
 
     return db
 
