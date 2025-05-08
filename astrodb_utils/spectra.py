@@ -6,7 +6,7 @@ import astropy.units as u
 import numpy as np
 from specutils import Spectrum
 
-from astrodb_utils import AstroDBError
+from astrodb_utils import AstroDBError, exit_function
 
 matplotlib_check = importlib.util.find_spec("matplotlib")
 if matplotlib_check is not None:
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 def check_spectrum_plottable(
-    spectrum_path, raise_error: bool = True, show_plot: bool = False, format: str = None
+    spectrum_path: str | Spectrum, raise_error: bool = True, show_plot: bool = False, format: str = None
 ):
     """
     Check if spectrum is readable and plottable with specutils.
@@ -27,8 +27,8 @@ def check_spectrum_plottable(
 
     Parameters
     ----------
-    spectrum_path : str
-        Path to spectrum file
+    spectrum_path : str or Spectrum
+        Path to spectrum file or Spectrum object
 
     raise_error : bool. Default=True
         True: Raise error if spectrum is not plottable
@@ -44,21 +44,22 @@ def check_spectrum_plottable(
     -------
     bool
         True: Spectrum is plottable
-        False: Spectrum is not plotable
+        False: Spectrum is not plottable
 
     """
-    # load the spectrum and make sure it's readable as a Spectrum object, has units, is not all NaNs.
+    # check if spectrum is a Spectrum object or a file path
+    # if it's a file path, check if it can be read as a Spectrum object    
     if isinstance(spectrum_path, Spectrum):
         spectrum = spectrum_path
-        class_check = True
-    else:
-        class_check = _check_spectrum_class(
-            spectrum_path, raise_error=raise_error, format=format
-        )
-        if not class_check:
-            return False
-        else:
+    elif isinstance(spectrum_path, str):
+        try:
             spectrum = Spectrum.read(spectrum_path, format=format)
+        except Exception as error_message:
+            msg = f"Unable to load file as Spectrum object:{spectrum_path}:\n{error_message}"
+            exit_function(msg, raise_error=raise_error)
+    else:
+        msg = f"Input is not a valid path or Spectrum object: {spectrum_path}"
+        exit_function(msg, raise_error=raise_error)
 
     # checking spectrum has good units
     wave_unit_check = _check_spectrum_wave_units(spectrum, raise_error=raise_error)
@@ -78,22 +79,7 @@ def check_spectrum_plottable(
         _plot_spectrum(spectrum)
 
     return True
-
-
-def _check_spectrum_class(spectrum, raise_error=True, format=None):
-    try:
-        Spectrum.read(spectrum, format=format)
-        return True
-    except Exception as error_message:
-        msg = f"Unable to load file as Spectrum object:{spectrum}"
-        logger.debug(f"{error_message}")
-        if raise_error:
-            logger.error(msg)
-            raise AstroDBError(msg)
-        else:
-            logger.warning(msg)
-            return False
-
+    
 
 def _check_spectrum_not_nans(spectrum, raise_error=True):
     nan_check: np.ndarray = ~np.isnan(spectrum.flux) & ~np.isnan(spectrum.spectral_axis)

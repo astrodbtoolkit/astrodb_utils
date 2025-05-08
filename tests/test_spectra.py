@@ -5,41 +5,11 @@ from specutils import Spectrum
 
 from astrodb_utils import AstroDBError
 from astrodb_utils.spectra import (
-    _check_spectrum_class,
     _check_spectrum_flux_units,
     _check_spectrum_not_nans,
     _check_spectrum_wave_units,
     check_spectrum_plottable,
 )
-
-
-@pytest.mark.filterwarnings(
-    "ignore", message=".*Standard Deviation has values of 0 or less.*"
-)
-@pytest.mark.parametrize(
-    "spectrum_path, result",
-    [
-        ("tests/data/2MASS+J21442847+1446077.fits", True),
-        ("tests/data/U50184_1022+4114_HD89744B_BUR08B.fits", False),
-        ("tests/data/WISEAJ2018-74MIRI.fits", False),
-    ],
-)
-def test_check_spectrum_class(spectrum_path, result):
-    assert os.path.exists(spectrum_path) is True
-    check = _check_spectrum_class(spectrum_path, raise_error=False)
-    assert check == result
-
-
-@pytest.mark.parametrize(
-    "spectrum_path",
-    [
-        ("tests/data/U50184_1022+4114_HD89744B_BUR08B.fits"),
-    ],
-)
-def test_check_spectrum_class_errors(spectrum_path):
-    with pytest.raises(AstroDBError) as error_message:
-        _check_spectrum_class(spectrum_path, raise_error=True)
-        assert "Unable to load file as Spectrum object" in str(error_message)
 
 
 @pytest.mark.filterwarnings(
