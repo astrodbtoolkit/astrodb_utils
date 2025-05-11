@@ -1,83 +1,75 @@
-import os
-
 import pytest
-from specutils import Spectrum1D
+from specutils import Spectrum
 
-from astrodb_utils import AstroDBError
 from astrodb_utils.spectra import (
-    check_spectrum_class,
-    check_spectrum_flux_units,
-    check_spectrum_not_nans,
+    _check_spectrum_flux_units,
+    _check_spectrum_not_nans,
+    _check_spectrum_wave_units,
     check_spectrum_plottable,
-    check_spectrum_wave_units,
 )
-
-
-@pytest.fixture(scope="module")
-def good_spectrum_path():
-    return "tests/data/2MASS+J21442847+1446077.fits"
-
-
-@pytest.fixture(scope="module")
-def good_spectrum(good_spectrum_path):
-    return Spectrum1D.read(good_spectrum_path)
 
 
 @pytest.mark.filterwarnings(
     "ignore", message=".*Standard Deviation has values of 0 or less.*"
 )
 @pytest.mark.parametrize(
-    "spectrum_path, result",
+    "spectrum_path",
     [
-        ("tests/data/2MASS+J21442847+1446077.fits", True),
-        ("tests/data/U50184_1022+4114_HD89744B_BUR08B.fits", False),
+        ("tests/data/2MASS+J21442847+1446077.fits"),
+        ("tests/data/WISEAJ2018-74MIRI.fits"),
     ],
 )
-def test_check_spectrum_class(spectrum_path, result):
-    assert os.path.exists(spectrum_path) is True
-    check = check_spectrum_class(spectrum_path, raise_error=False)
-    assert check == result
+def test_spectrum_not_nans(spectrum_path):
+    spectrum = Spectrum.read(spectrum_path, format='tabular-fits')
+    check = _check_spectrum_not_nans(spectrum)
+    assert check is True
 
 
 @pytest.mark.parametrize(
     "spectrum_path",
     [
-        ("tests/data/U50184_1022+4114_HD89744B_BUR08B.fits"),
+        ("tests/data/2MASS+J21442847+1446077.fits"),
+        ("tests/data/WISEAJ2018-74MIRI.fits"),
     ],
 )
-def test_check_spectrum_class_errors(spectrum_path):
-    with pytest.raises(AstroDBError) as error_message:
-        check_spectrum_class(spectrum_path, raise_error=True)
-        assert "Unable to load file as Spectrum1D object" in str(error_message)
+def test_check_spectrum_wave_units(spectrum_path):
+    spectrum = Spectrum.read(spectrum_path, format='tabular-fits')
+    check = _check_spectrum_wave_units(spectrum)
+    assert check is True
 
 
-@pytest.mark.filterwarnings(
-    "ignore", message=".*Standard Deviation has values of 0 or less.*"
+@pytest.mark.parametrize(
+    "spectrum_path",
+    [
+        ("tests/data/2MASS+J21442847+1446077.fits"),
+        ("tests/data/WISEAJ2018-74MIRI.fits"),
+    ],
 )
-def test_spectrum_not_nans(good_spectrum):
-    check = check_spectrum_not_nans(good_spectrum)
-    assert check is True
-
-
-def test_check_spectrum_wave_units(good_spectrum):
-    check = check_spectrum_wave_units(good_spectrum)
-    assert check is True
-
-
-def test_check_spectrum_flux_units(good_spectrum):
-    check = check_spectrum_flux_units(good_spectrum)
+def test_check_spectrum_flux_units(spectrum_path):
+    spectrum = Spectrum.read(spectrum_path, format='tabular-fits')
+    check = _check_spectrum_flux_units(spectrum)
     assert check is True
 
 
 @pytest.mark.filterwarnings(
     "ignore", message=".*Standard Deviation has values of 0 or less.*"
 )
-def test_check_spectrum_plottable(good_spectrum, good_spectrum_path):
-    check = check_spectrum_plottable(good_spectrum, show_plot=False)
-    assert check is True
-
-    check = check_spectrum_plottable(good_spectrum_path, show_plot=False)
-    assert check is True
+@pytest.mark.parametrize(
+    ("spectrum_path","result"),
+    [
+        ("tests/data/U50184_1022+4114_HD89744B_BUR08B.fits", False),
+        ("tests/data/2MASS+J21442847+1446077.fits", True),
+        ("tests/data/WISEAJ2018-74MIRI.fits", True),
+    ],
+)
+def test_check_spectrum_plottable(spectrum_path, result):
+    try:
+        spectrum = Spectrum.read(spectrum_path, format='tabular-fits')
+        check = check_spectrum_plottable(spectrum, show_plot=False)
+    except IndexError: # Index error expected for U50184_1022+4114_HD89744B_BUR08B
+        check = False
+        
+    assert check is result
 
 
 
