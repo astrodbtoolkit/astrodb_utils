@@ -1,9 +1,6 @@
-import os
-
 import pytest
 from specutils import Spectrum
 
-from astrodb_utils import AstroDBError
 from astrodb_utils.spectra import (
     _check_spectrum_flux_units,
     _check_spectrum_not_nans,
