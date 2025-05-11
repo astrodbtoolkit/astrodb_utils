@@ -15,7 +15,7 @@ __all__ = ["__version__"]
 
 
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("astrodb_utils")
 
 LOGFORMAT = logging.Formatter(
     "%(levelname)-8s - %(name)-15s - %(message)s")
@@ -30,7 +30,7 @@ handler = logging.StreamHandler(stream=sys.stdout)
 handler.setFormatter(LOGFORMAT)
 logger.addHandler(handler)
 
-logger.info("astrodb_utils logger initialized")
+logger.info(f"Logger initialized: {logger.name}")
 logger.info(f"Logger level: {logging.getLevelName(logger.getEffectiveLevel()) }")
 
 warnings.filterwarnings("ignore", module="astroquery.simbad")
