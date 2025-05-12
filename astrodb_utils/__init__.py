@@ -33,7 +33,7 @@ handler = logging.StreamHandler(stream=sys.stdout)
 handler.setFormatter(LOGFORMAT)
 logger.addHandler(handler)
 
-logger.info(f"Logger initialized: {logger.name}")
+logger.setLevel(logging.INFO)  # Set the default logging level to INFO
 logger.info(f"Logger level: {logging.getLevelName(logger.getEffectiveLevel()) }")
 
 warnings.filterwarnings("ignore", module="astroquery.simbad")

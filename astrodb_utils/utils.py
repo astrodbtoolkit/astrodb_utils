@@ -17,6 +17,8 @@ __all__ = [
 ]
 
 logger = logging.getLogger(__name__)
+msg = f"logger.parent.name: {logger.parent.name}, logger.parent.level: {logger.parent.level}"
+logger.info(msg)
 
 
 class AstroDBError(Exception):

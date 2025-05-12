@@ -1,7 +1,6 @@
 import logging
 
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger("astrodb_utils") 
 
 def test_logger():    
     print("Logger name:", logger.name)
