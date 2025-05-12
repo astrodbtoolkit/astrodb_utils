@@ -18,7 +18,7 @@ __all__ = ["__version__"]
 
 
 
-logger = logging.getLogger("astrodb_utils")
+logger = logging.getLogger(__name__) # Sets up the parent "astrodb_utils" logger
 
 LOGFORMAT = logging.Formatter(
     "%(levelname)-8s - %(name)-15s - %(message)s")

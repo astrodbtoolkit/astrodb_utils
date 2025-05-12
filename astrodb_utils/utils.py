@@ -70,7 +70,7 @@ def load_astrodb(
         create_database(db_connection_string, felis_schema=felis_schema)
         # Connect and load the database
         db = Database(db_connection_string, reference_tables=reference_tables)
-        if logger.level <= 10:
+        if logger.parent.level <= 10:
             db.load_database(data_path, verbose=True)
         else:
             db.load_database(data_path)
