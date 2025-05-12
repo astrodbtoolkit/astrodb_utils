@@ -100,7 +100,7 @@ def find_publication(
             f"Found {n_pubs_found} matching publications for "
             f"{reference} or {doi} or {bibcode}: {pub_search_table['reference'].data}"
         )
-        if logger.level <= 10:  # debug
+        if logger.parent.level <= 10:  # debug
             pub_search_table.pprint_all()
         return True, pub_search_table["reference"].data[0]
 
@@ -108,7 +108,7 @@ def find_publication(
         logger.warning(
             f"Found {n_pubs_found} matching publicationsfor {reference} or {doi} or {bibcode}"
         )
-        if logger.level <= 30:  # warning
+        if logger.parent.level <= 30:  # warning
             pub_search_table.pprint_all()
         return False, n_pubs_found
 
@@ -140,7 +140,7 @@ def find_publication(
             logger.debug(
                 f"Found {n_pubs_found_short} matching publications for {shorter_name}"
             )
-            if logger.level == 10:  # debug
+            if logger.parent.level == 10:  # debug
                 pub_search_table.pprint_all()
 
             two_digit_date = _find_dates_in_reference(reference)
@@ -188,7 +188,7 @@ def find_publication(
                     f"Found {len(pub_search_table)} matching publications for "
                     f"{reference} or {doi} or {bibcode}: {pub_search_table['reference'].data}"
                 )
-                if logger.level <= 10:  # debug
+                if logger.parent.level <= 10:  # debug
                     pub_search_table.pprint_all()
 
                 return True, pub_search_table["reference"].data[0]
