@@ -26,7 +26,7 @@ Overview
 
    * To make a new ERD, run ``scripts/build_schema_docs.py``. This generates a .PNG file in the ``docs/figures`` directory.
    
-   * To make new documentation pages, run ``scripts/build_schema_docs.py``. This generates a new set of MarkDown files in the ``docs/schema`` directory.
+   * To make new documentation pages, run ``scripts/build_schema_docs.py``. This generates a new set of Markdown files in the ``docs/schema`` directory.
 
 #. Ingest data by modifying the JSON files by hand (in the ``data/`` directory) or by using ``astrodb_utils`` functions.
 
