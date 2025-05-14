@@ -1,5 +1,5 @@
 Modifying the schema
-======================
+====================
 
 The template database comes with an existing schema, consisting of a set of tables and columns.
 It is expected that every usecase will modify this schema to suit their needs.
@@ -12,7 +12,7 @@ The `Felis Data Model documentation <Felis documentation>`_ provides a detailed 
 
 
 Required tables
-----------------
+---------------
 There are several tables which are expected by ``astrodb_utils`` and should be modified with great care: 
 
 * Sources 
@@ -23,7 +23,7 @@ There are several tables which are expected by ``astrodb_utils`` and should be m
 * Instruments
 
 Optional tables
-----------------
+---------------
 Optional tables are things like Spectra, Photometry, Radial Velocities, etc. 
 These are included in the template database and can be used as models for other data tables and can be removed/modified if not needed.
 
@@ -36,7 +36,7 @@ We encourage users to follow the detailed best practices for astronomical databa
 
 
 Long vs Wide tables
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 Think carefully about the structure of your tables.
 TODO: Need an example
 
