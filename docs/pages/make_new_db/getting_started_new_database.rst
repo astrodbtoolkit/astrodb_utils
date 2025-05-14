@@ -12,7 +12,7 @@ Making a New Database
 Overview
 --------
 
-#. Make a new Github repository using the `astrodb-template-db <https://github.com/astrodbtoolkit/astrodb-template-db>`_ template repository.
+#. Make a new GitHub repository using the `astrodb-template-db <https://github.com/astrodbtoolkit/astrodb-template-db>`_ template repository.
 
 #. Update the README.md file with your database name and description.
 
