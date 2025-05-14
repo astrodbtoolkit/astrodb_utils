@@ -1,6 +1,6 @@
-################
-Template schema
-################
+############################
+The AstroDB Template schema
+############################
 
 .. toctree::
    :glob:
