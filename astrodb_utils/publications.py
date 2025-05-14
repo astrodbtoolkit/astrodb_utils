@@ -107,13 +107,13 @@ def find_publication(
 
     if n_pubs_found > 1:
         logger.warning(
-            f"Found {n_pubs_found} matching publicationsfor {reference} or {doi} or {bibcode}"
+            f"Found {n_pubs_found} matching publications for {reference} or {doi} or {bibcode}"
         )
         if logger.parent.level <= 30:  # warning
             pub_search_table.pprint_all()
         return False, n_pubs_found
 
-    logger.info(f"n_pubs_found: {n_pubs_found}")
+    logger.debug(f"n_pubs_found: {n_pubs_found}. Using {reference} or {doi} or {bibcode}.")
     logger.debug(f"bibcode: {bibcode}")
     logger.debug(f"use_ads: {use_ads}")
 
@@ -179,7 +179,6 @@ def find_publication(
             bibcode_alt = results[1]
             not_null_pub_filters = []
             not_null_pub_filters.append(db.Publications.c.bibcode.ilike(bibcode_alt))
-            print(not_null_pub_filters)
             pub_search_table = Table()
             pub_search_table = (
                 db.query(db.Publications).filter(or_(*not_null_pub_filters)).table()
@@ -419,7 +418,7 @@ def _search_ads(
         return
 
     if len(ads_matches_list) == 1:
-        logger.debug(f"Publication found in ADS for {query_type}: {value}")
+        logger.info(f"Publication found in ADS for {query_type}: {value}")
         article = ads_matches_list[0]
         logger.debug(
             f"{article.first_author}, {article.year}, {article.bibcode}, {article.doi}, {article.title}"
