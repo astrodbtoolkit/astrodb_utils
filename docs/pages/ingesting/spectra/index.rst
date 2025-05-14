@@ -3,7 +3,10 @@ Spectra
 
 .. toctree::
     :glob:
-    spectra/*
+    :maxdepth: 2
+    :titlesonly:
+
+    converting_spectra/*
 
 
 Check if spectra are plottable
