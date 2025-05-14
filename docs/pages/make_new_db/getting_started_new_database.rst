@@ -20,7 +20,7 @@ Overview
 
 #. :doc:`Modify the schema <modifying_schema>` in ``schema/schema.yaml`` to suit your use case.
 
-   * We highly recommend using a AI coding assistant (like GitHub CoPilot) when modifying this file.
+   * We highly recommend using an AI coding assistant (like GitHub Copilot) when modifying this file.
   
 #. Generate a new entity relationship diagram (ERD) and documentation pages for your schema.
 
