@@ -30,7 +30,7 @@ These are included in the template database and can be used as models for other 
 
 
 Philosophy and guidelines
--------------------------- 
+-------------------------
 
 We encourage users to follow the detailed best practices for astronomical databases outlined in `Chen et al. 2022 <https://iopscience.iop.org/article/10.3847/1538-4365/ac6268>`_.
 
@@ -42,7 +42,7 @@ TODO: Need an example
 
 
 Column names
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
 * **Use lowercase column names.** This is a convention.
 * **Include units in the column name.** Since we do not have a way of storing Quantities in the database, 
   we recommend including the units in the column name. 
@@ -52,7 +52,7 @@ Column names
   
 
 Units
----------------------------
+-----
 Per `Chen et al. 2022 <https://iopscience.iop.org/article/10.3847/1538-4365/ac6268>`_, we explicitly define the units
 for each table in their name (e.g., in the `Sources` table, the column with Right Ascension values
 is named `ra_deg`). Doing so removes unit ambiguity when querying and modifying the database.

@@ -20,7 +20,7 @@ Overview
 
 #. :doc:`Modify the schema <modifying_schema>` in ``schema/schema.yaml`` to suit your use case.
 
-   * We highly recommend using a AI coding assistant (like GitHub CoPilot) when modifing this file.
+   * We highly recommend using a AI coding assistant (like GitHub CoPilot) when modifying this file.
   
 #. Generate a new entity relationship diagram (ERD) and documentation pages for your schema.
 
@@ -28,7 +28,7 @@ Overview
    
    * To make new documentation pages, run ``scripts/build_schema_docs.py``. This generates a new set of MarkDown files in the ``docs/schema`` directory.
 
-#. Ingest data by modifing the JSON files by hand (in the ``data/`` directory) or by using ``astrodb_utils`` functions.
+#. Ingest data by modifying the JSON files by hand (in the ``data/`` directory) or by using ``astrodb_utils`` functions.
 
 
 
