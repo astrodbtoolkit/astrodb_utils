@@ -31,7 +31,3 @@ Overview
 #. Ingest data by modifying the JSON files by hand (in the ``data/`` directory) or by using ``astrodb_utils`` functions.
 
 
-
-
-
-
