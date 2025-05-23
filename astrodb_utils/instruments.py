@@ -136,7 +136,7 @@ def get_db_instrument(db, instrument=None, mode=None, telescope=None):
         ):
             msg = (
                 f"Instrument {instrument} with mode {mode} and telescope {telescope} "
-                f"matched to {instrument_table["instrument"][0]}-{instrument_table["mode"][0]}-{instrument_table["telescope"][0]}. "
+                f"matched to {instrument_table['instrument'][0]}-{instrument_table['mode'][0]}-{instrument_table['telescope'][0]}. "
             )
             logger.warning(msg) 
 
