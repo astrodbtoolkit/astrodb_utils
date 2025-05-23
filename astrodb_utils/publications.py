@@ -478,7 +478,7 @@ def get_db_publication(db, reference: str, raise_error: bool = True):
     )
 
     if len(pubs_table) == 1:
-        logger.debug(f"Found {reference} in database as {pubs_table['reference'][0]}")
+        logger.warning(f"Matched {reference} in database to {pubs_table['reference'][0]}")
         return pubs_table["reference"][0]
 
     if len(pubs_table) == 0:

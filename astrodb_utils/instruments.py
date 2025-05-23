@@ -115,7 +115,7 @@ def get_db_instrument(db, instrument=None, mode=None, telescope=None):
         .table()
     )
 
-    if len(instrument_table) > 1:
+    if len(instrument_table) > 1: # constrain query with instrument mode
         instrument_table = (
             db.query(db.Instruments)
             .filter(
@@ -128,18 +128,27 @@ def get_db_instrument(db, instrument=None, mode=None, telescope=None):
             .table()
         )
 
-    
     if len(instrument_table) == 1:
+        if (
+            instrument_table["instrument"][0] != instrument
+            or instrument_table["mode"][0] != mode
+            or instrument_table["telescope"][0] != telescope
+        ):
+            msg = (
+                f"Instrument {instrument} with mode {mode} and telescope {telescope} "
+                f"matched to {instrument_table["instrument"][0]}-{instrument_table["mode"][0]}-{instrument_table["telescope"][0]}. "
+            )
+            logger.warning(msg) 
+
         return (
             instrument_table["instrument"][0],
             instrument_table["mode"][0],
             instrument_table["telescope"][0],
         )
-    
+
     if len(instrument_table) == 0:
         msg = f"{telescope}-{instrument}-{mode}, not found in database. Please add it to the Instruments table."
     else:
         msg = f"Multiple matches found for {telescope}-{instrument}-{mode}. Please check the Instruments table."
 
     exit_function(msg, raise_error=True, return_value=None)
-    

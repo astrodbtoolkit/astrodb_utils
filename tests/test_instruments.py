@@ -1,9 +1,10 @@
 import pytest
 from sqlalchemy import and_
 
-from astrodb_utils import AstroDBError, ingest_instrument
+from astrodb_utils import AstroDBError
 from astrodb_utils.instruments import (
     get_db_instrument,
+    ingest_instrument,
 )
 
 

@@ -9,20 +9,21 @@ import requests
 from astrodbkit.astrodb import Database, create_database
 
 __all__ = [
-    "AstroDBError",
     "load_astrodb",
     "internet_connection",
     "exit_function",
     "get_db_regime",
+    "AstroDBError",
 ]
-
-logger = logging.getLogger(__name__)
-msg = f"logger.parent.name: {logger.parent.name}, logger.parent.level: {logger.parent.level}"
-logger.info(msg)
 
 
 class AstroDBError(Exception):
     """Custom error for AstroDB"""
+
+
+logger = logging.getLogger(__name__)
+msg = f"logger.parent.name: {logger.parent.name}, logger.parent.level: {logger.parent.level}"
+logger.debug(msg)
 
 
 def load_astrodb(
@@ -158,6 +159,14 @@ def get_db_regime(db, regime:str, raise_error=True):
     )
 
     if len(regime_table) == 1:
+        
+        # Warn if the regime found in the database was not exactly the same as the one requested
+        if regime_table["regime"][0] != regime:
+            msg = (
+                f"Regime {regime} matched to {regime_table['regime'][0]}. "
+            )
+            logger.warning(msg)
+
         return regime_table["regime"][0]
 
     if len(regime_table) == 0:

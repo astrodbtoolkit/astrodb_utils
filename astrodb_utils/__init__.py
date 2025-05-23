@@ -1,4 +1,4 @@
-import logging  # noqa: I001
+import logging
 import sys
 import warnings
 
@@ -8,10 +8,6 @@ from .utils import (  # noqa: F401
     internet_connection,
     load_astrodb,
 )
-from .instruments import (  # noqa: F401
-    ingest_instrument,
-)
-
 from .version import version as __version__
 
 __all__ = ["__version__"]
@@ -34,6 +30,6 @@ handler.setFormatter(LOGFORMAT)
 logger.addHandler(handler)
 
 logger.setLevel(logging.INFO)  # Set the default logging level to INFO
-logger.info(f"Logger level: {logging.getLevelName(logger.getEffectiveLevel()) }")
+logger.debug(f"Logger level: {logging.getLevelName(logger.getEffectiveLevel()) }")
 
 warnings.filterwarnings("ignore", module="astroquery.simbad")
