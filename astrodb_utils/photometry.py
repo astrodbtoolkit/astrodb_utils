@@ -12,9 +12,9 @@ from astropy.io.votable import parse
 
 from astrodb_utils import (
     AstroDBError,
-    ingest_instrument,
     internet_connection,
 )
+from astrodb_utils.instruments import ingest_instrument
 from astrodb_utils.publications import find_publication
 from astrodb_utils.sources import find_source_in_db
 

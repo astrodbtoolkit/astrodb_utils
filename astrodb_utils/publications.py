@@ -8,19 +8,23 @@ import sqlalchemy.exc
 from astropy.table import Table
 from sqlalchemy import or_
 
-from astrodb_utils import AstroDBError
+from astrodb_utils import AstroDBError, exit_function
 
 __all__ = [
     "find_publication",
     "ingest_publication",
     "check_ads_token",
+    "get_db_publication",
 ]
 
 logger = logging.getLogger(__name__)
-
+msg = f"logger.parent.name: {logger.parent.name}, logger.parent.level: {logger.parent.level}"
+logger.info(msg)
 
 # ruff: noqa: C901 (function complexity check)
-def find_publication(db, *, reference: str = None, doi: str = None, bibcode: str = None):
+def find_publication(
+    db, *, reference: str = None, doi: str = None, bibcode: str = None
+):
     """
     Find publications in the database by matching
     on the publication name,  doi, or bibcode
@@ -86,7 +90,9 @@ def find_publication(db, *, reference: str = None, doi: str = None, bibcode: str
         not_null_pub_filters.append(db.Publications.c.bibcode.ilike(bibcode))
     pub_search_table = Table()
     if len(not_null_pub_filters) > 0:
-        pub_search_table = db.query(db.Publications).filter(or_(*not_null_pub_filters)).table()
+        pub_search_table = (
+            db.query(db.Publications).filter(or_(*not_null_pub_filters)).table()
+        )
 
     n_pubs_found = len(pub_search_table)
 
@@ -95,37 +101,47 @@ def find_publication(db, *, reference: str = None, doi: str = None, bibcode: str
             f"Found {n_pubs_found} matching publications for "
             f"{reference} or {doi} or {bibcode}: {pub_search_table['reference'].data}"
         )
-        if logger.level <= 10:  # debug
+        if logger.parent.level <= 10:  # debug
             pub_search_table.pprint_all()
         return True, pub_search_table["reference"].data[0]
 
     if n_pubs_found > 1:
-        logger.warning(f"Found {n_pubs_found} matching publicationsfor {reference} or {doi} or {bibcode}")
-        if logger.level <= 30:  # warning
+        logger.warning(
+            f"Found {n_pubs_found} matching publications for {reference} or {doi} or {bibcode}"
+        )
+        if logger.parent.level <= 30:  # warning
             pub_search_table.pprint_all()
         return False, n_pubs_found
 
-    logger.info(f"n_pubs_found: {n_pubs_found}")
+    logger.debug(f"n_pubs_found: {n_pubs_found}. Using {reference} or {doi} or {bibcode}.")
     logger.debug(f"bibcode: {bibcode}")
     logger.debug(f"use_ads: {use_ads}")
 
     # If no matches found, search using first four characters of input name
     if n_pubs_found == 0 and reference:
         shorter_name = reference[:4]
-        logger.debug(f"No matching publications for {reference}, Trying {shorter_name}.")
+        logger.debug(
+            f"No matching publications for {reference}, Trying {shorter_name}."
+        )
         fuzzy_query_shorter_name = "%" + shorter_name + "%"
         pub_search_table = (
-            db.query(db.Publications).filter(db.Publications.c.reference.ilike(fuzzy_query_shorter_name)).table()
+            db.query(db.Publications)
+            .filter(db.Publications.c.reference.ilike(fuzzy_query_shorter_name))
+            .table()
         )
         n_pubs_found_short = len(pub_search_table)
         if n_pubs_found_short == 0:
-            logger.warning(f"No matching publications for {reference} or {shorter_name}")
+            logger.warning(
+                f"No matching publications for {reference} or {shorter_name}"
+            )
             logger.warning("Use add_publication() to add it to the database.")
             return False, 0
 
         if n_pubs_found_short > 0:
-            logger.debug(f"Found {n_pubs_found_short} matching publications for {shorter_name}")
-            if logger.level == 10:  # debug
+            logger.debug(
+                f"Found {n_pubs_found_short} matching publications for {shorter_name}"
+            )
+            if logger.parent.level == 10:  # debug
                 pub_search_table.pprint_all()
 
             two_digit_date = _find_dates_in_reference(reference)
@@ -163,15 +179,16 @@ def find_publication(db, *, reference: str = None, doi: str = None, bibcode: str
             bibcode_alt = results[1]
             not_null_pub_filters = []
             not_null_pub_filters.append(db.Publications.c.bibcode.ilike(bibcode_alt))
-            print(not_null_pub_filters)
             pub_search_table = Table()
-            pub_search_table = db.query(db.Publications).filter(or_(*not_null_pub_filters)).table()
+            pub_search_table = (
+                db.query(db.Publications).filter(or_(*not_null_pub_filters)).table()
+            )
             if len(pub_search_table) == 1:
                 logger.debug(
                     f"Found {len(pub_search_table)} matching publications for "
                     f"{reference} or {doi} or {bibcode}: {pub_search_table['reference'].data}"
                 )
-                if logger.level <= 10:  # debug
+                if logger.parent.level <= 10:  # debug
                     pub_search_table.pprint_all()
 
                 return True, pub_search_table["reference"].data[0]
@@ -269,8 +286,12 @@ def ingest_publication(
             logger.error("Unexpected error. No doi or bibcode provided")
             return
 
-        logger.debug(f"Searching ADS using {query_type}: {value}, reference: {reference}")
-        name_add, bibcode_add, doi_add, description = _search_ads(value, query_type=query_type, reference=reference)
+        logger.debug(
+            f"Searching ADS using {query_type}: {value}, reference: {reference}"
+        )
+        name_add, bibcode_add, doi_add, description = _search_ads(
+            value, query_type=query_type, reference=reference
+        )
     else:
         name_add = reference
         bibcode_add = bibcode
@@ -315,13 +336,17 @@ def check_ads_token():
     if ads.config.token:
         use_ads = True
     else:
-        logger.warning("An ADS_TOKEN environment variable is not set.\nsetting ignore_ads=True/use_ads=False")
+        logger.warning(
+            "An ADS_TOKEN environment variable is not set.\nsetting ignore_ads=True/use_ads=False"
+        )
         use_ads = False
 
     return use_ads
 
 
-def _search_ads(value: str, query_type: Literal["arxiv", "bibcode", "doi"], reference=None):
+def _search_ads(
+    value: str, query_type: Literal["arxiv", "bibcode", "doi"], reference=None
+):
     """
     Search ADS for a publication using the provided string and query type.
     The query type indicates if the string provided is an arXiv ID, bibcode, or DOI.
@@ -363,16 +388,22 @@ def _search_ads(value: str, query_type: Literal["arxiv", "bibcode", "doi"], refe
         return
 
     if query_type == "arxiv":
-        ads_matches = ads.SearchQuery(q=value, fl=["id", "bibcode", "title", "first_author", "year", "doi"])
+        ads_matches = ads.SearchQuery(
+            q=value, fl=["id", "bibcode", "title", "first_author", "year", "doi"]
+        )
     elif query_type == "bibcode":
         ads_matches = ads.SearchQuery(
             bibcode=value,
             fl=["id", "bibcode", "title", "first_author", "year", "doi"],
         )
     elif query_type == "doi":
-        ads_matches = ads.SearchQuery(doi=value, fl=["id", "bibcode", "title", "first_author", "year", "doi"])
+        ads_matches = ads.SearchQuery(
+            doi=value, fl=["id", "bibcode", "title", "first_author", "year", "doi"]
+        )
     else:
-        logger.error(f"Invalid query type: {query_type}. Valid types are 'arxiv', 'bibcode', or 'doi'")
+        logger.error(
+            f"Invalid query type: {query_type}. Valid types are 'arxiv', 'bibcode', or 'doi'"
+        )
         return
 
     ads_matches_list = list(ads_matches)
@@ -387,9 +418,11 @@ def _search_ads(value: str, query_type: Literal["arxiv", "bibcode", "doi"], refe
         return
 
     if len(ads_matches_list) == 1:
-        logger.debug(f"Publication found in ADS for {query_type}: {value}")
+        logger.info(f"Publication found in ADS for {query_type}: {value}")
         article = ads_matches_list[0]
-        logger.debug(f"{article.first_author}, {article.year}, {article.bibcode}, {article.doi}, {article.title}")
+        logger.debug(
+            f"{article.first_author}, {article.year}, {article.bibcode}, {article.doi}, {article.title}"
+        )
         if not reference:  # generate the name if it was not provided
             name_stub = article.first_author.replace(",", "").replace(" ", "")
             name_add = name_stub[0:4] + article.year[-2:]
@@ -423,3 +456,43 @@ def _find_dates_in_reference(reference):
         two_digit_date = None
 
     return two_digit_date
+
+
+def get_db_publication(db, reference: str, raise_error: bool = True):
+    """
+    Check if a publication is in the database using ilike matching.
+    This minimizes problems with case sensitivity.
+
+    If it is not found or there are multiple matches, raise an error or return None.
+    If it is found, return the reference as a string.
+
+    Returns
+    -------
+    str: The reference of the publication in the database.
+    None: If the publication is not found or there are multiple matches.
+    """
+    pubs_table = (
+        db.query(db.Publications)
+        .filter(db.Publications.c.reference.ilike(reference))
+        .table()
+    )
+
+    if len(pubs_table) == 1:
+        logger.warning(f"Matched {reference} in database to {pubs_table['reference'][0]}")
+        return pubs_table["reference"][0]
+
+    if len(pubs_table) == 0:
+        msg = (
+            f"Reference {reference} not found in database. "
+            "Please add it to the Publications table."
+        )
+    elif len(pubs_table) > 1:
+        msg = (
+            f"Multiple entries for reference {reference} found in database. "
+            "Please check the Publications table. \n  "
+            f"Matches: \n {pubs_table}"
+        )
+    else:
+        msg = f"Unexpected condition while searching for reference {reference} in database."
+
+    exit_function(msg, raise_error=raise_error, return_value=None)

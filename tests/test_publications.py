@@ -6,6 +6,7 @@ from astrodb_utils.publications import (
     _search_ads,
     check_ads_token,
     find_publication,
+    get_db_publication,
     ingest_publication,
 )
 
@@ -122,3 +123,26 @@ def test_search_ads_using_bibcode():
 def test_find_dates_in_reference():
     assert _find_dates_in_reference("Wright_2010") == "10"
     assert _find_dates_in_reference("Refr20") == "20"
+
+@pytest.mark.parametrize(
+    "input, db_ref",
+    [
+       ("Cutr03","Cutr03"),
+       ("CUTR03","Cutr03"),
+       ("cutr03","Cutr03"),
+       ("GAIA23","Gaia23"),
+    ],
+)
+def test_get_db_publication(db, input, db_ref):
+    # Test with a valid reference
+    result = get_db_publication(db, reference=input)
+    assert result == db_ref
+
+def test_get_db_publication_invalid(db):
+    with pytest.raises(AstroDBError) as error_message:
+        get_db_publication(db, reference="Cruz25")
+        
+    assert "Reference Cruz25 not found" in str(error_message.value)
+    
+    result = get_db_publication(db, reference="Cruz25", raise_error=False)
+    assert result is None
