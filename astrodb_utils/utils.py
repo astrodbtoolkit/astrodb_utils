@@ -1,5 +1,6 @@
 """Utils functions for use in ingests."""
 
+import datetime
 import logging
 import os
 import socket
@@ -14,6 +15,7 @@ __all__ = [
     "exit_function",
     "get_db_regime",
     "AstroDBError",
+    "check_obs_date",
 ]
 
 
@@ -181,3 +183,32 @@ def get_db_regime(db, regime:str, raise_error=True):
         msg = f"Unexpected condition while searching for regime {regime} in database."
 
     exit_function(msg, raise_error=raise_error, return_value=None)
+
+
+def check_obs_date(date, raise_error=True):
+    """
+    Check if the observation date is in the correct format
+    Parameters
+    ----------
+    date: str
+        Observation date
+
+    Returns
+    -------
+    bool
+        True if the date is in the correct format, False otherwise
+    """
+    try:
+        parsed_date = datetime.date.fromisoformat(date)
+        logger.debug(
+            f"Observation date {date} is valid: {parsed_date.strftime('%d %b %Y')}"
+        )
+        return parsed_date
+    except ValueError as e:
+        msg = f"Observation date {date} is not valid: {e}"
+        result = None
+        if raise_error:
+            raise AstroDBError(msg)
+        else:
+            logger.warning(msg)
+            return result
