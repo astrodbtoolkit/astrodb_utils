@@ -1,0 +1,7 @@
+Please cite this software by referring to its Zenodo release: 
+
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "AstroDB Utils"
+doi: https://zenodo.org/records/14397586
+url: "https://github.com/astrodbtoolkit/astrodb_utils"
