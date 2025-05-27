@@ -1,3 +1,5 @@
+import logging
+
 import pytest
 
 from astrodb_utils import AstroDBError
@@ -12,18 +14,19 @@ from astrodb_utils.utils import get_db_regime
         ("Optical", "optical"),
     ],
 )
-def test_get_db_regime(db, input, db_regime):   
-    #  TESTS WHICH SHOULD WORK
+def test_get_db_regime(db, caplog, input, db_regime):   
     regime = get_db_regime(db, input)
     assert regime == db_regime
 
+    with caplog.at_level(logging.WARNING):
+        regime = get_db_regime(db, "xray")
+        assert regime == "x-ray"
+        assert 'Regime xray matched to x-ray' in caplog.text
 
-def test_get_db_regime_errors(db):
-    #  TESTS WHICH SHOULD FAIL
-    with pytest.raises(AstroDBError) as error_message:
-        get_db_regime(db, "nir")
-    assert "Regime nir not found in database" in str(error_message.value)
 
+def test_get_db_regime_errors(db, caplog):
     with pytest.raises(AstroDBError) as error_message:
-        get_db_regime(db, "xray")
-    assert "Regime xray not found in database" in str(error_message.value)
+        get_db_regime(db, "notaregime")
+        assert "Regime not found in database" in str(error_message.value)
+
+    

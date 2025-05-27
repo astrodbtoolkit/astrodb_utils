@@ -334,7 +334,7 @@ def ingest_spectrum(
                 flags["message"] = msg
                 return flags
              
-    regime = get_db_regime(db, regime)
+    regime = get_db_regime(db, regime, raise_error=raise_error)
     if regime is None:
         msg = f"Regime not found in database: {regime}."
         flags["message"] = msg

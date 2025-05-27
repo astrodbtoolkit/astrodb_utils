@@ -130,19 +130,19 @@ def test_check_spectrum_plottable(spectrum_path, result):
         ),  # missing reference
         (
             {
-                "source": "GL 229b",
+                "source": "Gl 229b",
                 "telescope": "IRTF",
                 "instrument": "SpeX",
                 "mode": "Prism",
                 "regime": "nir",
                 "obs_date": "2020-01-01",
-                "reference": "Burg06",
+                "reference": "NotARealReference",
             },
             "Reference not found",
         ),  # invalid reference
         (
             {
-                "source": "GL 229b",
+                "source": "NotaRealSource",
                 "telescope": "IRTF",
                 "instrument": "SpeX",
                 "mode": "Prism",

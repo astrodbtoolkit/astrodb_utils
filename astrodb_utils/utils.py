@@ -171,9 +171,25 @@ def get_db_regime(db, regime:str, raise_error=True):
 
         return regime_table["regime"][0]
 
+    # try to match the regime hyphens removed
+    if len(regime_table) == 0:
+        regime.replace("-", "")
+        regimes = db.query(db.RegimeList).table()
+        for regime_option in regimes:
+            option = regime_option["regime"].replace("-", "")
+            if option.lower() == regime.lower():
+                msg = (
+                    f"Regime {regime} matched to {regime_option["regime"]}. "
+                )
+                logger.warning(msg)
+                return regime_option["regime"]
+            else:
+                continue
+
+
     if len(regime_table) == 0:
         msg = (
-            f"Regime {regime} not found in database. "
+            f"Regime not found in database: {regime}. "
             f"Please add it to the RegimesList table or use an existing regime.\n"
             f"Available regimes:\n {db.query(db.RegimeList).table()}"
         )
