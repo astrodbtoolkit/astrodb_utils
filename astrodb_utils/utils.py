@@ -1,5 +1,6 @@
 """Utils functions for use in ingests."""
 
+import datetime
 import logging
 import os
 import socket
@@ -14,6 +15,7 @@ __all__ = [
     "exit_function",
     "get_db_regime",
     "AstroDBError",
+    "check_obs_date",
 ]
 
 
@@ -169,9 +171,25 @@ def get_db_regime(db, regime:str, raise_error=True):
 
         return regime_table["regime"][0]
 
+    # try to match the regime hyphens removed
+    if len(regime_table) == 0:
+        regime.replace("-", "")
+        regimes = db.query(db.RegimeList).table()
+        for regime_option in regimes:
+            option = regime_option["regime"].replace("-", "")
+            if option.lower() == regime.lower():
+                msg = (
+                    f"Regime {regime} matched to {regime_option["regime"]}. "
+                )
+                logger.warning(msg)
+                return regime_option["regime"]
+            else:
+                continue
+
+
     if len(regime_table) == 0:
         msg = (
-            f"Regime {regime} not found in database. "
+            f"Regime not found in database: {regime}. "
             f"Please add it to the RegimesList table or use an existing regime.\n"
             f"Available regimes:\n {db.query(db.RegimeList).table()}"
         )
@@ -181,3 +199,32 @@ def get_db_regime(db, regime:str, raise_error=True):
         msg = f"Unexpected condition while searching for regime {regime} in database."
 
     exit_function(msg, raise_error=raise_error, return_value=None)
+
+
+def check_obs_date(date, raise_error=True):
+    """
+    Check if the observation date is in the correct format
+    Parameters
+    ----------
+    date: str
+        Observation date
+
+    Returns
+    -------
+    bool
+        True if the date is in the correct format, False otherwise
+    """
+    try:
+        parsed_date = datetime.date.fromisoformat(date)
+        logger.debug(
+            f"Observation date {date} is valid: {parsed_date.strftime('%d %b %Y')}"
+        )
+        return parsed_date
+    except ValueError as e:
+        msg = f"Observation date {date} is not valid: {e}"
+        result = None
+        if raise_error:
+            raise AstroDBError(msg)
+        else:
+            logger.warning(msg)
+            return result
