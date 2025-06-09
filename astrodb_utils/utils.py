@@ -179,7 +179,7 @@ def get_db_regime(db, regime:str, raise_error=True):
             option = regime_option["regime"].replace("-", "")
             if option.lower() == regime.lower():
                 msg = (
-                    f"Regime {regime} matched to {regime_option["regime"]}. "
+                    f"Regime {regime} matched to {regime_option['regime']}. "
                 )
                 logger.warning(msg)
                 return regime_option["regime"]
