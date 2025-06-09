@@ -26,7 +26,9 @@ def test_spectrum_not_nans(spectrum_path):
     check = _check_spectrum_not_nans(spectrum)
     assert check is True
 
-
+@pytest.mark.filterwarnings(
+    "ignore", message=".*Standard Deviation has values of 0 or less*"
+)
 @pytest.mark.parametrize(
     "spectrum_path",
     [
@@ -39,7 +41,9 @@ def test_check_spectrum_wave_units(spectrum_path):
     check = _check_spectrum_wave_units(spectrum)
     assert check is True
 
-
+@pytest.mark.filterwarnings(
+    "ignore", message=".*Standard Deviation has values of 0 or less*"
+)
 @pytest.mark.parametrize(
     "spectrum_path",
     [
@@ -54,7 +58,7 @@ def test_check_spectrum_flux_units(spectrum_path):
 
 
 @pytest.mark.filterwarnings(
-    "ignore", message=".*Standard Deviation has values of 0 or less.*"
+    "ignore", message=".*Standard Deviation has values of 0 or less*"
 )
 @pytest.mark.parametrize(
     ("spectrum_path","result"),
@@ -74,16 +78,6 @@ def test_check_spectrum_plottable(spectrum_path, result):
     assert check is result
 
 
-
-
-
-@pytest.mark.filterwarnings(
-    "ignore",
-    message=".*SAWarning: Column 'Spectra.reference' is marked as a member of the primary key for table 'Spectra'.*",
-)
-@pytest.mark.filterwarnings(
-    "ignore", message=".*'kiwi': No known catalog could be found.*"
-)
 @pytest.mark.parametrize(
     "test_input, message",
     [
