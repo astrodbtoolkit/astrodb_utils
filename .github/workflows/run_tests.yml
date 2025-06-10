@@ -21,9 +21,14 @@ jobs:
         python-version: ["3.11", "3.12", "3.13"]
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout utils repo
+      uses: actions/checkout@v4
+
+    - name: Checkout template database repo
+      uses: actions/checkout@v4
       with:
-        submodules: true
+        repository: astrodbtoolkit/astrodb-template-db
+        path: astrodb-template-db
                 
     - name: Check ADS_TOKEN
       shell: bash
@@ -35,7 +40,6 @@ jobs:
         else
           echo "ADS_TOKEN is set"
         fi
-    
     
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5

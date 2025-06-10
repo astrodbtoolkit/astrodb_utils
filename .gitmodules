@@ -1,3 +1,0 @@
-[submodule "astrodb-template-db"]
-	path = astrodb-template-db
-	url = https://github.com/astrodbtoolkit/astrodb-template-db.git
