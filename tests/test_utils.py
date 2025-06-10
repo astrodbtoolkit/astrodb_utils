@@ -21,8 +21,8 @@ def test_get_db_regime(db, input, db_regime):
 def test_get_db_regime_errors(db):
     #  TESTS WHICH SHOULD FAIL
     with pytest.raises(AstroDBError) as error_message:
-        get_db_regime(db, "nir")
-    assert "Regime nir not found in database" in str(error_message.value)
+        get_db_regime(db, "not_a_regime")
+    assert "Regime not_a_regime not found in database" in str(error_message.value)
 
     with pytest.raises(AstroDBError) as error_message:
         get_db_regime(db, "xray")
