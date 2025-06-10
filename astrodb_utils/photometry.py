@@ -153,7 +153,6 @@ def ingest_photometry(
         {
             "source": db_name,
             "band": band,
-            "regime": regime,
             "magnitude": str(
                 magnitude
             ),  # Convert to string to maintain significant digits
@@ -164,6 +163,10 @@ def ingest_photometry(
             "reference": reference,
         }
     ]
+    # In case regime column is not present
+    if regime is not None:
+        photometry_data[0]["regime"] = regime
+
     logger.debug(f"Photometry data: {photometry_data}")
 
     try:
