@@ -495,4 +495,5 @@ def get_db_publication(db, reference: str, raise_error: bool = True):
     else:
         msg = f"Unexpected condition while searching for reference: {reference}"
 
-    exit_function(msg, raise_error=raise_error, return_value=None)
+    result = exit_function(msg, raise_error=raise_error, return_value=None)
+    return result

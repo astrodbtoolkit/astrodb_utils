@@ -305,9 +305,12 @@ def ingest_spectrum(
         msg = "Reference is required."
         flags["message"] = msg
         exit_function(msg, raise_error=raise_error, return_value=flags)
+        return flags
     else:
-        reference = get_db_publication(db, reference, raise_error=raise_error)
-        
+        reference2 = get_db_publication(db, reference, raise_error=raise_error)
+        if reference2 is None:
+            flags["message"] = f"Reference not found in database: {reference}."
+            return flags
 
     # Check if regime is provided and is in the Regimes table         
     regime = get_db_regime(db, regime, raise_error=raise_error)
