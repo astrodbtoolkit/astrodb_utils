@@ -173,7 +173,7 @@ def get_db_regime(db, regime:str, raise_error=True):
 
     # try to match the regime hyphens removed
     if len(regime_table) == 0:
-        regime.replace("-", "")
+        regime = regime.replace("-", "")
         regimes = db.query(db.RegimeList).table()
         for regime_option in regimes:
             option = regime_option["regime"].replace("-", "")

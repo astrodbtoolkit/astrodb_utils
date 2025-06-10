@@ -266,7 +266,6 @@ def ingest_spectrum(
     # Get source name as it appears in the database
     db_name = find_source_in_db(db, source)
     logger.debug(f"Found db_name: {db_name} for source: {source}")
-
     if len(db_name) == 1:
         db_name = db_name[0]
     else:
@@ -300,6 +299,7 @@ def ingest_spectrum(
             logger.warning(msg)
             return flags
 
+    # Make sure reference is provided and is in the Publications table
     if reference is None:
         msg = "Reference is required."
         flags["message"] = msg
@@ -333,7 +333,8 @@ def ingest_spectrum(
                 logger.warning(msg)
                 flags["message"] = msg
                 return flags
-             
+
+    # Check if regime is provided and is in the Regimes table         
     regime = get_db_regime(db, regime, raise_error=raise_error)
     if regime is None:
         msg = f"Regime not found in database: {regime}."
@@ -343,18 +344,6 @@ def ingest_spectrum(
         else:
             logger.warning(msg)
             return flags
-
-    instrument, mode, telescope = get_db_instrument(
-        db,
-        instrument=instrument,
-        mode=mode,
-        telescope=telescope,
-    )
-
-    # Check if spectrum file(s) are accessible
-    check_spectrum_accessible(spectrum)
-    if original_spectrum is not None:
-        check_spectrum_accessible(original_spectrum)
 
     instrument, mode, telescope = get_db_instrument(
         db,
