@@ -109,7 +109,11 @@ def ingest_photometry(
             return flags
 
     # TODO: Make sure band exists in the PhotometryFilters table
-    band_match = db.query(db.PhotometryFilters).filter(db.PhotometryFilters.c.band == band).table()
+    band_match = (
+        db.query(db.PhotometryFilters)
+        .filter(db.PhotometryFilters.c.band == band)
+        .table()
+    )
     if len(band_match) == 0:
         msg = f"Band {band} not found in PhotometryFilters table."
         if raise_error:
@@ -121,7 +125,11 @@ def ingest_photometry(
 
     # If telescope is provided, make sure it exists in the Telescopes table
     if telescope is not None:
-        telescope_match = db.query(db.Telescopes).filter(db.Telescopes.c.telescope == telescope).table()
+        telescope_match = (
+            db.query(db.Telescopes)
+            .filter(db.Telescopes.c.telescope == telescope)
+            .table()
+        )
         if len(telescope_match) == 0:
             msg = f"Telescope {telescope} not found in Telescopes table."
             if raise_error:
@@ -145,8 +153,9 @@ def ingest_photometry(
         {
             "source": db_name,
             "band": band,
-            "regime": regime,
-            "magnitude": str(magnitude),  # Convert to string to maintain significant digits
+            "magnitude": str(
+                magnitude
+            ),  # Convert to string to maintain significant digits
             "magnitude_error": mag_error,
             "telescope": telescope,
             "epoch": epoch,
@@ -154,6 +163,10 @@ def ingest_photometry(
             "reference": reference,
         }
     ]
+    # In case regime column is not present
+    if regime is not None:
+        photometry_data[0]["regime"] = regime
+
     logger.debug(f"Photometry data: {photometry_data}")
 
     try:
@@ -186,12 +199,23 @@ def ingest_photometry(
     return flags
 
 
-def ingest_photometry_filter(db, *, telescope=None, instrument=None, filter_name=None, ucd=None):
+def ingest_photometry_filter(
+    db,
+    *,
+    telescope=None,
+    instrument=None,
+    filter_name=None,
+    ucd=None,
+    wavelength_col_name: str = "effective_wavelength_angstroms",
+    width_col_name: str = "width_angstroms",
+):
     """
     Add a new photometry filter to the database
     """
     # Fetch existing telescopes, add if missing
-    existing = db.query(db.Telescopes).filter(db.Telescopes.c.telescope == telescope).table()
+    existing = (
+        db.query(db.Telescopes).filter(db.Telescopes.c.telescope == telescope).table()
+    )
     if len(existing) == 0:
         with db.engine.connect() as conn:
             conn.execute(db.Telescopes.insert().values({"telescope": telescope}))
@@ -201,16 +225,24 @@ def ingest_photometry_filter(db, *, telescope=None, instrument=None, filter_name
         logger.info(f"Telescope {telescope} already exists.")
 
     # Fetch existing instruments, add if missing
-    existing = db.query(db.Instruments).filter(db.Instruments.c.instrument == instrument).table()
+    existing = (
+        db.query(db.Instruments)
+        .filter(db.Instruments.c.instrument == instrument)
+        .table()
+    )
     if len(existing) == 0:
-        ingest_instrument(db, telescope=telescope, instrument=instrument, mode="Imaging")
+        ingest_instrument(
+            db, telescope=telescope, instrument=instrument, mode="Imaging"
+        )
         logger.info(f"Added instrument {instrument}.")
     else:
         logger.info(f"Instrument {instrument} already exists.")
 
     # Get data from SVO
     try:
-        filter_id, wave_eff, fwhm, width_effective = fetch_svo(telescope, instrument, filter_name)
+        filter_id, wave_eff, fwhm, width_effective = fetch_svo(
+            telescope, instrument, filter_name
+        )
         logger.info(
             f"From SVO: Filter {filter_id} has effective wavelength {wave_eff} "
             f"and FWHM {fwhm} and width_effective {width_effective}."
@@ -219,7 +251,6 @@ def ingest_photometry_filter(db, *, telescope=None, instrument=None, filter_name
         msg = f"Error fetching filter data from SVO: {e}"
         logger.error(msg)
         raise AstroDBError(msg)
-
 
     if ucd is None:
         ucd = assign_ucd(wave_eff)
@@ -233,8 +264,8 @@ def ingest_photometry_filter(db, *, telescope=None, instrument=None, filter_name
                     {
                         "band": filter_id,
                         "ucd": ucd,
-                        "effective_wavelength_angstroms": wave_eff.to(u.Angstrom).value,
-                        "width_angstroms": width_effective.to(u.Angstrom).value,
+                        wavelength_col_name: wave_eff.to(u.Angstrom).value,
+                        width_col_name: width_effective.to(u.Angstrom).value,
                     }
                 )
             )
