@@ -307,8 +307,8 @@ def ingest_spectrum(
         exit_function(msg, raise_error=raise_error, return_value=flags)
         return flags
     else:
-        reference2 = get_db_publication(db, reference, raise_error=raise_error)
-        if reference2 is None:
+        reference_db = get_db_publication(db, reference, raise_error=raise_error)
+        if reference_db is None:
             flags["message"] = f"Reference not found in database: {reference}."
             return flags
 
@@ -323,6 +323,7 @@ def ingest_spectrum(
             logger.warning(msg)
             return flags
 
+    # Find the right instrument-mode-telescope in the database
     instrument, mode, telescope = get_db_instrument(
         db,
         instrument=instrument,
@@ -338,6 +339,7 @@ def ingest_spectrum(
     # Check if spectrum is plottable
     flags["plottable"] = check_spectrum_plottable(spectrum)
 
+    # If it's a FITS file, verify the header
     if os.path.splitext(spectrum)[1] == ".fits":
         with fits.open(spectrum) as hdul:
             hdul.verify("warn")
@@ -352,7 +354,7 @@ def ingest_spectrum(
         "instrument": instrument,
         "mode": mode,
         "observation_date": parsed_date,
-        "reference": reference,
+        "reference": reference_db,
         "comments": comments,
         "other_references": other_references,
     }
