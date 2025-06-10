@@ -16,6 +16,7 @@ from specutils import Spectrum
 
 from astrodb_utils import AstroDBError, exit_function
 from astrodb_utils.instruments import get_db_instrument
+from astrodb_utils.publications import get_db_publication
 from astrodb_utils.sources import find_source_in_db
 from astrodb_utils.utils import check_obs_date, get_db_regime, internet_connection
 
@@ -303,36 +304,10 @@ def ingest_spectrum(
     if reference is None:
         msg = "Reference is required."
         flags["message"] = msg
-
-        if raise_error:
-            raise AstroDBError(msg)
-        else:
-            logger.warning(msg)
-            return flags
+        exit_function(msg, raise_error=raise_error, return_value=flags)
     else:
-        # reference = check_publication_in_db(db, reference)
-        pubs_table = (
-            db.query(db.Publications)
-            .filter(db.Publications.c.reference.ilike(reference))
-            .table()
-        )
-
-        if len(pubs_table) == 1:
-            reference = pubs_table["reference"][0]
-        else:
-            if len(pubs_table) == 0:
-                msg = f"Reference not found in database: {reference}. Add it to the Publications table."
-            elif len(pubs_table) > 1:
-                msg = f"Multiple entries for reference {reference} found in database. Check the Publications table. \n  Matches: \n {pubs_table}"
-            else:
-                msg = f"Unexpected condition: {reference}."
-
-            if raise_error:
-                raise AstroDBError(msg)
-            else:
-                logger.warning(msg)
-                flags["message"] = msg
-                return flags
+        reference = get_db_publication(db, reference, raise_error=raise_error)
+        
 
     # Check if regime is provided and is in the Regimes table         
     regime = get_db_regime(db, regime, raise_error=raise_error)
