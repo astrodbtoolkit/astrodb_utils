@@ -76,8 +76,8 @@ filterwarnings = [
 # Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
 # McCabe complexity (`C901`) by default.
 # See https://docs.astral.sh/ruff/rules/
-select = ["E4", "E7", "E9", "F", "I", "PL", "C901", "RUF010"]
-#select = ["ALL"]
+#select = ["E4", "E7", "E9", "F", "I", "PL", "C901", "RUF010"]
+select = ["ALL"]
 ignore = ["PLR"]  # pylint refactor
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
@@ -94,3 +94,6 @@ exclude = [
 # Flag errors (`C901`) whenever the complexity level exceeds this number.
 # Default is 10
 max-complexity = 20
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy" # Use the NumPy docstring style guide. 
