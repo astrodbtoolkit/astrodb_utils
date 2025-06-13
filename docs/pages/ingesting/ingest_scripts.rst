@@ -1,12 +1,13 @@
 Ingest Scripts
 ==============
 Ingest scripts can be used to add a bunch of data to the database at once.
-Often ingests are performed by reading in a file (e.g.,csv) that contains a table of data 
-and then ingesting each row of the table into the database.
-Below is an example script for ingesting sources discovered by Rojas et al. 2012 into the SIMPLE Archive from a .csv file 
+Often ingests are performed by reading in a file (e.g., csv) that contains
+a table of data and then ingesting each row of the table into the database.
+Below is an example script for ingesting sources discovered by
+Rojas et al. 2012 into the SIMPLE Archive from a .csv file
 that has columns named `name`, `ra`, `dec`.
 
-.. code-block:: python 
+.. code-block:: python
 
     from astropy.io import ascii
     from simple.schema import REFERENCE_TABLES
@@ -16,28 +17,29 @@ that has columns named `name`, `ra`, `dec`.
 
     SAVE_DB = False # Set to True to write out the JSON files at the end of the script
     RECREATE_DB = True # Set to True to recreate the database from the JSON files
-
+    
     # Load the database
-    db = load_astrodb("SIMPLE.sqlite", 
-                recreatedb=RECREATE_DB, 
-                reference_tables=REFERENCE_TABLES
+    db = load_astrodb("SIMPLE.sqlite",
+                recreatedb=RECREATE_DB,
+                reference_tables=REFERENCE_TABLES,
+                felis_schema="simple/schema.yaml",
                 )
 
 
     def ingest_pubs(db):
         # Ingest discovery publication
         ingest_publication(
-            db, 
+            db,
             doi="10.1088/0004-637X/748/2/93"
             )
-    
+
     def ingest_sources(db):
         # read the csv data into an astropy table
         data_table = ascii.read(file.csv, format="csv")
 
         n_added = 0
         n_skipped = 0
-        
+
         for source in data_table:
             try:
                 ingest_source(
