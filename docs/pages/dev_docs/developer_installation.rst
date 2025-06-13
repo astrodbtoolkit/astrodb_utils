@@ -1,22 +1,6 @@
 Developer Documentation
 =======================
 
-.. toctree::
-    :hidden:
-    :titlesonly:
-
-    ingest_functions
-    documentation
-
-
-Setup
------
-
-If you'd like to contribute to `astrodb_utils`, first, first make a fork of the repository. 
-Then, clone your fork of the repository to your local machine. 
-Contributions will be accepted via pull requests from your fork to the primary repository.
-
-
 Installation
 ------------
 
@@ -43,6 +27,7 @@ All contributions should include tests. To run the tests, use the command
     pytest
 
 Linting and Formatting
+----------------------
 ----------------------
 
 Use `ruff <https://docs.astral.sh/ruff/>`_ for linting and formatting.    
