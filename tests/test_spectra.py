@@ -21,8 +21,8 @@ from astrodb_utils.spectra import (
         ("tests/data/WISEAJ2018-74MIRI.fits"),
     ],
 )
-def test_spectrum_not_nans(spectrum_path):
-    spectrum = Spectrum.read(spectrum_path, format='tabular-fits')
+def test_spectrum_not_nans(spectrum_path: str):
+    spectrum = Spectrum.read(spectrum_path, format="tabular-fits")
     check = _check_spectrum_not_nans(spectrum)
     assert check is True
 
@@ -70,16 +70,16 @@ def test_check_spectrum_flux_units(spectrum_path):
 )
 def test_check_spectrum_plottable(spectrum_path, result):
     try:
-        spectrum = Spectrum.read(spectrum_path, format='tabular-fits')
+        spectrum = Spectrum.read(spectrum_path, format="tabular-fits")
         check = check_spectrum_plottable(spectrum, show_plot=False)
-    except IndexError: # Index error expected for U50184_1022+4114_HD89744B_BUR08B
+    except IndexError:  # Index error expected for U50184_1022+4114_HD89744B_BUR08B
         check = False
-        
+
     assert check is result
 
 
 @pytest.mark.parametrize(
-    "test_input, message",
+    ("test_input", "message"),
     [
         (
             {
@@ -182,7 +182,7 @@ def test_ingest_spectrum_errors(db, test_input, message):
     # Check that error was raised
     with pytest.raises(AstroDBError) as error_message:
         _ = ingest_spectrum(**parameters)
-        assert message in str(error_message.value)
+    assert message in str(error_message.value)
 
     # Suppress error but check that it was still captured
     result = ingest_spectrum(**parameters, raise_error=False)
