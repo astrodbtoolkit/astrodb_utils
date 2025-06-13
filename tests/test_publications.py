@@ -142,7 +142,7 @@ def test_get_db_publication_invalid(db):
     with pytest.raises(AstroDBError) as error_message:
         get_db_publication(db, reference="Cruz25")
         
-    assert "Reference Cruz25 not found" in str(error_message.value)
+    assert "Reference not found" in str(error_message.value)
     
     result = get_db_publication(db, reference="Cruz25", raise_error=False)
     assert result is None

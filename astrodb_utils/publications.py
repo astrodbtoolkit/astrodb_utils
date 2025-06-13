@@ -483,16 +483,17 @@ def get_db_publication(db, reference: str, raise_error: bool = True):
 
     if len(pubs_table) == 0:
         msg = (
-            f"Reference {reference} not found in database. "
-            "Please add it to the Publications table."
+            f"Reference not found in database:  {reference}  "
+            "Add it to the Publications table."
         )
     elif len(pubs_table) > 1:
         msg = (
             f"Multiple entries for reference {reference} found in database. "
-            "Please check the Publications table. \n  "
+            "Check the Publications table. \n  "
             f"Matches: \n {pubs_table}"
         )
     else:
-        msg = f"Unexpected condition while searching for reference {reference} in database."
+        msg = f"Unexpected condition while searching for reference: {reference}"
 
-    exit_function(msg, raise_error=raise_error, return_value=None)
+    result = exit_function(msg, raise_error=raise_error, return_value=None)
+    return result
