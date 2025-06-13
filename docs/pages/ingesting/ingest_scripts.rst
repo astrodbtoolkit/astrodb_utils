@@ -17,7 +17,7 @@ that has columns named `name`, `ra`, `dec`.
 
     SAVE_DB = False # Set to True to write out the JSON files at the end of the script
     RECREATE_DB = True # Set to True to recreate the database from the JSON files
-    
+
     # Load the database
     db = load_astrodb("SIMPLE.sqlite",
                 recreatedb=RECREATE_DB,
