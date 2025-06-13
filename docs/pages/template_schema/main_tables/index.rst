@@ -7,3 +7,4 @@ Main tables
 
    sources
    names
+   versions

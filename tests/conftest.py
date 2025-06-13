@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 
 import pytest
 
@@ -9,8 +8,6 @@ from astrodb_utils import load_astrodb
 from astrodb_utils.publications import ingest_publication
 
 logger = logging.getLogger(__name__)
-
-sys.path.append("./tests/astrodb-template-db/")
 
 # TODO: Figure out how to import ReferenceTables
 REFERENCE_TABLES = [
@@ -28,8 +25,8 @@ REFERENCE_TABLES = [
 
 
 DB_NAME = "tests/test-template-db.sqlite"
-DB_PATH = "tests/astrodb-template-db/data"
-SCHEMA_PATH = "tests/astrodb-template-db/schema/schema.yaml"
+DB_PATH = "astrodb-template-db/data"
+SCHEMA_PATH = "astrodb-template-db/schema/schema.yaml"
 CONNECTION_STRING = "sqlite:///" + DB_NAME
 
 
@@ -55,7 +52,7 @@ def db():
         ignore_ads=True,
     )
 
-    ingest_publication(db, doi="10.1086/161442", reference="Prob83")
+    ingest_publication(db, doi="10.1086/161442", reference="Prob83", ignore_ads=True)
 
     return db
 

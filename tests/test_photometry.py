@@ -101,6 +101,17 @@ def test_ingest_photometry_fails(db):
     assert result["added"] is False
 
 
+@pytest.mark.dependency()
+@pytest.mark.xfail(reason="Test may fail due to SVO being down")
+def test_svo_up():
+    """
+    Test if the SVO is reachable
+    """
+    filter_id, wave, fwhm, width = fetch_svo("HST", "WFC3_IR", "F140W")
+    assert filter_id == "HST/WFC3_IR.F140W"
+
+
+@pytest.mark.dependency(depends=["test_svo_up"])
 @pytest.mark.parametrize(
     "telescope, instrument, filter_name, wavelength",
     [("HST", "WFC3_IR", "F140W", 13734.66)],
@@ -113,6 +124,7 @@ def test_fetch_svo(telescope, instrument, filter_name, wavelength):
     assert width.unit == u.Angstrom
 
 
+@pytest.mark.dependency(depends=["test_svo_up"])
 def test_fetch_svo_fail():
     with pytest.raises(AstroDBError) as error_message:
         fetch_svo("HST", "WFC3", "F140W")
@@ -144,7 +156,7 @@ def test_fetch_svo_fail():
 def test_assign_ucd(wave, ucd):
     assert assign_ucd(wave * u.Angstrom) == ucd
 
-
+@pytest.mark.dependency(depends=["test_svo_up"])
 def test_ingest_photometry_filter(db):
     ingest_photometry_filter(
         db, telescope="SLOAN", instrument="SDSS", filter_name="zprime_filter"
@@ -157,6 +169,7 @@ def test_ingest_photometry_filter(db):
     )
 
 
+@pytest.mark.dependency(depends=["test_svo_up"])
 def test_ingest_photometry_filter_errors(db):
     # Filter already ingested
     with pytest.raises(AstroDBError) as error_message:

@@ -30,3 +30,8 @@ sphinx:
 python:
   install:
     - requirements: docs/doc_requirements.txt
+
+submodules:
+  include: 
+    - astrodb-template-db
+    

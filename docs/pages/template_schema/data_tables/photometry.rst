@@ -9,6 +9,9 @@ Notes
 
 .. seealso::
 
+    :py:mod:`ingest_photometry<astrodb_utils.photometry.ingest_photometry>`
+        Function to ingest photometry data
+
     :doc:`../lookup_tables/photometryfilters`
         Documentation for the PhotometryFilters table
 

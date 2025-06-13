@@ -1,8 +1,9 @@
 import pytest
 from sqlalchemy import and_
 
-from astrodb_utils import (
-    AstroDBError,
+from astrodb_utils import AstroDBError
+from astrodb_utils.instruments import (
+    get_db_instrument,
     ingest_instrument,
 )
 
@@ -78,3 +79,22 @@ def test_ingest_instrument(db):
     assert "Telescope, Instrument, and Mode must be provided" in str(
         error_message.value
     )
+
+
+@pytest.mark.parametrize(
+    "telescope, instrument, mode",
+    [
+        ("2MASS", "2MASS", "imaging"),
+        ("WISE", "wise", "imaging"),
+    ],
+)
+def test_get_db_instrument(db, telescope, mode, instrument):
+    result = get_db_instrument(db, telescope=telescope, instrument=instrument, mode=mode)
+    assert result is not None
+
+
+def test_get_db_instrument_errors(db):
+    #  TESTS WHICH SHOULD FAIL
+    with pytest.raises(AstroDBError) as error_message:
+        get_db_instrument(db, telescope="JWST", instrument="test", mode="test")
+    assert "not found in database" in str(error_message.value)

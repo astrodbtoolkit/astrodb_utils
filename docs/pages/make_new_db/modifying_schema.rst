@@ -1,5 +1,5 @@
 Modifying the schema
-======================
+====================
 
 The template database comes with an existing schema, consisting of a set of tables and columns.
 It is expected that every usecase will modify this schema to suit their needs.
@@ -12,7 +12,7 @@ The `Felis Data Model documentation <Felis documentation>`_ provides a detailed 
 
 
 Required tables
-----------------
+---------------
 There are several tables which are expected by ``astrodb_utils`` and should be modified with great care: 
 
 * Sources 
@@ -23,7 +23,7 @@ There are several tables which are expected by ``astrodb_utils`` and should be m
 * Instruments
 
 Optional tables
-----------------
+---------------
 Optional tables are things like Spectra, Photometry, Radial Velocities, etc. 
 These are included in the template database and can be used as models for other data tables and can be removed/modified if not needed.
 
@@ -36,13 +36,13 @@ We encourage users to follow the detailed best practices for astronomical databa
 
 
 Long vs Wide tables
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 Think carefully about the structure of your tables.
 TODO: Need an example
 
 
 Column names
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
 * **Use lowercase column names.** This is a convention.
 * **Include units in the column name.** Since we do not have a way of storing Quantities in the database, 
   we recommend including the units in the column name. 
@@ -52,7 +52,7 @@ Column names
   
 
 Units
----------------------------
+-----
 Per `Chen et al. 2022 <https://iopscience.iop.org/article/10.3847/1538-4365/ac6268>`_, we explicitly define the units
 for each table in their name (e.g., in the `Sources` table, the column with Right Ascension values
 is named `ra_deg`). Doing so removes unit ambiguity when querying and modifying the database.

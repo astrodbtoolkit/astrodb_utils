@@ -25,13 +25,13 @@ Notes
     :doc:`../data_tables/photometry`
         Documentation for the Photometry table
 
-    :py:mod:`ingest_photometry_filter <astrodb_utils.photometry.ingest_photometry_filter>` function
+    :py:mod:`ingest_photometry_filter <astrodb_utils.photometry.ingest_photometry_filter>` 
         Function to ingest photometry filters
 
-    :py:mod:`fetch_svo <astrodb_utils.photometry.fetch_svo>` function
+    :py:mod:`fetch_svo <astrodb_utils.photometry.fetch_svo>` 
         Function to fetch SVO filter profiles
 
-    :py:mod:`assign_ucd <astrodb_utils.photometry.assign_ucd>` function
+    :py:mod:`assign_ucd <astrodb_utils.photometry.assign_ucd>` 
         Function to assign UCDs to photometry filters
 
 Table documentation

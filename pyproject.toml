@@ -28,6 +28,7 @@ dependencies = [
     "tqdm",
     "ads",
     "dateparser",
+    "specutils>=1.20.1",
 ]
 dynamic = ["version"]
 
@@ -36,6 +37,7 @@ test = [
     "pytest",
     "ruff>0.3.7",
     "pre-commit",
+    "pytest-dependency",
     ]
 docs = [
     "sphinx",
@@ -44,6 +46,8 @@ docs = [
     "nbsphinx",
     "pydata-sphinx-theme",
     "pandoc",
+    "sphinx_mdinclude",
+    "doc8"
     ]
 all = ["astrodb_utils[test, docs]"]
 
@@ -57,7 +61,6 @@ root = '.'
 write_to = "astrodb_utils/version.py"
 
 [tool.pytest.ini_options]
-testpaths = ["astrodb_utils/tests"]
 norecursedirs = "astrodb-template-db"
 addopts = "-ra" # show extra summary info
 log_cli = false # override on the command line with: pytest -o log_cli=1
@@ -83,6 +86,9 @@ unfixable = []
 
 [tool.ruff]
 line-length = 120
+exclude = [
+    "astrodb-template-db",  # ignore the astrodb-template-db submodule
+]
 
 [tool.ruff.lint.mccabe]
 # Flag errors (`C901`) whenever the complexity level exceeds this number.

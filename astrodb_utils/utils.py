@@ -6,23 +6,24 @@ import socket
 from pathlib import Path
 
 import requests
-import sqlalchemy.exc
 from astrodbkit.astrodb import Database, create_database
-from sqlalchemy import and_
 
 __all__ = [
-    "AstroDBError",
     "load_astrodb",
     "internet_connection",
-    "ingest_instrument",
     "exit_function",
+    "get_db_regime",
+    "AstroDBError",
 ]
-
-logger = logging.getLogger(__name__)
 
 
 class AstroDBError(Exception):
     """Custom error for AstroDB"""
+
+
+logger = logging.getLogger(__name__)
+msg = f"logger.parent.name: {logger.parent.name}, logger.parent.level: {logger.parent.level}"
+logger.debug(msg)
 
 
 def load_astrodb(
@@ -72,7 +73,7 @@ def load_astrodb(
         create_database(db_connection_string, felis_schema=felis_schema)
         # Connect and load the database
         db = Database(db_connection_string, reference_tables=reference_tables)
-        if logger.level <= 10:
+        if logger.parent.level <= 10:
             db.load_database(data_path, verbose=True)
         else:
             db.load_database(data_path)
@@ -115,97 +116,7 @@ def check_url_valid(url):
     return status
 
 
-def ingest_instrument(db, *, telescope=None, instrument=None, mode=None):
-    """
-    Script to ingest instrumentation
-    TODO: Add option to ingest references for the telescope and instruments
-
-    Parameters
-    ----------
-    db: astrodbkit.astrodb.Database
-        Database object created by astrodbkit
-    telescope: str
-    instrument: str
-    mode: str
-
-    Returns
-    -------
-
-    None
-
-    """
-
-    # Make sure enough inputs are provided
-    if telescope is None and (instrument is None or mode is None):
-        msg = "Telescope, Instrument, and Mode must be provided"
-        logger.error(msg)
-        raise AstroDBError(msg)
-
-    msg_search = f"Searching for {telescope}, {instrument}, {mode} in database"
-    logger.info(msg_search)
-
-    # Search for the inputs in the database
-    telescope_db = (
-        db.query(db.Telescopes).filter(db.Telescopes.c.telescope == telescope).table()
-    )
-    mode_db = (
-        db.query(db.Instruments)
-        .filter(
-            and_(
-                db.Instruments.c.mode == mode,
-                db.Instruments.c.instrument == instrument,
-                db.Instruments.c.telescope == telescope,
-            )
-        )
-        .table()
-    )
-
-    if len(telescope_db) == 1 and len(mode_db) == 1:
-        msg_found = (
-            f"{telescope}, {instrument}, and {mode} are already in the database."
-        )
-        logger.info(msg_found)
-        return
-
-    # Ingest telescope entry if not already present
-    if telescope is not None and len(telescope_db) == 0:
-        telescope_add = [{"telescope": telescope}]
-        try:
-            with db.engine.connect() as conn:
-                conn.execute(db.Telescopes.insert().values(telescope_add))
-                conn.commit()
-            msg_telescope = f"{telescope} was successfully ingested in the database"
-            logger.info(msg_telescope)
-        except sqlalchemy.exc.IntegrityError as e:  # pylint: disable=invalid-name
-            msg = "Telescope could not be ingested"
-            logger.error(msg)
-            raise AstroDBError(msg) from e
-
-    # Ingest instrument+mode (requires telescope) if not already present
-    if (
-        telescope is not None
-        and instrument is not None
-        and mode is not None
-        and len(mode_db) == 0
-    ):
-        instrument_add = [
-            {"instrument": instrument, "mode": mode, "telescope": telescope}
-        ]
-        try:
-            with db.engine.connect() as conn:
-                conn.execute(db.Instruments.insert().values(instrument_add))
-                conn.commit()
-            msg_instrument = f"{instrument} was successfully ingested in the database."
-            logger.info(msg_instrument)
-        except sqlalchemy.exc.IntegrityError as e:  # pylint: disable=invalid-name
-            msg = "Instrument/Mode could not be ingested"
-            logger.error(msg)
-            raise AstroDBError(msg) from e
-
-    return
-
-
-def exit_function(msg, raise_error=True):
+def exit_function(msg, raise_error=True, return_value=None):
     """
     Exit function to handle errors and exceptions
 
@@ -215,13 +126,58 @@ def exit_function(msg, raise_error=True):
         Message to be logged
     raise_error: bool
         Flag to raise an error
+    return_value: any
+        Value to be returned if raise_error is False
 
     Returns
     -------
 
     """
     if raise_error:
+        logger.error(msg)
         raise AstroDBError(msg)
     else:
         logger.warning(msg)
-        return
+        return return_value
+
+
+def get_db_regime(db, regime:str, raise_error=True):
+    """
+    Check if a regime is in the Regimes table using ilike matching.
+    This minimizes problems with case sensitivity.
+
+    If it is not found or there are multiple matches, raise an error or return None.
+    If it is found, return the reference as a string.
+
+    Returns
+    -------
+    str: The regime found
+    None: If the regime is not found or there are multiple matches.
+    """
+    regime_table = (
+        db.query(db.RegimeList).filter(db.RegimeList.c.regime.ilike(regime)).table()
+    )
+
+    if len(regime_table) == 1:
+        
+        # Warn if the regime found in the database was not exactly the same as the one requested
+        if regime_table["regime"][0] != regime:
+            msg = (
+                f"Regime {regime} matched to {regime_table['regime'][0]}. "
+            )
+            logger.warning(msg)
+
+        return regime_table["regime"][0]
+
+    if len(regime_table) == 0:
+        msg = (
+            f"Regime {regime} not found in database. "
+            f"Please add it to the RegimesList table or use an existing regime.\n"
+            f"Available regimes:\n {db.query(db.RegimeList).table()}"
+        )
+    elif len(regime_table) > 1:
+        msg = f"Multiple entries for regime {regime} found in database. Please check the Regimes table. Matches: {regime_table}"
+    else:
+        msg = f"Unexpected condition while searching for regime {regime} in database."
+
+    exit_function(msg, raise_error=raise_error, return_value=None)
