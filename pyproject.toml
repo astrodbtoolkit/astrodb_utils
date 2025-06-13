@@ -28,7 +28,7 @@ dependencies = [
     "tqdm",
     "ads>=0.12.7",
     "dateparser",
-    "specutils>=1.20.1",
+    "specutils>=2.0",
 ]
 dynamic = ["version"]
 
