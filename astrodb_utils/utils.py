@@ -203,7 +203,7 @@ def get_db_regime(db, regime:str, raise_error=True):
 
 def check_obs_date(date, raise_error=True):
     """
-    Check if the observation date is in the correct format
+    Check if the observation date is in a parseable ISO format (YYYY-MM-DD).
     Parameters
     ----------
     date: str
@@ -212,16 +212,16 @@ def check_obs_date(date, raise_error=True):
     Returns
     -------
     bool
-        True if the date is in the correct format, False otherwise
+        True if the date is in parseable ISO format, False otherwise
     """
     try:
         parsed_date = datetime.date.fromisoformat(date)
         logger.debug(
-            f"Observation date {date} is valid: {parsed_date.strftime('%d %b %Y')}"
+            f"Observation date {date} is parseable: {parsed_date.strftime('%d %b %Y')}"
         )
         return parsed_date
     except ValueError as e:
-        msg = f"Observation date {date} is not valid: {e}"
+        msg = f"Observation date {date} is not parseable as ISO format: {e}"
         result = None
         if raise_error:
             raise AstroDBError(msg)
