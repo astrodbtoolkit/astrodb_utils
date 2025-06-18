@@ -8,6 +8,7 @@ from astroquery.simbad import Simbad
 
 from astrodb_utils import AstroDBError, exit_function
 from astrodb_utils.publications import find_publication
+from astrodb_utils.utils import internet_connection
 
 __all__ = [
     "find_source_in_db",
@@ -88,6 +89,13 @@ def find_source_in_db(
             verbose=False,
             resolve_simbad=use_simbad,
         )
+
+    # If no internet, then do not use Simbad
+    if use_simbad and not internet_connection():
+        logger.warning(
+            f"{source}: No internet connection, not using Simbad to resolve source name."
+        )
+        use_simbad = False
 
     # If still no matches, try to resolve the name with Simbad
     if len(db_name_matches) == 0 and use_simbad:

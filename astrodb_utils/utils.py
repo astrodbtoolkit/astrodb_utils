@@ -1,5 +1,6 @@
 """Utils functions for use in ingests."""
 
+import datetime
 import logging
 import os
 import socket
@@ -7,6 +8,7 @@ from pathlib import Path
 
 import requests
 from astrodbkit.astrodb import Database, create_database
+from sqlalchemy import func
 
 __all__ = [
     "load_astrodb",
@@ -14,6 +16,7 @@ __all__ = [
     "exit_function",
     "get_db_regime",
     "AstroDBError",
+    "check_obs_date",
 ]
 
 
@@ -45,7 +48,7 @@ def load_astrodb(
     felis_schema=None
 ):
     """Utility function to load the database
-    
+
     Parameters
     ----------
     db_file : str
@@ -55,7 +58,7 @@ def load_astrodb(
     recreatedb : bool
         Flag whether or not the database file should be recreated
     reference_tables : list
-        List of tables to consider as reference tables.   
+        List of tables to consider as reference tables.
         Default: Publications, Telescopes, Instruments, Versions, PhotometryFilters
     felis_schema : str
         Path to Felis schema; default None
@@ -66,7 +69,7 @@ def load_astrodb(
 
     # removes the current .db file if one already exists
     if recreatedb and db_file_path.exists():
-        os.remove(db_file)  
+        os.remove(db_file)
 
     if not db_file_path.exists():
         # Create database, using Felis if provided
@@ -159,7 +162,6 @@ def get_db_regime(db, regime:str, raise_error=True):
     )
 
     if len(regime_table) == 1:
-        
         # Warn if the regime found in the database was not exactly the same as the one requested
         if regime_table["regime"][0] != regime:
             msg = (
@@ -169,15 +171,61 @@ def get_db_regime(db, regime:str, raise_error=True):
 
         return regime_table["regime"][0]
 
+    # try to match the regime hyphens removed
+    if len(regime_table) == 0:
+        regime = regime.replace("-", "")
+        regime_match = (db.query(db.RegimeList).
+            filter(func.replace(func.lower(db.RegimeList.c.regime),"-","") == regime.lower())
+            .table())
+
+        if len(regime_match) == 1:
+            msg = (
+                f"Regime {regime} matched to {regime_match['regime'][0]}. "
+            )
+            logger.warning(msg)
+            return regime_match["regime"][0]
+
     if len(regime_table) == 0:
         msg = (
-            f"Regime {regime} not found in database. "
+            f"Regime not found in database: {regime}. "
             f"Please add it to the RegimesList table or use an existing regime.\n"
             f"Available regimes:\n {db.query(db.RegimeList).table()}"
         )
     elif len(regime_table) > 1:
-        msg = f"Multiple entries for regime {regime} found in database. Please check the Regimes table. Matches: {regime_table}"
+        msg = (
+            f"Multiple entries for regime {regime} found in database. "
+            f"Please check the Regimes table. Matches: {regime_table}"
+        )
     else:
         msg = f"Unexpected condition while searching for regime {regime} in database."
 
     exit_function(msg, raise_error=raise_error, return_value=None)
+
+
+def check_obs_date(date, raise_error=True):
+    """
+    Check if the observation date is in a parseable ISO format (YYYY-MM-DD).
+    Parameters
+    ----------
+    date: str
+        Observation date
+
+    Returns
+    -------
+    bool
+        True if the date is in parseable ISO format, False otherwise
+    """
+    try:
+        parsed_date = datetime.date.fromisoformat(date)
+        logger.debug(
+            f"Observation date {date} is parseable: {parsed_date.strftime('%d %b %Y')}"
+        )
+        return parsed_date
+    except ValueError as e:
+        msg = f"Observation date {date} is not parseable as ISO format: {e}"
+        result = None
+        if raise_error:
+            raise AstroDBError(msg)
+        else:
+            logger.warning(msg)
+            return result
