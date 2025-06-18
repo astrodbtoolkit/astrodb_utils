@@ -106,11 +106,11 @@ def test_check_spectrum_plottable(spectrum_path, result):
                 "telescope": "IRTF",
                 "instrument": "SpeX",
                 "mode": "Prism",
-                "regime": "nir",
+                "regime": "notarealregime",
                 "obs_date": "2020-01-01",
                 "reference": "Burg06"
             },
-            "Reference is required",
+            "Regime not found in database",
         ),
         (
             {

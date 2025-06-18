@@ -450,7 +450,7 @@ def find_spectra(
         filter_list.append(db.Spectra.c.mode == mode)
 
     if len(filter_list) > 0:
-        source_spec_data = source_spec_data.filter(and_(filter_list))
+        source_spec_data = source_spec_data.filter(and_(*filter_list))
     else:
         source_spec_data = source_spec_data.filter(filter_list[0])
 
