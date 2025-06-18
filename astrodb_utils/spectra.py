@@ -449,13 +449,16 @@ def find_spectra(
     if mode is not None:
         filter_list.append(db.Spectra.c.mode == mode)
 
+    # Actually perform the query
     if len(filter_list) > 0:
         source_spec_data = source_spec_data.filter(and_(*filter_list))
     else:
         source_spec_data = source_spec_data.filter(filter_list[0])
-
-    # Actually perform the query
     source_spec_data = source_spec_data.table()
+
+    if len(source_spec_data) > 0:
+        logger.debug(f"Found {len(source_spec_data)} spectra for source: {source}")
+        logger.debug(f"Spectra data: {source_spec_data}")
 
     return source_spec_data
 
