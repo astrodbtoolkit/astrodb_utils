@@ -8,4 +8,4 @@
 The AstroDB Toolkit provides a set of tools to help astronomers work with and create databases. 
 The `astrodb_utils` package provides a set of functions to query and ingest data into databases built with the `astrodb-template-db` schema.
 
-[Documentation for the Toolkit](https://astrodb-utils.readthedocs.io/en/latest/)
+[Documentation for the Toolkit](https://astrodb-utils.readthedocs.io/en/stable/)
