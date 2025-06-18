@@ -26,7 +26,7 @@ if matplotlib_check is not None:
     import matplotlib.pyplot as plt
 
 
-__all__ = ["check_spectrum_plottable"]
+__all__ = ["check_spectrum_plottable", "ingest_spectrum", "find_spectra"]
 
 logger = logging.getLogger(__name__)
 
