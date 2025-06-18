@@ -84,32 +84,22 @@ def test_check_spectrum_plottable(spectrum_path, result):
         (
             {
                 "source": "Gl 229b",
-                "telescope": "IRTF",
-                "instrument": "SpeX",
-                "mode": "Prism",
-            },
-            "Observation date is not valid",
-        ),  # missing regime
-        (
-            {
-                "source": "Gl 229b",
                 "regime": "nir",
                 "instrument": "SpeX",
                 "obs_date": "2020-01-01",
             },
             "Reference is required",
-            # "Value required for telescope",
-        ),  # missing telescope
+        ),
         (
             {
                 "source": "Gl 229b",
                 "regime": "nir",
                 "telescope": "IRTF",
                 "obs_date": "2020-01-01",
+                "reference": "Burg06"
             },
-            "Reference is required",
-            # "Value required for instrument",
-        ),  # missing instrument
+            "Instrument is required",
+        ),
         (
             {
                 "source": "Gl 229b",
@@ -118,10 +108,10 @@ def test_check_spectrum_plottable(spectrum_path, result):
                 "mode": "Prism",
                 "regime": "nir",
                 "obs_date": "2020-01-01",
+                "reference": "Burg06"
             },
             "Reference is required",
-            # "NOT NULL constraint failed: Spectra.reference",
-        ),  # missing reference
+        ),
         (
             {
                 "source": "Gl 229b",
@@ -133,7 +123,16 @@ def test_check_spectrum_plottable(spectrum_path, result):
                 "reference": "NotARealReference",
             },
             "Reference not found",
-        ),  # invalid reference
+        ),
+        (
+            {
+                "source": "Gl 229b",
+                "telescope": "IRTF",
+                "instrument": "SpeX",
+                "mode": "Prism",
+                "reference": "Burg06"
+            },
+            "Observation date is not valid",),
         (
             {
                 "source": "NotaRealSource",
