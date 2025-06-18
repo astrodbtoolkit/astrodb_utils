@@ -130,8 +130,15 @@ html_favicon = "_static/Toolkit-logo.png"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#
-html_theme_options = {"show_nav_level": 2}
+
+html_theme_options = {
+    "show_nav_level": 2,
+    "logo": {
+        "text": "AstroDB Toolkit",
+        "image_light": "_static/Toolkit-logo.png",
+        "image_dark": "_static/Toolkit-logo.png",
+    }
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
