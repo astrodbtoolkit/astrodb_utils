@@ -143,8 +143,8 @@ def test_check_spectrum_plottable(spectrum_path, result):
                 "obs_date": "2020-01-01",
                 "reference": "Burg06",
             },
-            "No unique source match",
-        ),  # invalid source
+            "Invalid source name",
+        ),
         (
             {
                 "source": "Gl 229b",
@@ -155,7 +155,7 @@ def test_check_spectrum_plottable(spectrum_path, result):
                 "reference": "Burg06",
             },
             "Observation date is not valid",
-        ),  # missing date
+        ),
         (
             {
                 "source": "Gl 229b",
@@ -167,7 +167,7 @@ def test_check_spectrum_plottable(spectrum_path, result):
                 "reference": "Burg06",
             },
             "Regime not found",
-        ),  # invalid regime
+        ),
     ],
 )
 def test_ingest_spectrum_errors(db, test_input, message):

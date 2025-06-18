@@ -283,7 +283,7 @@ def ingest_spectrum(
     if len(db_name) == 1:
         db_name = db_name[0]
     else:
-        msg = f"No unique source match for {source} in the database. Found {db_name}."
+        msg = f"Invalid source name. No unique source match for {source} in the database. Found {db_name}."
         flags["message"] = msg
         if raise_error:
             raise AstroDBError(msg)
