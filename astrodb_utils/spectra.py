@@ -379,7 +379,8 @@ def ingest_spectrum(
 
         flags["added"] = True
         logger.info(
-            f"Added spectrum for {source}: {telescope}-{instrument}-{mode} from {reference} on {parsed_date.strftime('%d %b %Y')}"
+            f"Added spectrum for {source}: {telescope}-{instrument}-{mode} from {reference} "
+            f"on {parsed_date.strftime('%d %b %Y')}"
         )
     except (sqlite3.IntegrityError, sqlalchemy.exc.IntegrityError) as e:
         msg = f"Integrity Error: {source} \n {e}"
