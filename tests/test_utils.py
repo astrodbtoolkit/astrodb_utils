@@ -7,7 +7,7 @@ from astrodb_utils.utils import get_db_regime
 
 
 @pytest.mark.parametrize(
-    "input, db_regime",
+    ("input", "db_regime"),
     [
         ("gamma-ray", "gamma-ray"),
         ("X-ray", "x-ray"),
@@ -18,6 +18,8 @@ def test_get_db_regime(db, caplog, input, db_regime):
     regime = get_db_regime(db, input)
     assert regime == db_regime
 
+
+def test_get_db_regime_hyphens(db, caplog):
     with caplog.at_level(logging.WARNING):
         regime = get_db_regime(db, "xray")
         assert regime == "x-ray"
