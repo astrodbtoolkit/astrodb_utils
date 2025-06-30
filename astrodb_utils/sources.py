@@ -127,9 +127,19 @@ def find_source_in_db(
                 f"using ra_col_name: {ra_col_name}, dec_col_name: {dec_col_name}"
             )
             logger.debug(msg2)
-            db_name_matches = db.query_region(
+            try:
+                db_name_matches = db.query_region(
                 simbad_skycoord, radius=search_radius, ra_col=ra_col_name, dec_col=dec_col_name
             )
+            except KeyError as e:
+                msg = (
+                    f"Error querying database with coordinates from SIMBAD: {e}\n"
+                    f"Using skycoord: {simbad_skycoord} and ra_col_name: {ra_col_name}, dec_col_name: {dec_col_name}.\n"
+                    "Try setting `ra_col_name` and `dec_col_name` arguments to the "
+                    "column names used in the Sources table.\n"
+                )
+                logger.error(msg)
+                raise AstroDBError(msg)
 
     if len(db_name_matches) == 1:
         db_names = db_name_matches["source"].tolist()
