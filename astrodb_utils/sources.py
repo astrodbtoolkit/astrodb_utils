@@ -211,6 +211,33 @@ def coords_from_simbad(source):
 
     return simbad_skycoord
 
+def simbad_name_resolvable(source, ra, dec):
+    #check name of match is SIMBAD resolvable
+    simbad_resolvable = False
+    #search SIMBAD for the source using its name
+    simbad_result_table = Simbad.query_object(source)
+    if simbad_result_table is None:
+        #name is not resolvable or not in SIMBAD database
+        logger.debug(f"SIMBAD returned no results for {source}")
+    elif len(simbad_result_table) == 1:
+        logger.debug(
+            f"simbad colnames: {simbad_result_table.colnames} \n simbad results \n {simbad_result_table}"
+        )
+        simbad_name = f"{simbad_result_table['main_id'][0]}"
+        other_name = f"{simbad_result_table['matched_id'][0]}"
+        logger.debug(f"SIMBAD name string: {simbad_name}")
+        if (simbad_name == source) or (source == other_name):
+            simbad_resolvable= True
+    else:
+        msg = f"Name not resolvable in SIMBAD for {source}"
+        logger.warning(msg)
+
+    #search SIMBAD using coordinates and return list of possible names that are resolvable in SIMBAD
+    simbad_coord_result = Simbad.query_region(SkyCoord(ra = ra, dec = dec, unit = "deg"))
+    print(simbad_coord_result)
+    print(f"Alternate names for {source} that are resolvable in SIMBAD: {simbad_coord_result['main_id']}")
+
+    return simbad_resolvable
 
 # NAMES
 def ingest_name(
