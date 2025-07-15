@@ -5,6 +5,7 @@ Build the Docs
 --------------
 The documentation is built using files in the `astrodb-template-db` submodule. 
 Be sure to update the submodule before building the docs.
+
 .. code-block:: bash
 
     git submodule update --init --recursive
