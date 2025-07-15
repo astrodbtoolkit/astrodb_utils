@@ -8,6 +8,6 @@ Association
 Table Documentation
 ===================
 
-.. mdinclude:: ../../../../astrodb-template-db/docs/schema/Associations.md
-
+.. mdinclude:: ../astrodb-template-db/docs/schema/Associations.md
+.. mdinclude:: ../astrodb-template-db/docs/schema/AssociationList.md
 
