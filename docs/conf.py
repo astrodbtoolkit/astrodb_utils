@@ -19,6 +19,7 @@ import os
 import sys
 from importlib.metadata import version
 
+from git import Repo
 from sphinx_pyproject import SphinxConfig
 
 astrodb_utils_version = version("astrodb_utils")
@@ -33,6 +34,14 @@ sys.path.insert(0, os.path.abspath("../.."))
 sys.path.insert(0, os.path.abspath(".."))
 sys.path.insert(0, os.path.abspath("../schema"))
 
+# Get markdown files for the template schema from astrodb-template-db/ repository 
+
+template_schema_path = "pages/template_schema/astrodb-template-db"
+if os.path.exists(template_schema_path):
+    template_repo = Repo(template_schema_path)
+    template_repo.remotes.origin.pull()
+else:
+    Repo.clone_from("https://github.com/astrodbtoolkit/astrodb-template-db.git", template_schema_path, branch="main")
 
 # -- General configuration ------------------------------------------------
 
