@@ -34,7 +34,7 @@ sys.path.insert(0, os.path.abspath("../.."))
 sys.path.insert(0, os.path.abspath(".."))
 sys.path.insert(0, os.path.abspath("../schema"))
 
-# Get markdown files for the template schema from astrodb-template-db/ repository 
+# Get markdown files for the template schema from astrodb-template-db/ repository
 
 template_schema_path = "pages/template_schema/astrodb-template-db"
 if os.path.exists(template_schema_path):
