@@ -63,10 +63,15 @@ def load_astrodb(
     If recreatedb is True, it removes the existing database file before creating a new one.
     """
 
+    db_name = os.path.basename(db_path)
+
+    db_file = db_name + ".sqlite"
+    db_connection_string = "sqlite:///" + db_file
+    logger.debug(f"Database connection string: {db_connection_string}")
+
     # Load the reference tables from the db_name module if not provided
     if reference_tables is None:
         try:
-            db_name = os.path.basename(db_path)
             init_path = os.path.join(db_path, "__init__.py")
             spec = importlib.util.spec_from_file_location(db_name, init_path)
             db_module = importlib.util.module_from_spec(spec)
@@ -86,49 +91,68 @@ def load_astrodb(
                 "CompanionList",
                 "SourceTypeList",
             ]
-
-    # Load the Felis schema if provided
-    if felis_schema is None:
-        try:
-            felis_path = os.path.join(db_path, "schema.yaml")
-            os.path.exists(felis_path)  # Check if the schema file exists
-        except Exception as e:
-            logger.warning(f"Could not load Felis schema from {felis_path}: {e}")
     else:
-        felis_path = felis_schema
+        REFERENCE_TABLES = reference_tables
 
-    db_file = db_name + ".sqlite"
-    db_connection_string = "sqlite:///" + db_file
-    logger.debug(f"Database connection string: {db_connection_string}")
-
-    # removes the current .db file if one already exists
+    # removes the current .db file if one already exists and Recreatedb is True
     if recreatedb and os.path.exists(db_file):
         os.remove(db_file)
 
     if not os.path.exists(db_file):
-        # Create database, using Felis if provided
-        create_database(db_connection_string, felis_schema=felis_path)
-        # Connect and load the database
-        db = Database(db_connection_string, reference_tables=REFERENCE_TABLES)
-
-        # check the data_path
-        if not os.path.exists(data_path):
-            logger.debug(f"Data path {data_path} does not exist. Looking for it.")
-            data_path = os.path.join(os.path.dirname(db_path), "data")
-            if os.path.exists(data_path):
-                logger.debug(f"Using data path: {data_path}")
-            else:
-                msg = f"Data path {data_path} does not exist. Please provide a valid data path."
-                logger.error(msg)
-                raise AstroDBError(msg)
-
-        if logger.parent.level <= 10:  # noqa: PLR2004
-            db.load_database(data_path, verbose=True)
-        else:
-            db.load_database(data_path)
+        db = _rebuild_db(db_path, db_file, data_path, REFERENCE_TABLES, felis_schema)
     else:
-        # if database already exists, connects to it
+        # if database file already exists, just connect to it
         db = Database(db_connection_string, reference_tables=REFERENCE_TABLES)
+
+    return db
+
+
+def _rebuild_db(db_path, db_file, data_path, reference_tables, felis_schema):
+    """Rebuild the database from the schema and data files.
+    Called by load_astrodb if the database file does not exist or recreatedb is True.
+
+    Returns
+    -------
+    db : Astrodbkit Database object
+    """
+    logger.info(f"Creating new database file: {db_file}")
+    db_connection_string = "sqlite:///" + db_file
+
+    # Load the Felis schema if provided
+    if felis_schema is None:
+        felis_path = os.path.join(db_path, "schema.yaml")
+    else:
+        felis_path = felis_schema
+
+    if not os.path.exists(felis_path):  # Check if the schema file exists
+        msg = (
+            f"Could not find Felis schema in {db_path}. "
+            "Please provide a valid felis_schema path or ensure the schema.yaml file exists."
+        )
+        logger.error(msg)
+        raise AstroDBError(msg)
+
+    # Create database
+    create_database(db_connection_string, felis_schema=felis_path)
+
+    # Connect and load the database
+    db = Database(db_connection_string, reference_tables=reference_tables)
+
+    # check the data_path
+    if not os.path.exists(data_path):
+        logger.debug(f"Data path {data_path} does not exist. Looking for it.")
+        data_path = os.path.join(os.path.dirname(db_path), "data")
+        if os.path.exists(data_path):
+            logger.debug(f"Using data path: {data_path}")
+        else:
+            msg = f"Data path {data_path} does not exist. Please provide a valid data path."
+            logger.error(msg)
+            raise AstroDBError(msg)
+
+    if logger.parent.level <= 10:  # noqa: PLR2004
+        db.load_database(data_path, verbose=True)
+    else:
+        db.load_database(data_path)
 
     return db
 
