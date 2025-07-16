@@ -32,21 +32,21 @@ logger = logging.getLogger(__name__)
 
 # Make sure the astrodb-template-db repository is cloned and updated
 template_schema_path = os.path.join("tests", "astrodb-template-db")
-# if os.path.exists(template_schema_path):
-#     template_repo = Repo(template_schema_path)
-#     try:
-#         template_repo.git.reset("--hard")
-#         template_repo.remotes.origin.pull()
-#     except Exception as e:
-#         print(f"Error updating template schema repository: {e}")
-#         print(f"Using existing local copy of the template schema: {template_schema_path}")
-# else:
-#     url = "https://github.com/astrodbtoolkit/astrodb-template-db.git"
-#     try:
-#         Repo.clone_from(url, template_schema_path, branch="main")
-#     except Exception as e:
-#         print(f"Error cloning template schema repository: {e}")
-#         print(f"Please ensure the repository exists and is accessible: {url}")
+if os.path.exists(template_schema_path):
+    template_repo = Repo(template_schema_path)
+    try:
+        template_repo.git.reset("--hard")
+        template_repo.remotes.origin.pull()
+    except Exception as e:
+        print(f"Error updating template schema repository: {e}")
+        print(f"Using existing local copy of the template schema: {template_schema_path}")
+else:
+    url = "https://github.com/astrodbtoolkit/astrodb-template-db.git"
+    try:
+        Repo.clone_from(url, template_schema_path, branch="main")
+    except Exception as e:
+        print(f"Error cloning template schema repository: {e}")
+        print(f"Please ensure the repository exists and is accessible: {url}")
 
 
 # load the template database for use by the tests
