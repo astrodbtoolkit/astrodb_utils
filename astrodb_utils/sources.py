@@ -234,10 +234,9 @@ def simbad_name_resolvable(source, ra, dec):
 
     #search SIMBAD using coordinates and return list of possible names that are resolvable in SIMBAD
     simbad_coord_result = Simbad.query_region(SkyCoord(ra = ra, dec = dec, unit = "deg"))
-    print(simbad_coord_result)
     print(f"Alternate names for {source} that are resolvable in SIMBAD: {simbad_coord_result['main_id']}")
 
-    return simbad_resolvable
+    return simbad_resolvable, simbad_coord_result['main_id']
 
 # NAMES
 def ingest_name(
