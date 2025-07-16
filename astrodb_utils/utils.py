@@ -114,16 +114,15 @@ def load_astrodb(
         # check the data_path
         if not os.path.exists(data_path):
             logger.debug(f"Data path {data_path} does not exist. Looking for it.")
-            try:
-                data_path = os.path.join(os.path.dirname(db_path), "data")
-                os.path.exists(data_path)  # Check if the data path exists
+            data_path = os.path.join(os.path.dirname(db_path), "data")
+            if os.path.exists(data_path):
                 logger.debug(f"Using data path: {data_path}")
-            except Exception as e:
+            else:
                 msg = f"Data path {data_path} does not exist. Please provide a valid data path."
                 logger.error(msg)
                 raise AstroDBError(msg)
 
-        if logger.parent.level <= 10:
+        if logger.parent.level <= 10:  # noqa: PLR2004
             db.load_database(data_path, verbose=True)
         else:
             db.load_database(data_path)
@@ -151,7 +150,7 @@ def check_url_valid(url):
 
     request_response = requests.head(url, timeout=60)
     status_code = request_response.status_code
-    if status_code != 200:  # The website is up if the status code is 200
+    if status_code != 200:  # The website is up if the status code is 200  # noqa: PLR2004
         status = "skipped"  # instead of incrememnting n_skipped, just skip this one
         msg = (
             "The spectrum location does not appear to be valid: \n"
