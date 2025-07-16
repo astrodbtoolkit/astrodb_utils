@@ -1,10 +1,10 @@
 """Utils functions for use in ingests."""
 
 import datetime
+import importlib
 import logging
 import os
 import socket
-from pathlib import Path
 
 import requests
 from astrodbkit.astrodb import Database, create_database
@@ -30,29 +30,19 @@ logger.debug(msg)
 
 
 def load_astrodb(
-    db_file,
+    db_path,
     data_path="data/",
     recreatedb=True,
-    reference_tables=[
-        "Publications",
-        "Telescopes",
-        "Instruments",
-        "Versions",
-        "PhotometryFilters",
-        "Regimes",
-        "AssociationList",
-        "ParameterList",
-        "CompanionList",
-        "SourceTypeList",
-    ],
+    reference_tables=None,
     felis_schema=None
 ):
     """Utility function to load the database
 
     Parameters
     ----------
-    db_file : str
-        Name of SQLite file to use
+    db_path : str
+        Path to the directory containing the __init__.py and schema.yaml file for the database
+        This name is used to name the database file, e.g. 'stars' will create 'stars.sqlite'
     data_path : str
         Path to data directory; default 'data/'
     recreatedb : bool
@@ -60,29 +50,86 @@ def load_astrodb(
     reference_tables : list
         List of tables to consider as reference tables.
         Default: Publications, Telescopes, Instruments, Versions, PhotometryFilters
+        Looks in <db_name>/__init__.py for the list of tables.
     felis_schema : str
         Path to Felis schema; default None
+        Looks in db_name/schema.yaml for the schema path.
+
+    Returns
+    -------
+    db : Astrodbkit Database object
+
+    Also creates the database file if it does not exist.
+    If recreatedb is True, it removes the existing database file before creating a new one.
     """
 
-    db_file_path = Path(db_file)
+    # Load the reference tables from the db_name module if not provided
+    if reference_tables is None:
+        try:
+            db_name = os.path.basename(db_path)
+            init_path = os.path.join(db_path, "__init__.py")
+            spec = importlib.util.spec_from_file_location(db_name, init_path)
+            db_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(db_module)
+            REFERENCE_TABLES = db_module.REFERENCE_TABLES
+        except ImportError:
+            logger.warning(f"Could not import reference tables from {db_path}, using default set.")
+            REFERENCE_TABLES = [
+                "Publications",
+                "Telescopes",
+                "Instruments",
+                "Versions",
+                "PhotometryFilters",
+                "Regimes",
+                "AssociationList",
+                "ParameterList",
+                "CompanionList",
+                "SourceTypeList",
+            ]
+
+    # Load the Felis schema if provided
+    if felis_schema is None:
+        try:
+            felis_path = os.path.join(db_path, "schema.yaml")
+            os.path.exists(felis_path)  # Check if the schema file exists
+        except Exception as e:
+            logger.warning(f"Could not load Felis schema from {felis_path}: {e}")
+    else:
+        felis_path = felis_schema
+
+    db_file = db_name + ".sqlite"
     db_connection_string = "sqlite:///" + db_file
+    logger.debug(f"Database connection string: {db_connection_string}")
 
     # removes the current .db file if one already exists
-    if recreatedb and db_file_path.exists():
+    if recreatedb and os.path.exists(db_file):
         os.remove(db_file)
 
-    if not db_file_path.exists():
+    if not os.path.exists(db_file):
         # Create database, using Felis if provided
-        create_database(db_connection_string, felis_schema=felis_schema)
+        create_database(db_connection_string, felis_schema=felis_path)
         # Connect and load the database
-        db = Database(db_connection_string, reference_tables=reference_tables)
+        db = Database(db_connection_string, reference_tables=REFERENCE_TABLES)
+
+        # check the data_path
+        if not os.path.exists(data_path):
+            logger.debug(f"Data path {data_path} does not exist. Looking for it.")
+            try:
+                data_path = os.path.join(os.path.dirname(db_path), "data")
+                os.path.exists(data_path)  # Check if the data path exists
+                logger.debug(f"Using data path: {data_path}")
+            except Exception as e:
+                msg = f"Data path {data_path} does not exist. Please provide a valid data path."
+                logger.error(msg)
+                raise AstroDBError(msg)
+
         if logger.parent.level <= 10:
             db.load_database(data_path, verbose=True)
         else:
             db.load_database(data_path)
     else:
         # if database already exists, connects to it
-        db = Database(db_connection_string, reference_tables=reference_tables)
+        db = Database(db_connection_string, reference_tables=REFERENCE_TABLES)
 
     return db
 
@@ -229,3 +276,4 @@ def check_obs_date(date, raise_error=True):
         else:
             logger.warning(msg)
             return result
+
