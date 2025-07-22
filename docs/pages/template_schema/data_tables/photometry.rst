@@ -29,4 +29,4 @@ Table documentation
 The below table is built directly from the schema and is
 included here from the `astrodb-template-db` documentation: `source`_.
 
-.. mdinclude:: ../../../../astrodb-template-db/docs/schema/Photometry.md
+.. mdinclude:: ../astrodb-template-db/docs/schema/Photometry.md

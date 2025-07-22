@@ -26,5 +26,5 @@ Notes
 Table documentation
 -------------------
 
-.. mdinclude:: ../../../../astrodb-template-db/docs/schema/Sources.md
+.. mdinclude:: ../astrodb-template-db/docs/schema/Sources.md
 
