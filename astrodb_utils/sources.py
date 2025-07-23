@@ -240,7 +240,7 @@ def simbad_name_resolvable(source, ra, dec):
 
 # NAMES
 def ingest_name(
-    db, source: str = None, other_name: str = None, raise_error: bool = None
+    db, source: str = None, other_name: str = None, raise_error: bool = None, ra: float = None, dec: float = None
 ):
     """
     This function ingests an other name into the Names table
@@ -255,6 +255,10 @@ def ingest_name(
         Name of the source different than that found in source table
     raise_error: bool
         Raise an error if name was not ingested
+    ra: float
+        Right ascensions of sources. Decimal degrees.
+    dec: float 
+        Declinations of sources. Decimal degrees.
 
     Returns
     -------
@@ -266,6 +270,17 @@ def ingest_name(
     """
     source = strip_unicode_dashes(source)
     other_name = strip_unicode_dashes(other_name)
+    #check if name is resolvable in SIMBAD
+    logger.debug(f"{source}: Checking if name is resolvable in SIMBAD")
+    resolvable = simbad_name_resolvable(source = source, ra = ra, dec = dec)
+    if not resolvable:
+        msg1= f"{source} not resolvable in SIMBAD."
+        msg2 = f"Some alternative names for {source}: {resolvable[1]}"
+        exit_function(msg1+ msg2, raise_error)
+    else:
+        logger.info(f"{source} is resolvable in SIMBAD.")
+
+
     name_data = [{"source": source, "other_name": other_name}]
     try:
         with db.engine.connect() as conn:
@@ -357,6 +372,17 @@ def ingest_source(
         )
         exit_function(msg, raise_error)
         return
+    
+    #Check if source name is resolvable in SIMBAD
+    logger.debug(f"{source}: Checking if name is resolvable in SIMBAD")
+    resolvable = simbad_name_resolvable(source = source, ra = ra, dec = dec)
+    if not resolvable:
+        msg1= f"{source} not resolvable in SIMBAD."
+        msg2 = f"Some alternative names for {source}: {resolvable[1]}"
+        exit_function(msg1+ msg2, raise_error)
+    else:
+        logger.info(f"{source} is resolvable in SIMBAD.")
+
 
     # Find out if source is already in database or not
     if search_db:
