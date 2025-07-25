@@ -12,6 +12,7 @@ from astrodb_utils.sources import (
     ingest_name,
     ingest_source,
     strip_unicode_dashes,
+    simbad_name_resolvable
 )
 
 
@@ -271,3 +272,17 @@ def test_ingest_name(db):
 def test_strip_unicode_dashes(input, expected):
     result = strip_unicode_dashes(input)
     assert result == expected
+
+@pytest.mark.parametrize('input,ra, dec, expected', [
+    #2 cases whose names are NOT in the database
+    ("Apple", 144.395292,29.528028, False),
+    ("Banana", 3.9888,4.2511, False),
+    #2 cases whose names are in the database
+    ("2MASS J07222760-0540384",110.6149995,-5.677333, True),
+    ("ULAS J000734.90+011247.1", 1.8957, 1.2132, True)
+])
+
+def test_simbad_resolvable_names(input,ra,dec,expected):
+    result = simbad_name_resolvable(input, ra, dec)[0]
+    assert result == expected
+
