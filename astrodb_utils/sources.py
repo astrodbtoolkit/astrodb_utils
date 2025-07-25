@@ -212,6 +212,34 @@ def coords_from_simbad(source):
     return simbad_skycoord
 
 def simbad_name_resolvable(source, ra, dec):
+    """
+    Checks whether a given astronomical source name is resolvable in the SIMBAD database,
+    and retrieves alternate resolvable names at the specified coordinates.
+
+    Parameters:
+    ----------
+    source : str
+        The name of the astronomical source to check in SIMBAD.
+    ra : float
+        Right ascension of the source (in degrees).
+    dec : float
+        Declination of the source (in degrees).
+
+    Returns:
+    -------
+    simbad_resolvable : bool
+        True if the provided source name matches an entry in SIMBAD; False otherwise.
+    alternate_names : list of str
+        List of alternate SIMBAD-resolvable names found at the given coordinates.
+
+    Notes:
+    -----
+    - Uses `Simbad.query_object()` to determine if the source name is directly resolvable.
+    - If successful, compares returned `main_id` and `matched_id` to the original source name.
+    - Uses `Simbad.query_region()` to identify alternate names at the specified coordinates.
+    - Logs debug information for traceability and warnings when resolution fails.
+    """
+
     #check name of match is SIMBAD resolvable
     simbad_resolvable = False
     #search SIMBAD for the source using its name
@@ -219,6 +247,7 @@ def simbad_name_resolvable(source, ra, dec):
     if simbad_result_table is None:
         #name is not resolvable or not in SIMBAD database
         logger.debug(f"SIMBAD returned no results for {source}")
+        
     elif len(simbad_result_table) == 1:
         logger.debug(
             f"simbad colnames: {simbad_result_table.colnames} \n simbad results \n {simbad_result_table}"
