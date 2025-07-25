@@ -269,7 +269,7 @@ def simbad_name_resolvable(source, ra, dec):
 
 # NAMES
 def ingest_name(
-    db, source: str = None, other_name: str = None, raise_error: bool = None, ra: float = None, dec: float = None
+    db, source: str = None, other_name: str = None, raise_error: bool = None, ra: float = None, dec: float = None, use_simbad: bool = True
 ):
     """
     This function ingests an other name into the Names table
@@ -288,6 +288,9 @@ def ingest_name(
         Right ascensions of sources. Decimal degrees.
     dec: float 
         Declinations of sources. Decimal degrees.
+    use_simbad: bool
+        True (default): Use Simbad to resolve the source name if it is not found in the database
+        False: Do not use Simbad to resolve the source name. Or when internet is unavailable
 
     Returns
     -------
@@ -299,15 +302,16 @@ def ingest_name(
     """
     source = strip_unicode_dashes(source)
     other_name = strip_unicode_dashes(other_name)
-    #check if name is resolvable in SIMBAD
-    logger.debug(f"{source}: Checking if name is resolvable in SIMBAD")
-    resolvable = simbad_name_resolvable(source = source, ra = ra, dec = dec)
-    if not resolvable:
-        msg1= f"{source} not resolvable in SIMBAD."
-        msg2 = f"Some alternative names for {source}: {resolvable[1]}"
-        exit_function(msg1+ msg2, raise_error)
-    else:
-        logger.info(f"{source} is resolvable in SIMBAD.")
+    if use_simbad:
+        #check if name is resolvable in SIMBAD
+        logger.debug(f"{source}: Checking if name is resolvable in SIMBAD")
+        resolvable = simbad_name_resolvable(source = source, ra = ra, dec = dec)
+        if not resolvable:
+            msg1= f"{source} not resolvable in SIMBAD."
+            msg2 = f"Some alternative names for {source}: {resolvable[1]}"
+            exit_function(msg1+ msg2, raise_error)
+        else:
+            logger.info(f"{source} is resolvable in SIMBAD.")
 
 
     name_data = [{"source": source, "other_name": other_name}]
