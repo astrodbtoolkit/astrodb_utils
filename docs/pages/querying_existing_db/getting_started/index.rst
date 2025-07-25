@@ -31,7 +31,12 @@ Once you have the database files, you can access them using the
     for table in db.metadata.tables:
       print(table)
 
-See the `AstrodbKit documentation <https://astrodbkit.readthedocs.io/en/latest/>`_ for more about how to query the database using Python.
+You might need to provide more variables to the
+:py:func:`load_astrodb<astrodb_utils.utils.load_astrodb>` function,
+depending on how your database is set up.
+
+See the `AstrodbKit documentation <https://astrodbkit.readthedocs.io/en/latest/>`_
+for more about how to query the database using Python.
 
 Using a GUI
 -----------
