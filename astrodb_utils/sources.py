@@ -269,7 +269,7 @@ def simbad_name_resolvable(source, ra, dec):
 
 # NAMES
 def ingest_name(
-    db, source: str = None, other_name: str = None, raise_error: bool = None, ra: float = None, dec: float = None, use_simbad: bool = True
+    db, source: str = None, other_name: str = None, raise_error: bool = None, use_simbad: bool = True
 ):
     """
     This function ingests an other name into the Names table
