@@ -305,10 +305,10 @@ def ingest_name(
     if use_simbad:
         #check if name is resolvable in SIMBAD
         logger.debug(f"{source}: Checking if name is resolvable in SIMBAD")
-        resolvable = simbad_name_resolvable(source = source, ra = ra, dec = dec)
+        resolvable = simbad_name_resolvable(source = source)
         if not resolvable:
             msg1= f"{source} not resolvable in SIMBAD."
-            msg2 = f"Some alternative names for {source}: {resolvable[1]}"
+            msg2 = f"Use the simbad_name_resolvable function to find possible names"
             exit_function(msg1+ msg2, raise_error)
         else:
             logger.info(f"{source} is resolvable in SIMBAD.")
