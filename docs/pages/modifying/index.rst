@@ -1,6 +1,13 @@
 Modifying an Existing Schema
 ============================
+.. toctree::
+   :glob:
+   :maxdepth: 1
 
+   new_columns
+
+Overview
+--------
 The template database comes with an existing schema,
 consisting of a set of tables and columns.
 It is expected that every usecase will modify this schema to suit their needs.
@@ -33,14 +40,6 @@ Optional tables are things like Spectra, Photometry, Radial Velocities, etc.
 These are included in the template database and can be used as models for
 other data tables and can be removed/modified if not needed.
 
-Adding columns to tables with existing data
--------------------------------------------
-1. Load the database and data as-is
-2. Do ALTER TABLE commands to modify the tables/columns as needed
-3. Save the database back to JSON
-4. Make the modifications to the schema yaml file
-5. Reload the database
-6. There's an old example here: https://github.com/SIMPLE-AstroDB/SIMPLE-db/blob/main/scripts/updates/update_spectra_colnames.py
 
 Philosophy and guidelines
 -------------------------

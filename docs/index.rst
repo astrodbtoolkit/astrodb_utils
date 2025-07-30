@@ -21,7 +21,7 @@ User Guide
    Overview of the AstroDB Toolkit <pages/overview/organization>
    pages/querying_existing_db/index
    pages/ingesting/getting_started_ingesting
-   pages/modifying_schema
+   pages/modifying/index
    pages/make_new_db/getting_started_new_database
    pages/template_schema/template_schema
    pages/making_private_version
