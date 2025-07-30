@@ -1,13 +1,6 @@
 Making a New Database
 =====================
 
-.. toctree::
-    :titlesonly:
-    :maxdepth: 2
-
-    ../template_schema/template_schema
-    modifying_schema
-
 
 Overview
 --------
@@ -20,16 +13,23 @@ Overview
 
 #. Update the ``LICENSE`` file with your license of choice.
 
-#. :doc:`Modify the schema <modifying_schema>` in ``schema/schema.yaml`` to suit your use case.
+#. :doc:`Modify the schema <modifying_schema>`
+   in ``schema/schema.yaml`` to suit your use case.
 
-   * We highly recommend using an AI coding assistant (like GitHub Copilot) when modifying this file.
-  
-#. Generate a new entity relationship diagram (ERD) and documentation pages for your schema.
+   * We highly recommend using an AI coding assistant
+     (like GitHub Copilot) when modifying this file.
 
-   * To make a new ERD, run ``scripts/build_schema_docs.py``. This generates a PNG file in the ``docs/figures/`` directory.
-   
-   * To make new documentation pages, run ``scripts/build_schema_docs.py``. This generates a new set of Markdown files in the ``docs/schema/`` directory.
+#. Generate a new entity relationship diagram (ERD)
+   and documentation pages for your schema.
 
-#. Ingest data by modifying the JSON files by hand (in the ``data/`` directory) or by using ``astrodb_utils`` functions.
+   * To make a new ERD, run ``scripts/build_schema_docs.py``.
+     This generates a PNG file in the ``docs/figures/`` directory.
+
+   * To make new documentation pages, run ``scripts/build_schema_docs.py``.
+     This generates a new set of Markdown files
+     in the ``docs/schema/`` directory.
+
+#. Ingest data by modifying the JSON files by hand
+   (in the ``data/`` directory) or by using ``astrodb_utils`` functions.
 
 
