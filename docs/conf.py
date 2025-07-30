@@ -129,6 +129,7 @@ exclude_patterns = [
     "Thumbs.db",
     ".DS_Store",
     "../tests",
+    "pages/template_schema/astrodb-template-db/*",
 ]
 
 # The name of the Pygments (syntax highlighting) style to use.

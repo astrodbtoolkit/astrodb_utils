@@ -13,8 +13,8 @@ Overview
 
 #. Update the ``LICENSE`` file with your license of choice.
 
-#. :doc:`Modify the schema <modifying_schema>`
-   in ``schema/schema.yaml`` to suit your use case.
+#. :doc:`Modify the schema <../modifying/index>`
+   to suit your use case.
 
    * We highly recommend using an AI coding assistant
      (like GitHub Copilot) when modifying this file.
