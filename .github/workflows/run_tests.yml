@@ -22,10 +22,10 @@ jobs:
 
     steps:
     - name: Checkout utils repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     - name: Checkout template database repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         repository: astrodbtoolkit/astrodb-template-db
         path: astrodb-template-db
