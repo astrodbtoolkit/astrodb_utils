@@ -221,10 +221,65 @@ def coords_from_simbad(source):
 
     return simbad_skycoord
 
+def simbad_name_resolvable(source, ra, dec):
+    """
+    Checks whether a given astronomical source name is resolvable in the SIMBAD database,
+    and retrieves alternate resolvable names at the specified coordinates.
+
+    Parameters:
+    ----------
+    source : str
+        The name of the astronomical source to check in SIMBAD.
+    ra : float
+        Right ascension of the source (in degrees).
+    dec : float
+        Declination of the source (in degrees).
+
+    Returns:
+    -------
+    simbad_resolvable : bool
+        True if the provided source name matches an entry in SIMBAD; False otherwise.
+    alternate_names : list of str
+        List of alternate SIMBAD-resolvable names found at the given coordinates.
+
+    Notes:
+    -----
+    - Uses `Simbad.query_object()` to determine if the source name is directly resolvable.
+    - If successful, compares returned `main_id` and `matched_id` to the original source name.
+    - Uses `Simbad.query_region()` to identify alternate names at the specified coordinates.
+    - Logs debug information for traceability and warnings when resolution fails.
+    """
+
+    #check name of match is SIMBAD resolvable
+    simbad_resolvable = False
+    #search SIMBAD for the source using its name
+    simbad_result_table = Simbad.query_object(source)
+    if simbad_result_table is None:
+        #name is not resolvable or not in SIMBAD database
+        logger.debug(f"SIMBAD returned no results for {source}")
+        
+    elif len(simbad_result_table) == 1:
+        logger.debug(
+            f"simbad colnames: {simbad_result_table.colnames} \n simbad results \n {simbad_result_table}"
+        )
+        simbad_name = f"{simbad_result_table['main_id'][0]}"
+        other_name = f"{simbad_result_table['matched_id'][0]}"
+        logger.debug(f"SIMBAD name string: {simbad_name}")
+        if (simbad_name == source) or (source == other_name):
+            simbad_resolvable= True
+    else:
+        msg = f"Name not resolvable in SIMBAD for {source}"
+        logger.warning(msg)
+
+    #search SIMBAD using coordinates and return list of possible names that are resolvable in SIMBAD
+    simbad_coord_result = Simbad.query_region(SkyCoord(ra = ra, dec = dec, unit = "deg"))
+    print(f"Alternate names for {source} that are resolvable in SIMBAD: {simbad_coord_result['main_id']}")
+
+    return simbad_resolvable, simbad_coord_result['main_id']
 
 # NAMES
 def ingest_name(
-    db, source: str = None, other_name: str = None, raise_error: bool = None
+    db, source: str = None, other_name: str = None, raise_error: bool = None, use_simbad: bool = True
 ):
     """
     This function ingests an other name into the Names table
@@ -239,6 +294,13 @@ def ingest_name(
         Name of the source different than that found in source table
     raise_error: bool
         Raise an error if name was not ingested
+    ra: float
+        Right ascensions of sources. Decimal degrees.
+    dec: float 
+        Declinations of sources. Decimal degrees.
+    use_simbad: bool
+        True (default): Use Simbad to resolve the source name if it is not found in the database
+        False: Do not use Simbad to resolve the source name. Or when internet is unavailable
 
     Returns
     -------
@@ -250,6 +312,18 @@ def ingest_name(
     """
     source = strip_unicode_dashes(source)
     other_name = strip_unicode_dashes(other_name)
+    if use_simbad:
+        #check if name is resolvable in SIMBAD
+        logger.debug(f"{source}: Checking if name is resolvable in SIMBAD")
+        resolvable = simbad_name_resolvable(source = source)
+        if not resolvable:
+            msg1= f"{source} not resolvable in SIMBAD."
+            msg2 = f"Use the simbad_name_resolvable function to find possible names"
+            exit_function(msg1+ msg2, raise_error)
+        else:
+            logger.info(f"{source} is resolvable in SIMBAD.")
+
+
     name_data = [{"source": source, "other_name": other_name}]
     try:
         with db.engine.connect() as conn:
@@ -341,6 +415,17 @@ def ingest_source(
         )
         exit_function(msg, raise_error)
         return
+    
+    #Check if source name is resolvable in SIMBAD
+    logger.debug(f"{source}: Checking if name is resolvable in SIMBAD")
+    resolvable = simbad_name_resolvable(source = source, ra = ra, dec = dec)
+    if not resolvable:
+        msg1= f"{source} not resolvable in SIMBAD."
+        msg2 = f"Some alternative names for {source}: {resolvable[1]}"
+        exit_function(msg1+ msg2, raise_error)
+    else:
+        logger.info(f"{source} is resolvable in SIMBAD.")
+
 
     # Find out if source is already in database or not
     if search_db:
