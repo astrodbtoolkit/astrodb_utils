@@ -38,6 +38,7 @@ test = [
     "ruff>0.3.7",
     "pre-commit",
     "pytest-dependency",
+    "gitpython"
     ]
 docs = [
     "sphinx",
