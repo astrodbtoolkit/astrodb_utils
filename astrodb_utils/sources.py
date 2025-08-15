@@ -272,6 +272,7 @@ def ingest_source(
     dec_col_name: str = "dec_deg",
     epoch_col_name: str = "epoch_year",
     use_simbad: bool = True,
+    ignore_neighbors: bool = False,
 ):
     """
     Parameters
@@ -306,6 +307,9 @@ def ingest_source(
     use_simbad: bool
         True (default): Use Simbad to resolve the source name if it is not found in the database
         False: Do not use Simbad to resolve the source name.
+    ignore_neighbors: bool
+        False (default): Don't ignore neighbors and ingest close sources as the same source.
+        True: Ignore neighbors in order to ingest resolved children or close companions. 
 
     Returns
     -------
@@ -315,6 +319,8 @@ def ingest_source(
     """
 
     logger.debug(f"Trying to ingest source: {source}")
+    if ignore_neighbors:
+        use_simbad= False
 
     # change unicode dashes characters to `-`
     source = strip_unicode_dashes(source)
@@ -360,7 +366,7 @@ def ingest_source(
             msg2 = f"   Already in database as {name_matches[0]}. \n "
 
         # Multiple source matches in the database, unable to ingest source
-        elif len(name_matches) > 1:
+        elif not ignore_neighbors and len(name_matches) > 1:
             msg2 = f"   More than one match for {source}\n {name_matches}\n"
 
         exit_function(msg1 + msg2, raise_error)
@@ -512,66 +518,3 @@ def strip_unicode_dashes(source):
             logger.info(f"replaced {char_name}({char}) with - in {source}")
 
     return source
-
-
-def ingest_resolved_children(
-    db,
-    source,
-    reference: str,
-    *,
-    ra: float = None,
-    dec: float = None,
-    epoch: str = None,
-    equinox: str = None,
-    other_reference: str = None,
-    comment: str = None,
-    raise_error: bool = True,
-    ra_col_name: str = "ra",
-    dec_col_name: str = "dec",
-    epoch_col_name: str = "epoch",
-):
-    #check if the source is already in the database
-    already_in_db = False
-    source_search = db.search_object(
-        name = source,
-        output_table="Sources"
-    )
-    if len(source_search) > 0:
-        for source_result in source_search:
-            if source == source_result:
-                already_in_db = True
-                break
-    #if the source is not in the database... ingest the new source
-    if not already_in_db:
-        # Construct data to be added
-        source_data = [
-            {
-                "source": source,
-                ra_col_name: ra,
-                dec_col_name: dec,
-                "reference": reference,
-                epoch_col_name: epoch,
-                "equinox": equinox,
-                "other_references": other_reference,
-                "comments": comment,
-            }
-        ]
-        logger.debug(f"   Data: {source_data}.")
-
-        # Try to add the source to the database
-        try:
-            with db.engine.connect() as conn:
-                conn.execute(db.Sources.insert().values(source_data))
-                conn.commit()
-            msg = f"Added {source_data}"
-            logger.info(f"Added {source}")
-            logger.debug(msg)
-        except sqlalchemy.exc.IntegrityError:
-            msg = f"Not ingesting {source}. Not sure why. \n"
-            msg2 = f"   {source_data} "
-            logger.warning(msg)
-            logger.debug(msg2)
-
-        # Add the source name to the Names table
-        ingest_name(db, source=source, other_name=source, raise_error=raise_error)
-    return
