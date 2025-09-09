@@ -8,7 +8,7 @@ on:
     inputs:
       astrodb-template-db-branch:
         description: 'Branch of astrodb-template-db to use'
-        required: false
+        required: true
         default: 'main'
         type: string
   push:
@@ -35,7 +35,7 @@ jobs:
       with:
         repository: astrodbtoolkit/astrodb-template-db
         path: astrodb-template-db
-        ref: ${{ inputs.astrodb-template-db-branch || 'main' }}
+        ref: ${{ inputs.astrodb-template-db-branch}}
 
     - name: Check ADS_TOKEN
       shell: bash
