@@ -5,6 +5,12 @@ name: Test astrodb_utils
 
 on:
   workflow_dispatch:
+    inputs:
+      astrodb-template-db-branch:
+        description: 'Branch of astrodb-template-db to use'
+        required: true
+        default: 'main'
+        type: string
   push:
     branches: [ "main" ]
   pull_request:
@@ -29,7 +35,8 @@ jobs:
       with:
         repository: astrodbtoolkit/astrodb-template-db
         path: astrodb-template-db
-                
+        ref: ${{ inputs.astrodb-template-db-branch }}
+
     - name: Check ADS_TOKEN
       shell: bash
       env: 
@@ -42,7 +49,7 @@ jobs:
         fi
     
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
