@@ -35,7 +35,7 @@ jobs:
       with:
         repository: astrodbtoolkit/astrodb-template-db
         path: astrodb-template-db
-        ref: ${{ inputs.astrodb-template-db-branch}}
+        ref: ${{ inputs.astrodb-template-db-branch }}
 
     - name: Check ADS_TOKEN
       shell: bash
