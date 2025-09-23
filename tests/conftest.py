@@ -11,6 +11,8 @@ from astrodb_utils.publications import ingest_publication
 logger = logging.getLogger(__name__)
 
 # Make sure the astrodb-template-db repository is cloned and updated
+### BROKEN. - doesn't work with improve_load_astrodb branch - git pull manually
+###
 template_schema_path = os.path.join("tests", "astrodb-template-db")
 branch = "improve_load_astrodb"  #"main"
 logger.info(f"Checking out branch '{branch}' of the astrodb-template-db repository.")
