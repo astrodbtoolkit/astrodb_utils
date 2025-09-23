@@ -5,16 +5,18 @@ import pytest
 from git import Repo
 
 import astrodb_utils
-from astrodb_utils import load_astrodb
+from astrodb_utils import build_db_from_json, check_database_settings
 from astrodb_utils.publications import ingest_publication
 
 logger = logging.getLogger(__name__)
 
 # Make sure the astrodb-template-db repository is cloned and updated
 template_schema_path = os.path.join("tests", "astrodb-template-db")
+branch = "improve_load_astrodb"  #"main"
+logger.info(f"Checking out branch '{branch}' of the astrodb-template-db repository.")
 if os.path.exists(template_schema_path):
     template_repo = Repo(template_schema_path)
-    fetch_data = template_repo.remotes.origin.fetch('refs/heads/main:refs/remotes/origin/main')
+    fetch_data = template_repo.remotes.origin.fetch(f'refs/heads/{branch}:refs/remotes/origin/{branch}')
     for fetch in fetch_data: # there should only be one fetch object
         flag =  fetch.flags
     if flag != 4:  # 4 means the repo is up to date. https://stackoverflow.com/a/61470076/4842634  # noqa: PLR2004
@@ -30,7 +32,7 @@ if os.path.exists(template_schema_path):
 else:
     url = "https://github.com/astrodbtoolkit/astrodb-template-db.git"
     try:
-        Repo.clone_from(url, template_schema_path, branch="main")
+        Repo.clone_from(url, template_schema_path, branch=branch)
     except Exception as e:
         logger.error(f"Error cloning template schema repository: {e}")
         logger.error(f"Please ensure the repository exists and is accessible: {url}")
@@ -40,14 +42,23 @@ else:
 @pytest.fixture(scope="session", autouse=True)
 def db():
     logger.info(f"Using version {astrodb_utils.__version__} of astrodb_utils")
-    db_path = os.path.join(template_schema_path, "schema")
+    settings_path = os.path.join(template_schema_path, 'database.toml')
 
-    db = load_astrodb(db_path)
+    if not check_database_settings('database.toml', db_path=template_schema_path):
+        msg = f"Database settings in {settings_path} are not correct."
+        raise ValueError(msg)
+
+    db = build_db_from_json(
+       toml_file='database.toml',
+       db_path=template_schema_path,
+       db_name='tests/astrodb-template-tests',
+    )
 
     # Confirm file was created
-    assert os.path.exists("schema.sqlite"), "Database file 'schema.sqlite' was not created."
+    assert os.path.exists("tests/astrodb-template-tests.sqlite"), \
+        "Database file 'tests/astrodb-template-tests.sqlite' was not created."
 
-    logger.info("Loaded AstroDB Template database using load_astrodb function in conftest.py")
+    logger.info("Loaded AstroDB Template database using build_db_from_json function in conftest.py")
 
     ingest_publication(
         db,
