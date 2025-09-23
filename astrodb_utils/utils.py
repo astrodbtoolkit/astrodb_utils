@@ -1,7 +1,6 @@
 """Utils functions for use in ingests."""
 
 import datetime
-import importlib
 import logging
 import os
 import socket
@@ -31,6 +30,7 @@ logger = logging.getLogger(__name__)
 msg = f"logger.parent.name: {logger.parent.name}, logger.parent.level: {logger.parent.level}"
 logger.debug(msg)
 
+
 def check_database_settings(toml_file: str = "database.toml", db_path: str = None) -> bool:
     if db_path is not None:
         toml_path = os.path.join(db_path, toml_file)
@@ -39,10 +39,9 @@ def check_database_settings(toml_file: str = "database.toml", db_path: str = Non
 
     settings = _read_database_settings(toml_path)
     if db_path is not None:
-        settings['db_path'] = db_path
+        settings["db_path"] = db_path
     else:
-        settings['db_path'] = './'
-    print(settings)
+        settings["db_path"] = "./"
 
     _check_felis_path(settings)
     _check_data_path(settings)
@@ -88,13 +87,13 @@ def _read_database_settings(toml_file: str = "database.toml", db_path: str = Non
     return settings
 
 
-def load_astrodb(
+def load_astrodb(  # noqa: PLR0913
     toml_file: str = "database.toml",
     db_name: str = None,
     data_path: str = None,
     recreatedb=True,
     lookup_tables=None,
-    felis_path=None
+    felis_path=None,
 ):
     """Utility function to load the database
 
@@ -129,7 +128,7 @@ def load_astrodb(
         raise e
 
     if db_name is None:
-        db_name = settings['db_name']
+        db_name = settings["db_name"]
 
     db_file = db_name + ".sqlite"
     db_connection_string = "sqlite:///" + db_file
@@ -144,7 +143,9 @@ def load_astrodb(
         os.remove(db_file)
 
     if not os.path.exists(db_file):
-        db = build_db_from_json(db_name=db_name, felis_path=felis_path, data_path=data_path, lookup_tables=lookup_tables)
+        db = build_db_from_json(
+            db_name=db_name, felis_path=felis_path, data_path=data_path, lookup_tables=lookup_tables
+        )
     else:
         # if database file already exists, just connect to it
         db = Database(db_connection_string, lookup_tables=lookup_tables)
@@ -152,39 +153,27 @@ def load_astrodb(
     return db
 
 
-def build_db_from_json(
+def build_db_from_json(  # noqa: PLR0913
     toml_file: str = "database.toml",
+    *,
     db_path: str = None,
     db_name: str = None,
     felis_path: str = None,
     data_path: str = None,
-    lookup_tables: list = None
+    lookup_tables: list = None,
 ):
-    """Build the database from the schema and JSON files.
-    Called by load_astrodb if the database file does not exist or recreatedb is True.
+    """Build an SQLite database from the schema and JSON files.
+        Creates the database file if it does not exist.
+        If the database file already exists, it removes the existing database file before creating a new one
 
     Returns
     -------
     db : Astrodbkit Database object
     """
 
-    if db_path is not None:
-        toml_path = os.path.join(db_path, toml_file)
-    else:
-        toml_path = toml_file
-
-    try:
-        settings = _read_database_settings(toml_path)
-    except AstroDBError as e:
-        raise e
-
-    if db_path is not None:
-        settings['db_path'] = db_path
-    else:
-        settings['db_path'] = './'
-
-    if db_name is None:
-        db_name = settings['db_name']
+    db_file, felis_path, data_path, lookup_tables = _validate_db_settings(
+        toml_file, db_path, db_name, felis_path, data_path, lookup_tables
+    )
 
     db_file = db_name + ".sqlite"
 
@@ -196,25 +185,11 @@ def build_db_from_json(
     logger.info(f"Creating new database file: {db_file}")
     db_connection_string = "sqlite:///" + db_file
 
-    # Check the Felis schema path
-    if felis_path is None:
-        felis_path = settings['felis_path']
-    felis_path = _check_felis_path(settings)
-
     # Create database
     create_database(db_connection_string, felis_schema=felis_path)
 
-    # Check the lookup tables
-    if lookup_tables is None:
-        lookup_tables = _load_lookup_tables(settings)
-
     # Connect and load the database
     db = Database(db_connection_string, reference_tables=lookup_tables)
-
-    # check the data_path
-    if data_path is None:
-        data_path = settings['data_path']
-    data_path = _check_data_path(settings)
 
     if logger.parent.level <= 10:  # noqa: PLR2004
         db.load_database(data_path, verbose=True)
@@ -224,9 +199,45 @@ def build_db_from_json(
     return db
 
 
+def _validate_db_settings(toml_file, db_path, db_name, felis_path, data_path, lookup_tables):  # noqa: PLR0913
+    if db_path is not None:
+        toml_path = os.path.join(db_path, toml_file)
+    else:
+        toml_path = toml_file
+
+    try:
+        settings = _read_database_settings(toml_path)
+    except AstroDBError as e:
+        raise e
+
+    if db_path is not None:
+        settings["db_path"] = db_path
+    else:
+        settings["db_path"] = "./"
+
+    if db_name is None:
+        db_name = settings["db_name"]
+
+    # Check the Felis schema path
+    if felis_path is None:
+        felis_path = settings["felis_path"]
+    felis_path = _check_felis_path(settings)
+
+    # Check the lookup tables
+    if lookup_tables is None:
+        lookup_tables = _load_lookup_tables(settings)
+
+    # check the data_path
+    if data_path is None:
+        data_path = settings["data_path"]
+    data_path = _check_data_path(settings)
+
+    return db_name, felis_path, data_path, lookup_tables
+
+
 def _check_felis_path(settings):
     try:
-        felis_path = os.path.join(settings['db_path'], settings['felis_path'])
+        felis_path = os.path.join(settings["db_path"], settings["felis_path"])
     except KeyError:
         felis_path = "schema/schema.yaml"
     if not os.path.exists(felis_path):  # Check if the felis schema file exists
@@ -243,7 +254,7 @@ def _check_felis_path(settings):
 
 def _check_data_path(settings):
     try:
-        data_path = os.path.join(settings['db_path'], settings['data_path'])
+        data_path = os.path.join(settings["db_path"], settings["data_path"])
     except KeyError:
         data_path = "data/"
     if not os.path.exists(data_path):
@@ -278,11 +289,9 @@ def _load_lookup_tables(settings):
     return lookup_tables
 
 
-
-
 def internet_connection():
     try:
-        socket.getaddrinfo('google.com',80)
+        socket.getaddrinfo("google.com", 80)
         return True
     except socket.gaierror:
         return False
@@ -299,11 +308,7 @@ def check_url_valid(url):
     status_code = request_response.status_code
     if status_code != 200:  # The website is up if the status code is 200  # noqa: PLR2004
         status = "skipped"  # instead of incrememnting n_skipped, just skip this one
-        msg = (
-            "The spectrum location does not appear to be valid: \n"
-            f"spectrum: {url} \n"
-            f"status code: {status_code}"
-        )
+        msg = f"The spectrum location does not appear to be valid: \nspectrum: {url} \nstatus code: {status_code}"
         logger.error(msg)
     else:
         msg = f"The spectrum location appears up: {url}"
@@ -337,7 +342,7 @@ def exit_function(msg, raise_error=True, return_value=None):
         return return_value
 
 
-def get_db_regime(db, regime:str, raise_error=True):
+def get_db_regime(db, regime: str, raise_error=True):
     """
     Check if a regime is in the Regimes table using ilike matching.
     This minimizes problems with case sensitivity.
@@ -350,16 +355,12 @@ def get_db_regime(db, regime:str, raise_error=True):
     str: The regime found
     None: If the regime is not found or there are multiple matches.
     """
-    regime_table = (
-        db.query(db.RegimeList).filter(db.RegimeList.c.regime.ilike(regime)).table()
-    )
+    regime_table = db.query(db.RegimeList).filter(db.RegimeList.c.regime.ilike(regime)).table()
 
     if len(regime_table) == 1:
         # Warn if the regime found in the database was not exactly the same as the one requested
         if regime_table["regime"][0] != regime:
-            msg = (
-                f"Regime {regime} matched to {regime_table['regime'][0]}. "
-            )
+            msg = f"Regime {regime} matched to {regime_table['regime'][0]}. "
             logger.warning(msg)
 
         return regime_table["regime"][0]
@@ -367,14 +368,14 @@ def get_db_regime(db, regime:str, raise_error=True):
     # try to match the regime hyphens removed
     if len(regime_table) == 0:
         regime = regime.replace("-", "")
-        regime_match = (db.query(db.RegimeList).
-            filter(func.replace(func.lower(db.RegimeList.c.regime),"-","") == regime.lower())
-            .table())
+        regime_match = (
+            db.query(db.RegimeList)
+            .filter(func.replace(func.lower(db.RegimeList.c.regime), "-", "") == regime.lower())
+            .table()
+        )
 
         if len(regime_match) == 1:
-            msg = (
-                f"Regime {regime} matched to {regime_match['regime'][0]}. "
-            )
+            msg = f"Regime {regime} matched to {regime_match['regime'][0]}. "
             logger.warning(msg)
             return regime_match["regime"][0]
 
@@ -410,9 +411,7 @@ def check_obs_date(date, raise_error=True):
     """
     try:
         parsed_date = datetime.date.fromisoformat(date)
-        logger.debug(
-            f"Observation date {date} is parseable: {parsed_date.strftime('%d %b %Y')}"
-        )
+        logger.debug(f"Observation date {date} is parseable: {parsed_date.strftime('%d %b %Y')}")
         return parsed_date
     except ValueError as e:
         msg = f"Observation date {date} is not parseable as ISO format: {e}"
@@ -422,4 +421,3 @@ def check_obs_date(date, raise_error=True):
         else:
             logger.warning(msg)
             return result
-
