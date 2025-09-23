@@ -4,6 +4,8 @@ import warnings
 
 from .utils import (  # noqa: F401
     AstroDBError,
+    build_db_from_json,
+    check_database_settings,
     exit_function,
     internet_connection,
     load_astrodb,

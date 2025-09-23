@@ -5,6 +5,7 @@ import importlib
 import logging
 import os
 import socket
+import tomllib
 
 import requests
 from astrodbkit.astrodb import Database, create_database
@@ -12,6 +13,8 @@ from sqlalchemy import func
 
 __all__ = [
     "load_astrodb",
+    "build_db_from_json",
+    "check_database_settings",
     "internet_connection",
     "exit_function",
     "get_db_regime",
@@ -28,32 +31,88 @@ logger = logging.getLogger(__name__)
 msg = f"logger.parent.name: {logger.parent.name}, logger.parent.level: {logger.parent.level}"
 logger.debug(msg)
 
+def check_database_settings(toml_file: str = "database.toml", db_path: str = None) -> bool:
+    if db_path is not None:
+        toml_path = os.path.join(db_path, toml_file)
+    else:
+        toml_path = toml_file
+
+    settings = _read_database_settings(toml_path)
+    if db_path is not None:
+        settings['db_path'] = db_path
+    else:
+        settings['db_path'] = './'
+    print(settings)
+
+    _check_felis_path(settings)
+    _check_data_path(settings)
+    _load_lookup_tables(settings)
+
+    return True
+
+
+def _read_database_settings(toml_file: str = "database.toml", db_path: str = None) -> dict:
+    """Read database settings from a toml file
+
+    Parameters
+    ----------
+    toml_file : str
+        Path to the toml file containing the database settings
+        Default: database_settings.toml
+
+
+    Returns
+    -------
+    dict
+        Dictionary containing the database settings
+
+    Raises
+    ------
+    AstroDBError
+        If the toml file does not exist or cannot be read
+    """
+
+    if not os.path.exists(toml_file):
+        msg = f"Could not find database settings file: {toml_file}"
+        logger.error(msg)
+        raise AstroDBError(msg)
+
+    with open(toml_file, "rb") as f:
+        try:
+            settings = tomllib.load(f)
+        except Exception as e:
+            msg = f"Could not read database settings file: {toml_file}, error: {e}"
+            logger.error(msg)
+            raise AstroDBError(msg)
+
+    return settings
+
 
 def load_astrodb(
-    db_path,
-    data_path="data/",
+    toml_file: str = "database.toml",
+    db_name: str = None,
+    data_path: str = None,
     recreatedb=True,
-    reference_tables=None,
-    felis_schema=None
+    lookup_tables=None,
+    felis_path=None
 ):
     """Utility function to load the database
 
     Parameters
     ----------
-    db_path : str
-        Path to the directory containing the __init__.py and schema.yaml file for the database
+    db_name : str
         This name is used to name the database file, e.g. 'stars' will create 'stars.sqlite'
     data_path : str
         Path to data directory; default 'data/'
     recreatedb : bool
         Flag whether or not the database file should be recreated
-    reference_tables : list
-        List of tables to consider as reference tables.
+    lookup_tables : list
+        List of tables to consider as lookup tables.
         Default: Publications, Telescopes, Instruments, Versions, PhotometryFilters
-        Looks in <db_name>/__init__.py for the list of tables.
-    felis_schema : str
+        Looks in database.toml for the list of tables.
+    felis_path : str
         Path to Felis schema; default None
-        Looks in db_name/schema.yaml for the schema path.
+        Looks in database.toml for the schema path.
 
     Returns
     -------
@@ -63,91 +122,99 @@ def load_astrodb(
     If recreatedb is True, it removes the existing database file before creating a new one.
     """
 
-    db_name = os.path.basename(db_path)
+    # Read the database settings from the toml file
+    try:
+        settings = _read_database_settings(toml_file)
+    except AstroDBError as e:
+        raise e
+
+    if db_name is None:
+        db_name = settings['db_name']
 
     db_file = db_name + ".sqlite"
     db_connection_string = "sqlite:///" + db_file
     logger.debug(f"Database connection string: {db_connection_string}")
 
-    # Load the reference tables from the db_name module if not provided
-    if reference_tables is None:
-        try:
-            init_path = os.path.join(db_path, "__init__.py")
-            spec = importlib.util.spec_from_file_location(db_name, init_path)
-            db_module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(db_module)
-            REFERENCE_TABLES = db_module.REFERENCE_TABLES
-        except ImportError:
-            logger.warning(f"Could not import reference tables from {db_path}, using default set.")
-            REFERENCE_TABLES = [
-                "Publications",
-                "Telescopes",
-                "Instruments",
-                "Versions",
-                "PhotometryFilters",
-                "Regimes",
-                "AssociationList",
-                "ParameterList",
-                "CompanionList",
-                "SourceTypeList",
-            ]
-    else:
-        REFERENCE_TABLES = reference_tables
+    # Load the lookup tables from the db_name module if not provided
+    if lookup_tables is None:
+        lookup_tables = _load_lookup_tables(settings)
 
     # removes the current .db file if one already exists and Recreatedb is True
     if recreatedb and os.path.exists(db_file):
         os.remove(db_file)
 
     if not os.path.exists(db_file):
-        db = _rebuild_db(db_path, db_file, data_path, REFERENCE_TABLES, felis_schema)
+        db = build_db_from_json(db_name=db_name, felis_path=felis_path, data_path=data_path, lookup_tables=lookup_tables)
     else:
         # if database file already exists, just connect to it
-        db = Database(db_connection_string, reference_tables=REFERENCE_TABLES)
+        db = Database(db_connection_string, lookup_tables=lookup_tables)
 
     return db
 
 
-def _rebuild_db(db_path, db_file, data_path, reference_tables, felis_schema):
-    """Rebuild the database from the schema and data files.
+def build_db_from_json(
+    toml_file: str = "database.toml",
+    db_path: str = None,
+    db_name: str = None,
+    felis_path: str = None,
+    data_path: str = None,
+    lookup_tables: list = None
+):
+    """Build the database from the schema and JSON files.
     Called by load_astrodb if the database file does not exist or recreatedb is True.
 
     Returns
     -------
     db : Astrodbkit Database object
     """
+
+    if db_path is not None:
+        toml_path = os.path.join(db_path, toml_file)
+    else:
+        toml_path = toml_file
+
+    try:
+        settings = _read_database_settings(toml_path)
+    except AstroDBError as e:
+        raise e
+
+    if db_path is not None:
+        settings['db_path'] = db_path
+    else:
+        settings['db_path'] = './'
+
+    if db_name is None:
+        db_name = settings['db_name']
+
+    db_file = db_name + ".sqlite"
+
+    if os.path.exists(db_file):
+        os.remove(db_file)
+        msg = f"Removed old database file {db_file}."
+        logger.info(msg)
+
     logger.info(f"Creating new database file: {db_file}")
     db_connection_string = "sqlite:///" + db_file
 
-    # Load the Felis schema if provided
-    if felis_schema is None:
-        felis_path = os.path.join(db_path, "schema.yaml")
-    else:
-        felis_path = felis_schema
-
-    if not os.path.exists(felis_path):  # Check if the schema file exists
-        msg = (
-            f"Could not find Felis schema in {db_path}. "
-            "Please provide a valid felis_schema path or ensure the schema.yaml file exists."
-        )
-        logger.error(msg)
-        raise AstroDBError(msg)
+    # Check the Felis schema path
+    if felis_path is None:
+        felis_path = settings['felis_path']
+    felis_path = _check_felis_path(settings)
 
     # Create database
     create_database(db_connection_string, felis_schema=felis_path)
 
+    # Check the lookup tables
+    if lookup_tables is None:
+        lookup_tables = _load_lookup_tables(settings)
+
     # Connect and load the database
-    db = Database(db_connection_string, reference_tables=reference_tables)
+    db = Database(db_connection_string, reference_tables=lookup_tables)
 
     # check the data_path
-    if not os.path.exists(data_path):
-        logger.debug(f"Data path {data_path} does not exist. Looking for it.")
-        data_path = os.path.join(os.path.dirname(db_path), "data")
-        if os.path.exists(data_path):
-            logger.debug(f"Using data path: {data_path}")
-        else:
-            msg = f"Data path {data_path} does not exist. Please provide a valid data path."
-            logger.error(msg)
-            raise AstroDBError(msg)
+    if data_path is None:
+        data_path = settings['data_path']
+    data_path = _check_data_path(settings)
 
     if logger.parent.level <= 10:  # noqa: PLR2004
         db.load_database(data_path, verbose=True)
@@ -155,6 +222,62 @@ def _rebuild_db(db_path, db_file, data_path, reference_tables, felis_schema):
         db.load_database(data_path)
 
     return db
+
+
+def _check_felis_path(settings):
+    try:
+        felis_path = os.path.join(settings['db_path'], settings['felis_path'])
+    except KeyError:
+        felis_path = "schema/schema.yaml"
+    if not os.path.exists(felis_path):  # Check if the felis schema file exists
+        msg = (
+            f"Could not find Felis schema in {felis_path}. "
+            "Please provide a valid path to the felis schema.yaml file "
+            "in the felis_path key of the database settings toml file."
+        )
+        logger.error(msg)
+        raise AstroDBError(msg)
+
+    return felis_path
+
+
+def _check_data_path(settings):
+    try:
+        data_path = os.path.join(settings['db_path'], settings['data_path'])
+    except KeyError:
+        data_path = "data/"
+    if not os.path.exists(data_path):
+        logger.debug(f"Data path {data_path} does not exist. Looking for it in data/.")
+        data_path = "data/"
+        if os.path.exists(data_path):
+            logger.debug(f"Using data path: {data_path}")
+        else:
+            msg = f"Data path {data_path} does not exist. Please provide a valid data path."
+            logger.error(msg)
+            raise AstroDBError(msg)
+    return data_path
+
+
+def _load_lookup_tables(settings):
+    try:
+        lookup_tables = settings["lookup_tables"]
+    except KeyError:
+        lookup_tables = [
+            "Publications",
+            "Telescopes",
+            "Instruments",
+            "Versions",
+            "PhotometryFilters",
+            "Regimes",
+            "AssociationList",
+            "ParameterList",
+            "CompanionList",
+            "SourceTypeList",
+        ]
+
+    return lookup_tables
+
+
 
 
 def internet_connection():
