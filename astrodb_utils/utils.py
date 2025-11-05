@@ -5,6 +5,7 @@ import logging
 import os
 import socket
 import tomllib
+from pathlib import Path
 
 import requests
 from astrodbkit.astrodb import Database, create_database
@@ -89,67 +90,65 @@ def read_database_settings(toml_file: str = "database.toml", db_path: str = None
 
 
 def load_astrodb(  # noqa: PLR0913
-    toml_file: str = "database.toml",
-    db_name: str = None,
-    data_path: str = None,
+    db_file,
+    data_path="data/",
     recreatedb=True,
-    lookup_tables=None,
-    felis_path=None,
+    reference_tables=[
+        "Publications",
+        "Telescopes",
+        "Instruments",
+        "Versions",
+        "PhotometryFilters",
+        "Regimes",
+        "AssociationList",
+        "ParameterList",
+        "CompanionList",
+        "SourceTypeList",
+    ],
+    felis_schema=None
 ):
     """Utility function to load the database
 
     Parameters
     ----------
-    db_name : str
-        This name is used to name the database file, e.g. 'stars' will create 'stars.sqlite'
+    db_file : str
+        Name of SQLite file to use
     data_path : str
         Path to data directory; default 'data/'
     recreatedb : bool
         Flag whether or not the database file should be recreated
-    lookup_tables : list
-        List of tables to consider as lookup tables.
+    reference_tables : list
+        List of tables to consider as reference tables.
         Default: Publications, Telescopes, Instruments, Versions, PhotometryFilters
-        Looks in database.toml for the list of tables.
-    felis_path : str
+    felis_schema : str
         Path to Felis schema; default None
-        Looks in database.toml for the schema path.
-
-    Returns
-    -------
-    db : Astrodbkit Database object
-
-    Also creates the database file if it does not exist.
-    If recreatedb is True, it removes the existing database file before creating a new one.
     """
 
-    # Read the database settings from the toml file
-    try:
-        settings = read_database_settings(toml_file)
-    except AstroDBError as e:
-        raise e
-
-    if db_name is None:
-        db_name = settings["db_name"]
-
-    db_file = db_name + ".sqlite"
+    db_file_path = Path(db_file)
     db_connection_string = "sqlite:///" + db_file
-    logger.debug(f"Database connection string: {db_connection_string}")
 
-    # Load the lookup tables from the db_name module if not provided
-    if lookup_tables is None:
-        lookup_tables = _load_lookup_tables(settings)
-
-    # removes the current .db file if one already exists and Recreatedb is True
-    if recreatedb and os.path.exists(db_file):
+    # removes the current .db file if one already exists
+    if recreatedb and db_file_path.exists():
         os.remove(db_file)
 
-    if not os.path.exists(db_file):
-        db = build_db_from_json(
-            db_name=db_name, felis_path=felis_path, data_path=data_path, lookup_tables=lookup_tables
-        )
+    if not db_file_path.exists():
+        # Create database, using Felis if provided
+        create_database(db_connection_string, felis_schema=felis_schema)
+        # Connect and load the database
+        db = Database(db_connection_string, reference_tables=reference_tables)
+        if logger.parent.level <= 10:
+            db.load_database(data_path, verbose=True)
+        else:
+            db.load_database(data_path)
     else:
-        # if database file already exists, just connect to it
-        db = Database(db_connection_string, lookup_tables=lookup_tables)
+        # if database already exists, connects to it
+        db = Database(db_connection_string, reference_tables=reference_tables)
+
+
+    logger.warning(
+        "load_astrodb is deprecated and will be removed in future versions."
+        "Please use build_db_from_json or read_db_from_file instead."
+        )
 
     return db
 
@@ -166,6 +165,28 @@ def build_db_from_json(  # noqa: PLR0913
     """Build an SQLite database from the schema and JSON files.
         Creates the database file if it does not exist.
         If the database file already exists, it removes the existing database file before creating a new one
+
+    Inputs
+    ------
+    toml_file : str
+        Name of the toml file containing the database settings
+        Default: database.toml
+    db_path : str
+        Path to the directory containing the toml file
+        Default: None, assumes toml file is in current directory
+    db_name : str
+        Name of the database file (without .sqlite extension)
+        Default: None, reads from toml file
+    felis_path : str
+        Path to the Felis schema file
+        Default: None, reads from toml file
+    data_path : str
+        Path to the data directory containing the JSON files
+        Default: None, reads from toml file
+    lookup_tables : list
+        List of tables to consider as lookup tables.
+        Default: None, reads from toml file 
+
 
     Returns
     -------
@@ -200,6 +221,32 @@ def build_db_from_json(  # noqa: PLR0913
     return db
 
 
+def read_db_from_file(db_name: str, db_path: str = None):
+    """Read an SQLite database from a file.
+
+    Parameters
+    ----------
+    db_name : str
+        Name of the database file (without .sqlite extension)
+    db_path : str (optional)
+        Path to the directory containing the database .sqlite file
+
+    Returns
+    -------
+    db : Astrodbkit Database object
+    """
+    if db_path is not None:
+        db_file = os.path.join(db_path, db_name + ".sqlite")
+    else:
+        db_file = db_name + ".sqlite"
+
+    db_connection_string = "sqlite:///" + db_file
+    logger.debug(f"Database connection string: {db_connection_string}")
+
+    db = Database(db_connection_string)
+    return db
+
+
 def _validate_db_settings(toml_file, db_path, db_name, felis_path, data_path, lookup_tables):  # noqa: PLR0913
     if db_path is not None:
         toml_path = os.path.join(db_path, toml_file)
@@ -213,6 +260,8 @@ def _validate_db_settings(toml_file, db_path, db_name, felis_path, data_path, lo
 
     if db_path is not None:
         settings["db_path"] = db_path
+        if not os.path.exists(db_path):
+            raise AstroDBError(f"Database path {db_path} does not exist.")
     else:
         settings["db_path"] = "./"
 

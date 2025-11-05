@@ -10,6 +10,7 @@ from .utils import (  # noqa: F401
     internet_connection,
     load_astrodb,
     read_database_settings,
+    read_db_from_file,
 )
 from .version import version as __version__
 
