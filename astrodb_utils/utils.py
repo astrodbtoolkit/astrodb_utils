@@ -14,6 +14,7 @@ __all__ = [
     "load_astrodb",
     "build_db_from_json",
     "check_database_settings",
+    "read_database_settings",
     "internet_connection",
     "exit_function",
     "get_db_regime",
@@ -37,7 +38,7 @@ def check_database_settings(toml_file: str = "database.toml", db_path: str = Non
     else:
         toml_path = toml_file
 
-    settings = _read_database_settings(toml_path)
+    settings = read_database_settings(toml_path)
     if db_path is not None:
         settings["db_path"] = db_path
     else:
@@ -50,7 +51,7 @@ def check_database_settings(toml_file: str = "database.toml", db_path: str = Non
     return True
 
 
-def _read_database_settings(toml_file: str = "database.toml", db_path: str = None) -> dict:
+def read_database_settings(toml_file: str = "database.toml", db_path: str = None) -> dict:
     """Read database settings from a toml file
 
     Parameters
@@ -123,7 +124,7 @@ def load_astrodb(  # noqa: PLR0913
 
     # Read the database settings from the toml file
     try:
-        settings = _read_database_settings(toml_file)
+        settings = read_database_settings(toml_file)
     except AstroDBError as e:
         raise e
 
@@ -206,7 +207,7 @@ def _validate_db_settings(toml_file, db_path, db_name, felis_path, data_path, lo
         toml_path = toml_file
 
     try:
-        settings = _read_database_settings(toml_path)
+        settings = read_database_settings(toml_path)
     except AstroDBError as e:
         raise e
 

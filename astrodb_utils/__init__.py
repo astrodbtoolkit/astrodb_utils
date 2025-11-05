@@ -9,6 +9,7 @@ from .utils import (  # noqa: F401
     exit_function,
     internet_connection,
     load_astrodb,
+    read_database_settings,
 )
 from .version import version as __version__
 
