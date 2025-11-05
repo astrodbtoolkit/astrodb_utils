@@ -61,6 +61,9 @@ Documentation = "https://astrodb-utils.readthedocs.io/en/latest/"
 root = '.'
 write_to = "astrodb_utils/version.py"
 
+[tool.setuptools]
+packages = ["astrodb_utils"]
+
 [tool.pytest.ini_options]
 norecursedirs = "astrodb-template-db"
 addopts = "-ra" # show extra summary info
