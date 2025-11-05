@@ -171,7 +171,7 @@ def build_db_from_json(  # noqa: PLR0913
     db : Astrodbkit Database object
     """
 
-    db_file, felis_path, data_path, lookup_tables = _validate_db_settings(
+    db_name, felis_path, data_path, lookup_tables = _validate_db_settings(
         toml_file, db_path, db_name, felis_path, data_path, lookup_tables
     )
 
@@ -239,7 +239,7 @@ def _check_felis_path(settings):
     try:
         felis_path = os.path.join(settings["db_path"], settings["felis_path"])
     except KeyError:
-        felis_path = "schema/schema.yaml"
+        felis_path = "schema.yaml"
     if not os.path.exists(felis_path):  # Check if the felis schema file exists
         msg = (
             f"Could not find Felis schema in {felis_path}. "
