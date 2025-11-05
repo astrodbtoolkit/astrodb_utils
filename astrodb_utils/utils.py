@@ -16,6 +16,7 @@ __all__ = [
     "build_db_from_json",
     "check_database_settings",
     "read_database_settings",
+    "read_db_from_file",
     "internet_connection",
     "exit_function",
     "get_db_regime",
@@ -31,62 +32,6 @@ class AstroDBError(Exception):
 logger = logging.getLogger(__name__)
 msg = f"logger.parent.name: {logger.parent.name}, logger.parent.level: {logger.parent.level}"
 logger.debug(msg)
-
-
-def check_database_settings(toml_file: str = "database.toml", db_path: str = None) -> bool:
-    if db_path is not None:
-        toml_path = os.path.join(db_path, toml_file)
-    else:
-        toml_path = toml_file
-
-    settings = read_database_settings(toml_path)
-    if db_path is not None:
-        settings["db_path"] = db_path
-    else:
-        settings["db_path"] = "./"
-
-    _check_felis_path(settings)
-    _check_data_path(settings)
-    _load_lookup_tables(settings)
-
-    return True
-
-
-def read_database_settings(toml_file: str = "database.toml", db_path: str = None) -> dict:
-    """Read database settings from a toml file
-
-    Parameters
-    ----------
-    toml_file : str
-        Path to the toml file containing the database settings
-        Default: database_settings.toml
-
-
-    Returns
-    -------
-    dict
-        Dictionary containing the database settings
-
-    Raises
-    ------
-    AstroDBError
-        If the toml file does not exist or cannot be read
-    """
-
-    if not os.path.exists(toml_file):
-        msg = f"Could not find database settings file: {toml_file}"
-        logger.error(msg)
-        raise AstroDBError(msg)
-
-    with open(toml_file, "rb") as f:
-        try:
-            settings = tomllib.load(f)
-        except Exception as e:
-            msg = f"Could not read database settings file: {toml_file}, error: {e}"
-            logger.error(msg)
-            raise AstroDBError(msg)
-
-    return settings
 
 
 def load_astrodb(  # noqa: PLR0913
@@ -151,6 +96,62 @@ def load_astrodb(  # noqa: PLR0913
         )
 
     return db
+
+
+def check_database_settings(toml_file: str = "database.toml", db_path: str = None) -> bool:
+    if db_path is not None:
+        toml_path = os.path.join(db_path, toml_file)
+    else:
+        toml_path = toml_file
+
+    settings = read_database_settings(toml_path)
+    if db_path is not None:
+        settings["db_path"] = db_path
+    else:
+        settings["db_path"] = "./"
+
+    _check_felis_path(settings)
+    _check_data_path(settings)
+    _load_lookup_tables(settings)
+
+    return True
+
+
+def read_database_settings(toml_file: str = "database.toml", db_path: str = None) -> dict:
+    """Read database settings from a toml file
+
+    Parameters
+    ----------
+    toml_file : str
+        Path to the toml file containing the database settings
+        Default: database_settings.toml
+
+
+    Returns
+    -------
+    dict
+        Dictionary containing the database settings
+
+    Raises
+    ------
+    AstroDBError
+        If the toml file does not exist or cannot be read
+    """
+
+    if not os.path.exists(toml_file):
+        msg = f"Could not find database settings file: {toml_file}"
+        logger.error(msg)
+        raise AstroDBError(msg)
+
+    with open(toml_file, "rb") as f:
+        try:
+            settings = tomllib.load(f)
+        except Exception as e:
+            msg = f"Could not read database settings file: {toml_file}, error: {e}"
+            logger.error(msg)
+            raise AstroDBError(msg)
+
+    return settings
 
 
 def build_db_from_json(  # noqa: PLR0913
