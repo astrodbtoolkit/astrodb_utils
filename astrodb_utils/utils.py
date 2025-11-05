@@ -54,6 +54,10 @@ def load_astrodb(  # noqa: PLR0913
 ):
     """Utility function to load the database
 
+    .. note:: Deprecated in 2.0 and will be removed in future versions.
+              `load_astrodb` is deprecated. 
+              It is replaced by `build_db_from_json` and `read_db_from_file`.
+
     Parameters
     ----------
     db_file : str
@@ -163,9 +167,11 @@ def build_db_from_json(  # noqa: PLR0913
     data_path: str = None,
     lookup_tables: list = None,
 ):
-    """Build an SQLite database from the schema and JSON files.
-        Creates the database file if it does not exist.
-        If the database file already exists, it removes the existing database file before creating a new one
+    """Build an SQLite database from JSON files.
+
+    Default is to get the database settings from a toml file.
+    Creates the database .sqlite file in the current directory.
+    If a database file with the same name already exists, it is removed.
 
     Inputs
     ------
@@ -186,12 +192,17 @@ def build_db_from_json(  # noqa: PLR0913
         Default: None, reads from toml file
     lookup_tables : list
         List of tables to consider as lookup tables.
-        Default: None, reads from toml file 
+        Default: None, reads from toml file
 
 
     Returns
     -------
     db : Astrodbkit Database object
+
+    Yields
+    ------
+    .sqlite database file in the current directory
+
     """
 
     db_name, felis_path, data_path, lookup_tables = _validate_db_settings(
@@ -229,8 +240,9 @@ def read_db_from_file(db_name: str, db_path: str = None):
     ----------
     db_name : str
         Name of the database file (without .sqlite extension)
-    db_path : str (optional)
+    db_path : str, optional
         Path to the directory containing the database .sqlite file
+        Default: None, assumes database file is in current directory
 
     Returns
     -------
