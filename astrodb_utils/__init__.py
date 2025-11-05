@@ -2,20 +2,21 @@ import logging
 import sys
 import warnings
 
-from .utils import (  # noqa: F401
-    AstroDBError,
+from .loaders import (  # noqa: F401
     build_db_from_json,
     check_database_settings,
+    read_database_settings,
+    read_db_from_file,
+)
+from .utils import (  # noqa: F401
+    AstroDBError,
     exit_function,
     internet_connection,
     load_astrodb,
-    read_database_settings,
-    read_db_from_file,
 )
 from .version import version as __version__
 
 __all__ = ["__version__"]
-
 
 
 logger = logging.getLogger(__name__) # Sets up the parent "astrodb_utils" logger
