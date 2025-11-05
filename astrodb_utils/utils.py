@@ -48,7 +48,7 @@ def load_astrodb(  # noqa: PLR0913
 
     .. note:: Deprecated in 2.0 and will be removed in future versions.
               `load_astrodb` is deprecated.
-              It is replaced by `build_db_from_json` and `read_db_from_file`.
+              It is replaced by :py:func:`loaders.build_db_from_json` and :py:func:`loaders.read_db_from_file`.
 
     Parameters
     ----------
