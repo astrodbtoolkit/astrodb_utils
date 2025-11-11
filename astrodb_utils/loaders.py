@@ -21,8 +21,8 @@ class DatabaseSettings:
     settings_file: str = "database.toml"
     base_path: str = "."
     db_name: str = None
-    felis_path: str = None
-    data_path: str = None
+    felis_path: str = "."
+    data_path: str = "data/"
     lookup_tables: list = None
 
     def __post_init__(self):
