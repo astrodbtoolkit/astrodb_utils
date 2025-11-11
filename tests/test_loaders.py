@@ -25,7 +25,7 @@ def test_build_db_from_json():
 
 
 def test_read_db_from_file():
-    _ = read_db_from_file(db_name="astrodb-template-tests", db_path="tests/astrodb-template-db")
+    _ = read_db_from_file(db_name="astrodb-template-tests")
     assert _ is not None
 
 
@@ -44,11 +44,11 @@ def test_database_settings():
         "Publications",
         "Telescopes",
         "Instruments",
-        "Versions",
         "PhotometryFilters",
-        "Regimes",
+        "Versions",
+        "RegimeList",
         "AssociationList",
+        "SourceTypeList",
         "ParameterList",
         "CompanionList",
-        "SourceTypeList",
     ]
