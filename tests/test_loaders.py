@@ -17,15 +17,15 @@ def test_load_astrodb_deprecated(db, caplog):
 
 def test_build_db_from_json():
     _ = build_db_from_json(
-        toml_file="database.toml",
-        db_path="tests/astrodb-template-db",
+        settings_file="database.toml",
+        base_path="tests/astrodb-template-db",
         db_name="astrodb-template-tests",
     )
     assert _ is not None
 
 
 def test_read_db_from_file():
-    _ = read_db_from_file(db_name="astrodb-template-tests")
+    _ = read_db_from_file(db_name="astrodb-template-tests", db_path="tests/astrodb-template-db")
     assert _ is not None
 
 
@@ -39,7 +39,7 @@ def test_database_settings():
     assert db_settings.base_path == "tests/astrodb-template-db"
     assert db_settings.db_name == "astrodb-template-tests"
     assert db_settings.felis_path == "tests/astrodb-template-db/schema.yaml"
-    assert db_settings.data_path == "tests/astrodb-template-db/data"
+    assert db_settings.data_path == "tests/astrodb-template-db/data/"
     assert db_settings.lookup_tables == [
         "Publications",
         "Telescopes",
