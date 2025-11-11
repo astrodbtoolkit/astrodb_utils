@@ -18,23 +18,14 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class DatabaseSettings:
-    settings_file: str = "database.toml"
+    """Database settings dataclass"""
+
+    settings_file: str
     base_path: str = "."
     db_name: str = None
-    felis_path: str = "."
-    data_path: str = "data/"
-    lookup_tables: list =  [
-                "Publications",
-                "Telescopes",
-                "Instruments",
-                "Versions",
-                "PhotometryFilters",
-                "Regimes",
-                "AssociationList",
-                "ParameterList",
-                "CompanionList",
-                "SourceTypeList",
-            ]
+    felis_path: str = "schema.yaml"
+    data_path: str = "data"
+    lookup_tables: list = None  # default cannot be mutable list
 
     def __post_init__(self):
         # Use a base_path if provided, otherwise default to the current directory
@@ -47,35 +38,27 @@ class DatabaseSettings:
         self.settings = self._read_settings()
 
         # Prepare and check the Felis path
-        if self.felis_path is not None:
-            self.felis_path = os.path.join(self.base_path, "schema.yaml")
-        else:
-            self.felis_path = os.path.join(self.base_path, self.settings["felis_path"])
+        self.felis_path = os.path.join(self.base_path, self.settings.get("felis_path", self.felis_path))
         self.felis_path = self._check_path(self.felis_path)
 
         # Prepare and check the data path
-        if self.data_path is not None:
-            self.data_path = os.path.join(self.base_path, "data")
-        else:
-            self.data_path = os.path.join(self.base_path, self.settings["data_path"])
+        self.data_path = os.path.join(self.base_path, self.settings.get("data_path", self.data_path))
         self.data_path = self._check_path(self.data_path)
 
-        # Prepare and check the lookup tables
-        if self.lookup_tables is not None:
-            self.lookup_tables = [
-                "Publications",
-                "Telescopes",
-                "Instruments",
-                "Versions",
-                "PhotometryFilters",
-                "Regimes",
-                "AssociationList",
-                "ParameterList",
-                "CompanionList",
-                "SourceTypeList",
-            ]
-        else:
-            self.lookup_tables = self.settings["lookup_tables"]
+        # Prepare the lookup tables
+        self.lookup_tables = [
+            "Publications",
+            "Telescopes",
+            "Instruments",
+            "Versions",
+            "PhotometryFilters",
+            "Regimes",
+            "AssociationList",
+            "ParameterList",
+            "CompanionList",
+            "SourceTypeList",
+        ]
+        self.lookup_tables = self.settings.get("lookup_tables", self.lookup_tables)
 
         # Prepare and check the database name
         if self.db_name is None:
