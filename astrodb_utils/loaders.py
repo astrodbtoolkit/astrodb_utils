@@ -152,9 +152,9 @@ def build_db_from_json(  # noqa: PLR0913
     db = Database(db_connection_string, reference_tables=db_settings.lookup_tables)
 
     if logger.parent.level <= 10:  # noqa: PLR2004
-        db.load_database(data_path, verbose=True)
+        db.load_database(db_settings.data_path, verbose=True)
     else:
-        db.load_database(data_path)
+        db.load_database(db_settings.data_path)
 
     return db
 
