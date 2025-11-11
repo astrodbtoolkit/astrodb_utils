@@ -23,7 +23,18 @@ class DatabaseSettings:
     db_name: str = None
     felis_path: str = "."
     data_path: str = "data/"
-    lookup_tables: list = None
+    lookup_tables: list =  [
+                "Publications",
+                "Telescopes",
+                "Instruments",
+                "Versions",
+                "PhotometryFilters",
+                "Regimes",
+                "AssociationList",
+                "ParameterList",
+                "CompanionList",
+                "SourceTypeList",
+            ]
 
     def __post_init__(self):
         # Use a base_path if provided, otherwise default to the current directory
