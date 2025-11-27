@@ -27,7 +27,40 @@ replacing <your token> with the token you copied.
 
 Ingesting publications
 -----------------------
-Fill this in...
+Below is an example script for ingesting the discovery publication for Rojas et al. 2012 into the SIMPLE Archive
+
+.. code-block:: python
+
+    from astropy.io import ascii
+    from simple.schema import REFERENCE_TABLES
+    from astrodb_utils import load_astrodb, logger, AstroDBError
+    from astrodb_utils.publications import ingest_publication, find_publication
+
+    SAVE_DB = False # Set to True to write out the JSON files at the end of the script
+    RECREATE_DB = True # Set to True to recreate the database from the JSON files
+
+    # Load the database
+    db = load_astrodb("SIMPLE.sqlite",
+                recreatedb=RECREATE_DB,
+                reference_tables=REFERENCE_TABLES,
+                felis_schema="simple/schema.yaml",
+                )
+
+    # Test if publication already exists
+    found, pub_ref = find_publication(db =db, doi="10.1088/0004-637X/748/2/93")
+    if not found:
+        logger.info("Publication not found in database. Ingesting...")
+        # Ingest discovery publication
+        ingest_publication(
+            db,
+            doi="10.1088/0004-637X/748/2/93"
+        )
+    else:
+        logger.info("Publication already exists in database: {pub_ref}")
+
+    if SAVE_DB:
+        db.save_database()
+
 
 
 .. seealso::
