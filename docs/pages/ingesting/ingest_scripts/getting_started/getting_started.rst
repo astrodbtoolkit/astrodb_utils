@@ -64,6 +64,44 @@ Loading the Database
     SCHEMA_PATH = "simple/schema.yaml" 
     db = load_astrodb("SIMPLE.sqlite", recreatedb=RECREATE_DB, reference_tables=REFERENCE_TABLES, felis_schema=SCHEMA_PATH)
 
+When loading the database, it is important to know at which stage you are running your script at. 
+For example, SAVE_DB will save the data files in addition to modifying the .db file. 
+This should only be true for when you are sure your ingest script works so you don't run into errors. 
+RECREATE_DB forces a full rebuild of the SIMPLE database from the data files, essentially reconstructing it from scratch. 
+Having this set to true will initialize a clean database for you to work off of when you are still in the beginning stages of writing your script and if you are still rerunning your script often, while setting it to false will preserve any existing data.
+
+Our schema path variable simply points to the YAML schema file which defines the structure of our database, including all the tables, columns, constraints, and foreign keys. 
+This is important for when we actually load our database so it is built with the correct structure and information. 
+
+
+Setting Up Your Data
+-------------------------
+
+Often ingests are performed by reading in a file (e.g., csv) that contains a table of data and then ingesting each row of the table into the database.
+Therefore, it is important to convert your data into a format that is easy to read in Python.
+
+.. code-block:: python
+
+    L6T6_link = (
+        "scripts/ingests/zjzhang/L6_to_T6_benchmarks08062025.csv"
+    )
+
+    L6T6_table = ascii.read(
+        L6T6_link, 
+        format="csv",
+        data_start=1, 
+        header_start=0, 
+        guess=False,
+        fast_reader=False,
+        delimiter=",", 
+    )
+
+First, we define a variable that points to the location of our data file, in which we then use to read in our data file as an Astropy Table. 
+Here, we specify that our file is in csv format and provide additional parameters to ensure the file is read correctly. 
+For example, data_start and header_start specify which rows contain the data and the header, respectively, while delimiter indicates that the file is comma-separated. 
+The resulting ``L6T6_table`` variable is now an Astropy Table object that contains all the data from the csv file, which we can then loop through and ingest each row into the database. 
+
+
 
 
 
