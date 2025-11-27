@@ -46,3 +46,10 @@ Publications
     :members:
     :undoc-members:
     :show-inheritance:
+Instruments
+------------
+
+.. automodule:: astrodb_utils.instruments
+    :members:
+    :undoc-members:
+    :show-inheritance:
