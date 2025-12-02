@@ -14,7 +14,7 @@ description = "astrodb_utils: scripts for interacting with the astrodb database"
 readme = "README.md"
 requires-python = ">=3.11"
 keywords = ["databases", "astronomy"]
-license = {text = "BSD-3-Clause"}
+license = "BSD-3-Clause"
 classifiers = [
     "Programming Language :: Python :: 3",
 ]
@@ -38,6 +38,7 @@ test = [
     "ruff>0.3.7",
     "pre-commit",
     "pytest-dependency",
+    "gitpython"
     ]
 docs = [
     "sphinx",
@@ -59,6 +60,9 @@ Documentation = "https://astrodb-utils.readthedocs.io/en/latest/"
 [tool.setuptools_scm]
 root = '.'
 write_to = "astrodb_utils/version.py"
+
+[tool.setuptools]
+packages = ["astrodb_utils"]
 
 [tool.pytest.ini_options]
 norecursedirs = "astrodb-template-db"

@@ -2,6 +2,10 @@ import logging
 import sys
 import warnings
 
+from .loaders import (  # noqa: F401
+    build_db_from_json,
+    read_db_from_file,
+)
 from .utils import (  # noqa: F401
     AstroDBError,
     exit_function,
@@ -13,11 +17,9 @@ from .version import version as __version__
 __all__ = ["__version__"]
 
 
+logger = logging.getLogger(__name__)  # Sets up the parent "astrodb_utils" logger
 
-logger = logging.getLogger(__name__) # Sets up the parent "astrodb_utils" logger
-
-LOGFORMAT = logging.Formatter(
-    "%(levelname)-8s - %(name)-15s - %(message)s")
+LOGFORMAT = logging.Formatter("%(levelname)-8s - %(name)-15s - %(message)s")
 
 # To prevent duplicate handlers, clear all existing handlers and re-add them
 # Keeping this here in case we need it
@@ -30,6 +32,6 @@ handler.setFormatter(LOGFORMAT)
 logger.addHandler(handler)
 
 logger.setLevel(logging.INFO)  # Set the default logging level to INFO
-logger.debug(f"Logger level: {logging.getLevelName(logger.getEffectiveLevel()) }")
+logger.debug(f"Logger level: {logging.getLevelName(logger.getEffectiveLevel())}")
 
 warnings.filterwarnings("ignore", module="astroquery.simbad")

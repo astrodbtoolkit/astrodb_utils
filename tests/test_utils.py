@@ -14,7 +14,7 @@ from astrodb_utils.utils import get_db_regime
         ("Optical", "optical"),
     ],
 )
-def test_get_db_regime(db, caplog, input, db_regime):   
+def test_get_db_regime(db, caplog, input, db_regime):
     regime = get_db_regime(db, input)
     assert regime == db_regime
 
@@ -29,6 +29,6 @@ def test_get_db_regime_hyphens(db, caplog):
 def test_get_db_regime_errors(db, caplog):
     with pytest.raises(AstroDBError) as error_message:
         get_db_regime(db, "notaregime")
-        assert "Regime not found in database" in str(error_message.value)
+    assert "Regime not found in database" in str(error_message.value)
 
-    
+

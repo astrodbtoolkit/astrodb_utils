@@ -16,24 +16,31 @@ To use the AstroDB Toolkit with Python, you need the database
 located on your machine.
 That likely entails cloning the database's repository or downloading
 the database files directly.
+
 Once you have the database files, you can access them using the
-`astrodb-utils` package.
+`astrodb-utils` package. To load the database, the relevant functions
+are in the :py:mod:`loaders<astrodb_utils.loaders>` module.
+These functions use the database settings file (TOML format) to
+create an SQLite database file and load the database into Python.
 
 .. code-block:: python
 
-    from astrodb-utils import load_astrodb
+    from astrodb-utils import build_db_from_json
 
     # Load the database into a variable called `db`
     # and make a sqlite file
-    db = load_astrodb("path/to/database.sqlite")
+    db = build_db_from_json(settings_file = "path/to/database.toml")
 
     # Print the available tables in the database
     for table in db.metadata.tables:
       print(table)
 
 You might need to provide more variables to the
-:py:func:`load_astrodb<astrodb_utils.utils.load_astrodb>` function,
+:py:func:`build_db_from_json<astrodb_utils.loaders.build_db_from_json>` function,
 depending on how your database is set up.
+
+If you already have a database file (SQLite format), you can load it
+directly using the :py:func:`read_db_from_file<astrodb_utils.loaders.read_db_from_file>` function.
 
 See the `AstrodbKit documentation <https://astrodbkit.readthedocs.io/en/latest/>`_
 for more about how to query the database using Python.
