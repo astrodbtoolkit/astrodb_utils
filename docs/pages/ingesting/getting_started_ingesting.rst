@@ -8,7 +8,7 @@ Ingesting and Modifying Data
 
     ingesting_publications
     spectra/*
-    ingest_scripts
+    ingest_scripts/*
     
 
 
