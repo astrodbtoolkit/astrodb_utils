@@ -29,14 +29,14 @@ create an SQLite database file and load the database into Python.
 
     # Load the database into a variable called `db`
     # and make a sqlite file
-    db = load_db_from_json("path/to/database.toml")
+    db = build_db_from_json(settings_file = "path/to/database.toml")
 
     # Print the available tables in the database
     for table in db.metadata.tables:
       print(table)
 
 You might need to provide more variables to the
-:py:func:`load_db_from_json<astrodb_utils.utils.load_db_from_json>` function,
+:py:func:`build_db_from_json<astrodb_utils.utils.build_db_from_json>` function,
 depending on how your database is set up.
 
 See the `AstrodbKit documentation <https://astrodbkit.readthedocs.io/en/latest/>`_
