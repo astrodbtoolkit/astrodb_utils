@@ -47,7 +47,7 @@ that has columns named `name`, `ra`, `dec`.
                     source=data_table['name'],
                     ra=data_table['ra'],
                     dec=data_table['dec'],
-                    reference="Roja12"],
+                    reference="Roja12",
                 )
                 logger.info(f"Source {source['name']} ingested.")
                 n_added += 1

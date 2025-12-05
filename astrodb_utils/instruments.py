@@ -104,6 +104,25 @@ def ingest_instrument(db, *, telescope=None, instrument=None, mode=None, raise_e
 
 
 def get_db_instrument(db, instrument=None, mode=None, telescope=None):
+    """
+    Retrieve instrument from the database
+
+    Parameters
+    ----------
+    db : astrodbkit.astrodb.Database
+        Database object created by astrodbkit
+    instrument : str, optional
+        Name (or substring) of the instrument
+    mode : str, optional
+        Observing mode
+    telescope : str, optional
+        Telescope name
+
+    Returns
+    -------
+    one match found: tuple containing the matched
+    no match or multiple matches: None
+    """
     instrument_table = (
         db.query(db.Instruments)
         .filter(
