@@ -1,6 +1,13 @@
 API documentation
 =================
 
+Loaders
+-----------
+.. automodule:: astrodb_utils.loaders
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Sources
 -----------
 .. automodule:: astrodb_utils.sources
