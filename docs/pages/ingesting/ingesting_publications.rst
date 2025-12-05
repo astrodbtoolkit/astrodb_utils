@@ -35,16 +35,13 @@ Below is an example script for ingesting the discovery publication for Rojas et 
     from simple.schema import REFERENCE_TABLES
     from astrodb_utils import load_astrodb, logger, AstroDBError
     from astrodb_utils.publications import ingest_publication, find_publication
+    from astrodb_utils.loaders import read_db_from_file
 
     SAVE_DB = False # Set to True to write out the JSON files at the end of the script
     RECREATE_DB = True # Set to True to recreate the database from the JSON files
 
     # Load the database
-    db = load_astrodb("SIMPLE.sqlite",
-                recreatedb=RECREATE_DB,
-                reference_tables=REFERENCE_TABLES,
-                felis_schema="simple/schema.yaml",
-                )
+    db = read_db_from_file(db_name = "SIMPLE")
 
     # Test if publication already exists
     found, pub_ref = find_publication(db =db, doi="10.1088/0004-637X/748/2/93")

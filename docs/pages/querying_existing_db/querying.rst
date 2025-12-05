@@ -9,6 +9,7 @@ To query an existing database, you first need to load it using the **load_astrod
 
     from astrodb_utils import load_astrodb
     from simple import REFERENCE_TABLES
+    from astrodb_utils.loaders import read_db_from_file
 
     SAVE_DB = False  # save the data files in addition to modifying the .db file
     RECREATE_DB = True  # recreates the .db file from the data files
@@ -16,12 +17,7 @@ To query an existing database, you first need to load it using the **load_astrod
     SCHEMA_PATH = "simple/schema.yaml"
 
     # LOAD THE DATABASE
-    db = load_astrodb(
-        "SIMPLE.sqlite", 
-        recreatedb=RECREATE_DB, 
-        reference_tables=REFERENCE_TABLES, 
-        felis_schema=SCHEMA_PATH
-        )
+    db = read_db_from_file(db_name = "SIMPLE")
 
 
 Exploring the Schema

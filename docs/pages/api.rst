@@ -53,3 +53,10 @@ Instruments
     :members:
     :undoc-members:
     :show-inheritance:
+
+Loaders
+------------
+.. automodule:: astrodb_utils.loaders
+    :members:
+    :undoc-members:
+    :show-inheritance:
