@@ -53,3 +53,17 @@ Publications
     :members:
     :undoc-members:
     :show-inheritance:
+Instruments
+------------
+
+.. automodule:: astrodb_utils.instruments
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Loaders
+------------
+.. automodule:: astrodb_utils.loaders
+    :members:
+    :undoc-members:
+    :show-inheritance:
