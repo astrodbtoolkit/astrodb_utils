@@ -3,7 +3,7 @@ Querying
 
 Create the Database
 ------------------------
-To query an existing database, you first need to load it using the **load_astrodb** function.
+To query an existing database, you first need to load it using the load_db_from_json or **read_db_from_file** functions. 
 
 .. code-block:: python
 
