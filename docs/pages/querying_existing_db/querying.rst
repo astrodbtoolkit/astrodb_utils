@@ -7,8 +7,6 @@ To query an existing database, you first need to load it using the load_db_from_
 
 .. code-block:: python
 
-    from astrodb_utils import load_astrodb
-    from simple import REFERENCE_TABLES
     from astrodb_utils.loaders import read_db_from_file
 
     SAVE_DB = False  # save the data files in addition to modifying the .db file
