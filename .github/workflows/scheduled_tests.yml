@@ -24,7 +24,7 @@ jobs:
       uses: actions/checkout@v6
       with:
         repository: astrodbtoolkit/astrodb-template-db
-        path: astrodb-template-db  
+        path: tests/astrodb-template-db  
 
     - name: Check ADS_TOKEN
       shell: bash

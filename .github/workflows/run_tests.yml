@@ -34,7 +34,7 @@ jobs:
       uses: actions/checkout@v6
       with:
         repository: astrodbtoolkit/astrodb-template-db
-        path: astrodb-template-db
+        path: tests/astrodb-template-db
         ref: ${{ inputs.astrodb-template-db-branch }}
 
     - name: Check ADS_TOKEN
