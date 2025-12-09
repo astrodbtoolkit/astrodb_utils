@@ -34,7 +34,6 @@ Below is an example script for ingesting the discovery publication for Rojas et 
     from astrodb_utils.loaders import read_db_from_file
 
     SAVE_DB = False # Set to True to write out the JSON files at the end of the script
-    RECREATE_DB = True # Set to True to recreate the database from the JSON files
 
     # Load the database
     db = read_db_from_file(db_name = "SIMPLE")
