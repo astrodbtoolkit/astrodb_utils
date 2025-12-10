@@ -143,7 +143,7 @@ def build_db_from_json(  # noqa: PLR0913
     create_database(db_connection_string, felis_schema=db_settings.felis_path)
 
     # Connect and load the database
-    db = Database(db_connection_string, reference_tables=db_settings.lookup_tables)
+    db = Database(db_connection_string, lookup_tables=db_settings.lookup_tables)
 
     if logger.parent.level <= 10:  # noqa: PLR2004
         db.load_database(db_settings.data_path, verbose=True)
