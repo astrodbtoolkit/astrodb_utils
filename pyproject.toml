@@ -108,3 +108,21 @@ line-length = 120
 # Flag errors (`C901`) whenever the complexity level exceeds this number.
 # Default is 10
 max-complexity = 20
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+# Relaxed coverage requirements
+fail_under = 70
+precision = 2
+skip_covered = false
+skip_empty = true
+
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
