@@ -1,13 +1,8 @@
-Getting started
-===============
+Building and Opening Existing Databases
+=======================================
 
 There are multiple ways to use existing databases
 with the AstroDB Toolkit.
-
-.. toctree::
-
-  installation
-
 
 Using Python
 ------------
@@ -44,6 +39,31 @@ directly using the :py:func:`read_db_from_file<astrodb_utils.loaders.read_db_fro
 
 See the `AstrodbKit documentation <https://astrodbkit.readthedocs.io/en/latest/>`_
 for more about how to query the database using Python.
+
+Using the Command-Line
+----------------------
+
+You can also build an SQLite database from JSON files using the
+``build_db_from_json`` command-line script. This is useful for
+creating or updating databases without writing Python code.
+
+Basic Usage
+^^^^^^^^^^^
+
+The simplest way to build the database is to use the ``build_db_from_json``
+command:
+
+.. code-block:: bash
+
+   build_db_from_json
+
+This command will:
+
+* Read the database configuration from ``database.toml``
+* Create a new SQLite database file using the JSON data files
+
+For detailed information about all available options, examples, and
+troubleshooting, see the :doc:`command_line` page.
 
 Using a GUI
 -----------

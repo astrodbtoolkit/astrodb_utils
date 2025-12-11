@@ -57,6 +57,9 @@ Homepage = "https://github.com/astrodbtoolkit/astrodb_utils"
 Issues = "https://github.com/astrodbtoolkit/astrodb_utils/issues"
 Documentation = "https://astrodb-utils.readthedocs.io/en/latest/"
 
+[project.scripts]
+build_db_from_json = "astrodb_utils.loaders:main"
+
 [tool.setuptools_scm]
 root = '.'
 write_to = "astrodb_utils/version.py"
