@@ -13,15 +13,17 @@ configuration file:
 
 .. code-block:: bash
 
-   build_db_from_json database.toml
+   build_db_from_json
 
 This command will:
 
 * Read the database configuration from ``database.toml``
 * Load the Felis schema from the path specified in the TOML
   file
-* Create a new SQLite database file
-* Ingest all JSON data from the data directory
+* Create a new SQLite database file using the db_name from the
+  TOML file
+* Ingest all JSON data from the data directory specified in the
+  TOML file
 
 Command-Line Options
 ---------------------
