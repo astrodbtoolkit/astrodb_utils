@@ -1,5 +1,7 @@
+import argparse
 import logging
 import os
+import sys
 import tomllib
 from dataclasses import dataclass
 
@@ -179,3 +181,90 @@ def read_db_from_file(db_name: str, db_path: str = None):
 
     db = Database(db_connection_string)
     return db
+
+
+def main():
+    """Command-line interface for building a database from JSON files."""
+    parser = argparse.ArgumentParser(
+        description="Build an SQLite database from JSON files using a TOML configuration.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python -m astrodb_utils.loaders database.toml
+  python -m astrodb_utils.loaders database.toml --base-path /path/to/data
+  python -m astrodb_utils.loaders database.toml --db-name my_database --data-path data/
+        """,
+    )
+
+    parser.add_argument(
+        "settings_file",
+        nargs="?",
+        default="database.toml",
+        help="Name of the TOML file containing database settings (default: database.toml)",
+    )
+
+    parser.add_argument(
+        "--base-path",
+        default=".",
+        help="Path to the directory containing the TOML file (default: current directory)",
+    )
+
+    parser.add_argument(
+        "--db-name",
+        default=None,
+        help="Name of the database file without .sqlite extension (overrides TOML setting)",
+    )
+
+    parser.add_argument(
+        "--felis-path",
+        default=None,
+        help="Path to the Felis schema file (overrides TOML setting)",
+    )
+
+    parser.add_argument(
+        "--data-path",
+        default=None,
+        help="Path to the data directory containing JSON files (overrides TOML setting)",
+    )
+
+    parser.add_argument(
+        "--lookup-tables",
+        nargs="+",
+        default=None,
+        help="List of tables to consider as lookup tables (overrides TOML setting)",
+    )
+
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Enable verbose logging output",
+    )
+
+    args = parser.parse_args()
+
+    # Set logging level
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+    try:
+        logger.info(f"Building database from {args.settings_file}...")
+        db = build_db_from_json(
+            settings_file=args.settings_file,
+            base_path=args.base_path,
+            db_name=args.db_name,
+            felis_path=args.felis_path,
+            data_path=args.data_path,
+            lookup_tables=args.lookup_tables,
+        )
+        logger.info("Database created successfully!")
+        return 0
+    except Exception as e:
+        logger.error(f"Error building database: {e}")
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())
