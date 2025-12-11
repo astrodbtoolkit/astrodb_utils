@@ -1,14 +1,8 @@
-Getting started
-===============
+Building and Opening Existing Databases
+=======================================
 
 There are multiple ways to use existing databases
 with the AstroDB Toolkit.
-
-.. toctree::
-
-  installation
-  command_line
-
 
 Using Python
 ------------

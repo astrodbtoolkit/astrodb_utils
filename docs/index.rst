@@ -19,6 +19,8 @@ User Guide
    :maxdepth: 1
 
    Overview of the AstroDB Toolkit <pages/overview/organization>
+   Installing astrodb-utils <pages/installation>
+   pages/loading/index
    pages/querying_existing_db/index
    pages/ingesting/getting_started_ingesting
    pages/modifying/index
