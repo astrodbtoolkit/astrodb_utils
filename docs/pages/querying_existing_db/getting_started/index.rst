@@ -57,11 +57,11 @@ Basic Usage
 ^^^^^^^^^^^
 
 The simplest way to build the database is to use the ``build_db_from_json``
-command with the ``database.toml`` configuration file:
+command:
 
 .. code-block:: bash
 
-   build_db_from_json database.toml
+   build_db_from_json
 
 This command will:
 
