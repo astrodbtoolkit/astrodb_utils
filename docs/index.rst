@@ -25,6 +25,7 @@ User Guide
    pages/ingesting/getting_started_ingesting
    pages/modifying/index
    pages/make_new_db/getting_started_new_database
+   pages/template_repo/index
    pages/template_schema/template_schema
    pages/making_private_version
    pages/ingesting/spectra/converting_spectra/converting_spectra
