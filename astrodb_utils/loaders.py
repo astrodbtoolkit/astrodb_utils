@@ -251,7 +251,7 @@ Examples:
 
     try:
         logger.info(f"Building database from {args.settings_file}...")
-        db = build_db_from_json(
+        _ = build_db_from_json(
             settings_file=args.settings_file,
             base_path=args.base_path,
             db_name=args.db_name,
