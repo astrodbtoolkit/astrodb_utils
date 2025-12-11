@@ -102,28 +102,6 @@ Arguments
     * Shows all available options and their descriptions
     * Example: ``build_db_from_json --help``
 
-Return Codes
-------------
-
-The command returns the following exit codes:
-
-* ``0``: Success - database created successfully
-* ``1``: Error - database creation failed (check the error
-  message for details)
-
-These exit codes are useful for scripting and automation. For
-example, in a shell script:
-
-.. code-block:: bash
-
-   build_db_from_json database.toml
-   if [ $? -eq 0 ]; then
-       echo "Database created successfully"
-   else
-       echo "Failed to create database"
-       exit 1
-   fi
-
 Troubleshooting
 ---------------
 
