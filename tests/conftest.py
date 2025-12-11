@@ -2,7 +2,6 @@ import logging
 import os
 
 import pytest
-from git import Repo
 
 import astrodb_utils
 from astrodb_utils import build_db_from_json
