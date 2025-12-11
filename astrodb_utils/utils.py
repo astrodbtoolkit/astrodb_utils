@@ -15,18 +15,21 @@ __all__ = [
     "internet_connection",
     "exit_function",
     "get_db_regime",
+    "AstroDBError",
     "check_obs_date",
 ]
 
+
 class AstroDBError(Exception):
     """Custom error for AstroDB"""
+
 
 logger = logging.getLogger(__name__)
 msg = f"logger.parent.name: {logger.parent.name}, logger.parent.level: {logger.parent.level}"
 logger.debug(msg)
 
 
-def load_astrodb(  # noqa: PLR0913
+def load_astrodb(
     db_file,
     data_path="data/",
     recreatedb=True,
@@ -45,10 +48,6 @@ def load_astrodb(  # noqa: PLR0913
     felis_schema=None
 ):
     """Utility function to load the database
-
-    .. note:: Deprecated in 2.0 and will be removed in future versions.
-              `load_astrodb` is deprecated.
-              It is replaced by :py:func:`loaders.build_db_from_json` and :py:func:`loaders.read_db_from_file`.
 
     Parameters
     ----------
@@ -76,26 +75,21 @@ def load_astrodb(  # noqa: PLR0913
         # Create database, using Felis if provided
         create_database(db_connection_string, felis_schema=felis_schema)
         # Connect and load the database
-        db = Database(db_connection_string, lookup_tables=reference_tables)
-        if logger.parent.level <= 10:  # noqa: PLR2004
+        db = Database(db_connection_string, reference_tables=reference_tables)
+        if logger.parent.level <= 10:
             db.load_database(data_path, verbose=True)
         else:
             db.load_database(data_path)
     else:
         # if database already exists, connects to it
-        db = Database(db_connection_string, lookup_tables=reference_tables)
-
-    logger.warning(
-        "load_astrodb is deprecated and will be removed in future versions."
-        "Please use build_db_from_json or read_db_from_file instead."
-        )
+        db = Database(db_connection_string, reference_tables=reference_tables)
 
     return db
 
 
 def internet_connection():
     try:
-        socket.getaddrinfo("google.com", 80)
+        socket.getaddrinfo('google.com',80)
         return True
     except socket.gaierror:
         return False
@@ -110,9 +104,13 @@ def check_url_valid(url):
 
     request_response = requests.head(url, timeout=60)
     status_code = request_response.status_code
-    if status_code != 200:  # The website is up if the status code is 200  # noqa: PLR2004
+    if status_code != 200:  # The website is up if the status code is 200
         status = "skipped"  # instead of incrememnting n_skipped, just skip this one
-        msg = f"The spectrum location does not appear to be valid: \nspectrum: {url} \nstatus code: {status_code}"
+        msg = (
+            "The spectrum location does not appear to be valid: \n"
+            f"spectrum: {url} \n"
+            f"status code: {status_code}"
+        )
         logger.error(msg)
     else:
         msg = f"The spectrum location appears up: {url}"
@@ -146,7 +144,7 @@ def exit_function(msg, raise_error=True, return_value=None):
         return return_value
 
 
-def get_db_regime(db, regime: str, raise_error=True):
+def get_db_regime(db, regime:str, raise_error=True):
     """
     Check if a regime is in the Regimes table using ilike matching.
     This minimizes problems with case sensitivity.
@@ -159,12 +157,16 @@ def get_db_regime(db, regime: str, raise_error=True):
     str: The regime found
     None: If the regime is not found or there are multiple matches.
     """
-    regime_table = db.query(db.RegimeList).filter(db.RegimeList.c.regime.ilike(regime)).table()
+    regime_table = (
+        db.query(db.RegimeList).filter(db.RegimeList.c.regime.ilike(regime)).table()
+    )
 
     if len(regime_table) == 1:
         # Warn if the regime found in the database was not exactly the same as the one requested
         if regime_table["regime"][0] != regime:
-            msg = f"Regime {regime} matched to {regime_table['regime'][0]}. "
+            msg = (
+                f"Regime {regime} matched to {regime_table['regime'][0]}. "
+            )
             logger.warning(msg)
 
         return regime_table["regime"][0]
@@ -172,14 +174,14 @@ def get_db_regime(db, regime: str, raise_error=True):
     # try to match the regime hyphens removed
     if len(regime_table) == 0:
         regime = regime.replace("-", "")
-        regime_match = (
-            db.query(db.RegimeList)
-            .filter(func.replace(func.lower(db.RegimeList.c.regime), "-", "") == regime.lower())
-            .table()
-        )
+        regime_match = (db.query(db.RegimeList).
+            filter(func.replace(func.lower(db.RegimeList.c.regime),"-","") == regime.lower())
+            .table())
 
         if len(regime_match) == 1:
-            msg = f"Regime {regime} matched to {regime_match['regime'][0]}. "
+            msg = (
+                f"Regime {regime} matched to {regime_match['regime'][0]}. "
+            )
             logger.warning(msg)
             return regime_match["regime"][0]
 
@@ -215,7 +217,9 @@ def check_obs_date(date, raise_error=True):
     """
     try:
         parsed_date = datetime.date.fromisoformat(date)
-        logger.debug(f"Observation date {date} is parseable: {parsed_date.strftime('%d %b %Y')}")
+        logger.debug(
+            f"Observation date {date} is parseable: {parsed_date.strftime('%d %b %Y')}"
+        )
         return parsed_date
     except ValueError as e:
         msg = f"Observation date {date} is not parseable as ISO format: {e}"
