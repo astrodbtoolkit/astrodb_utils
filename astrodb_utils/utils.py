@@ -76,15 +76,14 @@ def load_astrodb(  # noqa: PLR0913
         # Create database, using Felis if provided
         create_database(db_connection_string, felis_schema=felis_schema)
         # Connect and load the database
-        db = Database(db_connection_string, reference_tables=reference_tables)
+        db = Database(db_connection_string, lookup_tables=reference_tables)
         if logger.parent.level <= 10:  # noqa: PLR2004
             db.load_database(data_path, verbose=True)
         else:
             db.load_database(data_path)
     else:
         # if database already exists, connects to it
-        db = Database(db_connection_string, reference_tables=reference_tables)
-
+        db = Database(db_connection_string, lookup_tables=reference_tables)
 
     logger.warning(
         "load_astrodb is deprecated and will be removed in future versions."
