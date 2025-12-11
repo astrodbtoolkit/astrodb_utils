@@ -56,8 +56,8 @@ creating or updating databases without writing Python code.
 Basic Usage
 ^^^^^^^^^^^
 
-The simplest way to build your database is to use the ``build_db_from_json``
-command with your ``database.toml`` configuration file:
+The simplest way to build the database is to use the ``build_db_from_json``
+command with the ``database.toml`` configuration file:
 
 .. code-block:: bash
 
@@ -66,9 +66,7 @@ command with your ``database.toml`` configuration file:
 This command will:
 
 * Read the database configuration from ``database.toml``
-* Load the Felis schema from the path specified in the TOML file
-* Create a new SQLite database file
-* Ingest all JSON data from the data directory
+* Create a new SQLite database file using the JSON data files
 
 For detailed information about all available options, examples, and
 troubleshooting, see the :doc:`command_line` page.
