@@ -22,7 +22,7 @@ User Guide
    Installing astrodb-utils <pages/installation>
    pages/loading/index
    pages/querying_existing_db/index
-   pages/ingesting/getting_started_ingesting
+   pages/ingesting/index
    pages/modifying/index
    pages/make_new_db/index
    pages/template_repo/index

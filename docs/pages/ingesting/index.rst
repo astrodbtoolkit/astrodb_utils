@@ -6,10 +6,10 @@ Ingesting and Modifying Data
     :maxdepth: 2
     :titlesonly:
 
+    ingest_scripts/index
     ingesting_publications
     spectra/*
-    ingest_scripts
-    
+
 
 
 .. note::
