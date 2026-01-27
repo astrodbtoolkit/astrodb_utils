@@ -47,7 +47,7 @@ You can use fuzzy search and alternative names to search for objects as well. Yo
 
 Inventory Search function
 -------------------------
-The **inventory_search** function returns all data for an object
+The **inventory_search** method returns all data for an object
 
 .. code-block:: python
 
