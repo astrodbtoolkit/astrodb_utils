@@ -17,6 +17,8 @@ To query an existing database, you first need to load it using the load_db_from_
 
 Exploring the Schema
 -------------------------
+The AstroDB Toolkit makes extensive use of the Astrodbkit package. Astrodbkit provides the Database class and useful methods for exploring the database.
+
 The database schema is accessible via the **db.metadata** attribute after loading the database.
 
 Below is an example of how to load the database and print the available tables from the schema.
