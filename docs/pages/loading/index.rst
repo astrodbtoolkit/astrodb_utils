@@ -1,6 +1,12 @@
 Building and Opening Existing Databases
 =======================================
 
+.. toctree::
+   :glob:
+   :maxdepth: 1
+
+   command_line
+
 There are multiple ways to use existing databases
 with the AstroDB Toolkit.
 
