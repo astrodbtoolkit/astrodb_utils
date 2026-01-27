@@ -34,7 +34,7 @@ You can also explore the columns of a specific table. For example, to view the f
 
 Search Object function
 -------------------------
-The **search_object** function allows you to search for astronomical objects in the database by name or identifier. It returns a list of matching sources along with their details.
+The **search_object** method allows you to search for astronomical objects in the database by name or identifier. It returns a list of matching sources along with their details.
 
 You can use fuzzy search and alternative names to search for objects as well. You can also specify which table to search from.
 
