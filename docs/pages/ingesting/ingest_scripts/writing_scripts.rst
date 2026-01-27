@@ -15,7 +15,8 @@ instruments.
 Therefore, if your data fits into one of these categories, it is recommended
 to use the existing functions.
 
-Below is an example of how to use the `ingest_source` function to ingest source
+Below is an example of how to use the
+:py:func:`astrodb_utils.sources.ingest_source` function to ingest source
 data into the database:
 
 .. code-block:: python

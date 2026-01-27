@@ -21,11 +21,11 @@ Loading the Database
 
     db = build_db_from_json(settings_file = "path/to/database.toml")
 
-First, we need to load our database using the ``build_db_from_json`` function
-from ``astrodb-utils``.
+First, we need to load our database using the
+:py:func:`astrodb_utils.loaders.build_db_from_json` function.
 This function takes in a settings file (in TOML format) that contains
 information about our database, including its name.
-The ``build_db_from_json`` function will preform a full rebuild of the
+The ``build_db_from_json`` function will perform a full rebuild of the
 database from the JSON data files,
 essentially reconstructing it from scratch.
 
