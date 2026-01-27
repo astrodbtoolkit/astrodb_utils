@@ -75,7 +75,7 @@ that has columns named `name`, `ra`, `dec`.
 .. code-block:: python
 
     from astropy.io import ascii
-    from astrodb-utils import build_db_from_json
+    from astrodb_utils.loaders import build_db_from_json
     from astrodb_utils.sources import ingest_source
     from astrodb_utils.publications import ingest_publication
 
