@@ -24,7 +24,7 @@ User Guide
    pages/querying_existing_db/index
    pages/ingesting/getting_started_ingesting
    pages/modifying/index
-   pages/make_new_db/getting_started_new_database
+   pages/make_new_db/index
    pages/template_repo/index
    pages/template_schema/template_schema
    pages/making_private_version
