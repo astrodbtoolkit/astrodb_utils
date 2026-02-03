@@ -97,6 +97,7 @@ reporting events, progress updates, and errors during execution.
 
 .. code-block:: python
 
+    import logging
     logger = logging.getLogger("AstroDB")
     logger.setLevel(logging.INFO)
 
