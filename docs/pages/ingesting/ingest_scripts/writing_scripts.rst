@@ -80,7 +80,7 @@ appropriate table you are ingesting into.
 It is also important to reference the schema to ensure your code matches the
 database structure. For example, make sure that the column names inside the
 ``values()`` method match exactly with the column names in the database schema.
-Additionally, the schema, which is availible in your code under the utils
+Additionally, the schema, which is available in your code under the utils
 folder, will indicate which columns are required versus optional (check nullable
 in the column you are referencing), so be sure to include all required columns in
 your code to avoid any errors. Finally, make sure to commit the changes to the
