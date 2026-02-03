@@ -8,8 +8,9 @@ Ingest Scripts
    writing_scripts
 
 Ingest scripts can be used to add a bunch of data to the database at once.
-Often ingests are performed by reading in a file (e.g., csv) that contains
-a table of data and then ingesting each row of the table into the database.
+Ingest scripts also aid in reproducibilty since they document exactly how
+data was added to the database.
+They can also be reused later to add similar data.
 
 
 Loading the Database
@@ -35,10 +36,15 @@ Setting Up Your Data
 
 Often ingests are performed by reading in a file (e.g., csv) that contains a
 table of data and then ingesting each row of the table into the database.
-Therefore, it is important to convert your data into a format that is easy
-to read in Python.
+Therefore, it is important to read in your data into a format that is easy
+to work with, such as an `Astropy Table <https://docs.astropy.org/en/latest/table/index.html>`_
+or pandas DataFrame.
+
+Here is an example of reading in a csv file using Astropy's ascii module:
 
 .. code-block:: python
+
+    from astropy.io import ascii
 
     L6T6_link = (
         "scripts/ingests/zjzhang/L6_to_T6_benchmarks08062025.csv"
@@ -65,6 +71,8 @@ The resulting ``L6T6_table`` variable is now an Astropy Table object that
 contains all the data from the csv file, which we can then loop through
 and ingest each row into the database.
 
+There are many ways to read in data files in Python, so feel free to use
+other libraries or methods that you are comfortable with, such as pandas.
 
 Another Example Ingest Script
 -----------------------------
@@ -79,11 +87,15 @@ that has columns named `name`, `ra`, `dec`.
     from astrodb_utils.sources import ingest_source
     from astrodb_utils.publications import ingest_publication
 
-    DB_SAVE = True
+    DB_SAVE = False  # Set to True once script can run without errors and all sources can be ingested
 
     # Load the database
     db = build_db_from_json(settings_file="path/to/database.toml")
 
+    # Set the logger setting to control how much output is shown
+    import logging
+    logger = logging.getLogger("astrodb_utils")
+    logger.setLevel(logging.INFO)  # Set to DEBUG for more verbosity
 
     def ingest_pubs(db):
         # Ingest discovery publication
@@ -101,26 +113,24 @@ that has columns named `name`, `ra`, `dec`.
         n_skipped = 0
 
         for source in data_table:
-            try:
-                ingest_source(
-                    db,
-                    source=data_table['name'],
-                    ra=data_table['ra'],
-                    dec=data_table['dec'],
-                    reference="Roja12",
-                )
-                logger.info(f"Source {source['name']} ingested.")
-                n_added += 1
+            ingest_source(
+                db,
+                source=data_table['name'],
+                ra=data_table['ra'],
+                dec=data_table['dec'],
+                reference="Roja12",
+                raise_error=True,
+            )
+            n_added += 1
             except AstroDBError as e:
                 logger.warning(f"Error ingesting source {source['name']}: {e}")
                 n_skipped += 1
                 continue
 
+        print(f"Added {n_added} sources, skipped {n_skipped} sources.")
 
     ingest_pubs(db)
     ingest_sources(db)
-
-    logger.info(f"Added {n_added} sources, skipped {n_skipped} sources.")
 
     if DB_SAVE:
         db.save()
