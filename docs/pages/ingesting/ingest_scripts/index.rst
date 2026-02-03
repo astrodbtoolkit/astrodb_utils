@@ -17,7 +17,7 @@ Loading the Database
 
 .. code-block:: python
 
-    from astrodb-utils import build_db_from_json
+    from astrodb_utils import build_db_from_json
 
     db = build_db_from_json(settings_file = "path/to/database.toml")
 
