@@ -327,6 +327,7 @@ def ingest_spectrum(
         telescope=telescope,
         instrument=instrument,
         mode=mode,
+        regime=regime,
     )
     if len(matches) > 0:
         msg = f"Skipping suspected duplicate measurement: {source}"
@@ -411,6 +412,7 @@ def find_spectra(
     telescope: str = None,
     instrument: str = None,
     mode: str = None,
+    regime: str = None,
 ):
     """
     Find what spectra already exists in database for this source
@@ -449,6 +451,9 @@ def find_spectra(
 
     if mode is not None:
         filter_list.append(db.Spectra.c.mode == mode)
+
+    if regime is not None:
+        filter_list.append(db.Spectra.c.regime == regime)
 
     # Actually perform the query
     if len(filter_list) > 0:
