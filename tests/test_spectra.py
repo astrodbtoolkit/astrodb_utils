@@ -207,7 +207,7 @@ def test_ingest_spectrum_works(db):
 
 def test_ingest_spectrum_duplicate_regime(db):
     """
-    To test two spectra will same fields except for the regime, it should be allowed to be ingested without error.
+    To test two spectra with same fields except for the regime can be ingested without error.
     """
     spectrum_url = "https://bdnyc.s3.amazonaws.com/IRS/2MASS+J03552337%2B1133437.fits"
 
