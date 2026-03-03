@@ -8,6 +8,7 @@ from astrodb_utils.spectra import (
     _check_spectrum_wave_units,
     check_spectrum_plottable,
     ingest_spectrum,
+    find_spectra
 )
 
 
@@ -203,3 +204,69 @@ def test_ingest_spectrum_works(db):
         mode="Prism",
     )
     assert result["added"] is True
+
+def test_ingest_spectrum_duplicate_regime(db):
+    """
+    To test two spectra will same fields except for the regime, it should be allowed to be ingested without error.
+    """
+    spectrum_url = "https://bdnyc.s3.amazonaws.com/IRS/2MASS+J03552337%2B1133437.fits"
+
+    # Check ingestion for first spectrum with regime nir
+    spectrum1 = ingest_spectrum(
+        db,
+        source="TWA 26",
+        regime="nir",
+        spectrum=spectrum_url,
+        reference="Burg06",
+        obs_date="2021-01-01",
+        telescope="IRTF",
+        instrument="SpeX",
+        mode="Prism",
+    )
+    assert spectrum1["added"] is True
+
+    # Second spectrum with same fields but different regime - it should be allowed.
+    spectrum2 = ingest_spectrum(
+        db,
+        source="TWA 26",
+        regime="optical",
+        spectrum=spectrum_url,
+        reference="Burg06",
+        obs_date="2021-01-01",
+        telescope="IRTF",
+        instrument="SpeX",
+        mode="Prism",
+    )
+    assert spectrum2["added"] is True
+
+    # Check if duplicate raises an error when ingesting a spectrum with the same fields including regime
+    with pytest.raises(AstroDBError) as error_message:
+        ingest_spectrum(
+            db,
+            source="TWA 26",
+            regime="nir",
+            spectrum=spectrum_url,
+            reference="Burg06",
+            obs_date="2021-01-01",
+            telescope="IRTF",
+            instrument="SpeX",
+            mode="Prism",
+        )
+    # Check that if error is raised
+    assert "Integrity Error" in str(error_message.value) 
+
+def test_find_spectra_regime(db):
+    """
+    Test that find_spectra can find spectra based on the regime field.
+    """
+    # find spectra using regime nir
+    nir_spectra = find_spectra(db, source="TWA 26", regime="nir")
+    assert len(nir_spectra) >= 1
+    assert all(row["regime"] == "nir" for row in nir_spectra)
+
+    optical_spectra = find_spectra(db, source="TWA 26", regime="optical")
+    assert len(optical_spectra) >= 1
+    assert all(row["regime"] == "optical" for row in optical_spectra)
+
+    no_regime = find_spectra(db, source="TWA 26", regime=None)
+    assert len(no_regime) >= 2
