@@ -45,6 +45,8 @@ An explanation of the trade-offs you weighed, the design/architecture you chose,
 
 blah blah. Copy and paste from other materials.
 
+Makes use of sqlalchemy and felis.
+
 # Research impact statement
 Evidence of realized impact (publications, external use, integrations) or credible near-term significance (benchmarks, reproducible materials, community-readiness signals). The evidence should be compelling and specific, not aspirational.
 
