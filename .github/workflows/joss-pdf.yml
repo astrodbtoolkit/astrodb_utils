@@ -27,7 +27,7 @@ jobs:
           # paper.md
           path: paper2026/paper.pdf
       - name: Commit PDF to repository
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@v10
         with:
           message: '(auto) Paper PDF Draft'
           # This should be the path to the paper within your repo.
