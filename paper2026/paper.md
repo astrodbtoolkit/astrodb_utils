@@ -19,9 +19,9 @@ affiliations:
    index: 1
  - name: Graduate Center, City University of New York, United States
    index: 2
-- name: Astrophysics, American Museum of Natural History, United States
+ - name: Astrophysics, American Museum of Natural History, United States
    index: 3
-- name: STScI, USA
+ - name: STScI, USA
    index: 4
 date: 1 April 2026
 bibliography: paper.bib
