@@ -92,6 +92,8 @@ and referenced from text using \autoref{fig:example}.
 Figure sizes can be customized by adding an optional second parameter:
 ![Caption for example figure.](figure.png){ width=20% } -->
 
+![Toolkit design.\label{fig:design}](astrodbkit_v2.png)
+
 ### Spectra and non-tabular data
 
 Spectra, images, and other non-tabular data are stored as pointers to cloud-hosted files. The files are hosted in a variety of places, including institutional repositories. However, we have found the best host to be Amazon Simple Storage Service (Amazon S3). In order to enable the database to fully function without an internet connection and/or to point to files not hosted in the cloud, we allow pointers to local files using an environment variable to indicate a local path.
