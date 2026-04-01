@@ -29,7 +29,9 @@ bibliography: paper.bib
 ---
 ## Summary
 
-A description of the high-level functionality and purpose of the software for a diverse, non-specialist audience.
+*A description of the high-level functionality and purpose of the software for a diverse, non-specialist audience.*
+
+We introduce the AstroDB Toolkit to fill a gap in the data management/sharing ecosystem for astronomers by providing a robust toolkit to empower astronomers to build databases of astronomical sources. Currently, astronomers reinvent the wheel, spending time making technology choices, database design decisions, and web applications as opposed to being able to focus on the analysis and physical interpretation of the actual data. The AstroDB Toolkit is an open-source, openly developed tool that greatly lowers the technology burden on the astronomers and empowers them to make databases of astronomical sources using a common, interoperable framework. The Toolkit uses GitHub’s features and its collaborative workflow. Spectra, images, and other non-tabular data are stored as pointers to cloud-hosted files.
 
 ## Statement of need
 
@@ -46,6 +48,16 @@ The AstroDB Toolkit aims to serve the needs of individual astronomers and small-
 ## State of the field
 
 *A description of how this software compares to other commonly-used packages in the research area. If related tools exist, provide a clear “build vs. contribute” justification explaining your unique scholarly contribution and why existing alternatives are insufficient.*
+
+The astronomical community has produced numerous data compilations, but they fall into two broad categories: large institutional archives and small grassroots efforts — and neither category offers a reusable framework for building new compilations.
+
+**Institutional archives** such as the NASA Exoplanet Archive [@akeson:2013], HITRAN [@gordon:2022], and WISeREP [@yaron:2012] provide excellent data access and, in the case of the Exoplanet Archive, gold-standard interoperability via the IVOA Table Access Protocol (TAP) and ADQL. However, their backends are undisclosed, they are operated by dedicated engineering teams, and they cannot be deployed by individual researchers or small collaborations. Contributing data requires submission through web forms or bulk upload APIs. These platforms are powerful for data consumers but offer no path for an astronomer to build their own analogous database.
+
+**Grassroots compilations** span a wide range of technology choices with little interoperability between them. The Open Astronomy Catalogs (AstroCats; @guillochon:2017) represent the most mature open-source effort: each transient source is stored as a richly annotated JSON file in a Git repository, with a documented schema that mandates source attribution for every data point. The framework was explicitly designed to be reusable, and four separate catalogs (supernovae, tidal disruption events, novae, black holes) were built on it. However, AstroCats supports only JSON — there is no relational query layer — and the codebase targets Python 2/3.4–3.6, limiting its continued maintainability. The MOCA database of open clusters [@malo:2021] uses a hosted MySQL backend with a companion Python package (`mocapy`) for querying, but the database schema is not designed to be forked and repopulated for a new science case. `species` [@stolker:2020] stores atmospheric model grids and brown dwarf/directly-imaged planet data in a single HDF5 file per project, enabling fast local queries, but its schema is tightly coupled to atmospheric characterization workflows. The Community Atlas of Tidal Streams [@price-whelan:2021] encapsulates its science logic in Jupyter notebooks with no persistent database backend, making it difficult to query programmatically or extend to new data types. At the lightest end of the spectrum, compilations such as the Ultracool Sheet and the Hypatia Catalog [@hinkel:2014] rely on Google Sheets or web-only interfaces — convenient for human browsing but lacking version control, contribution workflows, or machine-readable schemas.
+
+Across this landscape, several gaps are consistent. No community-built grassroots project exposes a TAP or Virtual Observatory interface. Schema documentation is rare. Contribution workflows are ad hoc (CSV uploads, pull requests against JSON files, or web forms), with no shared tooling. Most critically, none of these projects offer a general-purpose, deployable framework: an astronomer who wants to build their own compilation of, say, low-mass stars or high-redshift galaxies cannot fork any of these projects and adapt the infrastructure to their science case without essentially starting from scratch.
+
+The AstroDB Toolkit fills this gap. It provides a schema-first, SQLite-backed, Git-native framework that any researcher can clone from a template repository and immediately begin populating with their own sources. Unlike AstroCats — the closest precedent — the Toolkit supports structured SQL queries via SQLAlchemy, integrates with standard Python astronomy libraries (`astropy`, `specutils`), and is actively maintained against modern Python versions. The common schema and shared Python tooling mean that databases built with the Toolkit are interoperable with one another by construction, lowering the barrier both for data consumers and for researchers launching new compilations.
 
 ## Software design
 
@@ -124,7 +136,13 @@ Figure sizes can be customized by adding an optional second parameter:
 
 ## AI usage disclosure
 
-Github Co-Pilot was used to assist in writing small bits of code and documentation. All new code and text was supervised.
+Generative AI tools were used at several stages of this work.
+
+**GitHub Copilot** (version unspecified) was used to assist in writing small portions of code and inline documentation throughout the development of the AstroDB Toolkit. Its assistance was limited to code completion and minor documentation suggestions.
+
+**Claude Sonnet 4.6** (Anthropic, accessed via Claude Code CLI) was used to assist in drafting the "State of the field" section of this manuscript, including researching and summarizing the technology stacks and schemas of related astronomical data compilations, and constructing initial BibTeX bibliography entries for cited works.
+
+All AI-generated text and code was thoroughly reviewed, revised, and validated by the human authors. The authors made all primary architectural and design decisions for the AstroDB Toolkit. The authors take full responsibility for the accuracy of all content in this manuscript, including citations and bibliographic details.
 
 ## Acknowledgements
 
