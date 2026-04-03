@@ -111,6 +111,9 @@ max-complexity = 20
 
 [tool.coverage.run]
 branch = true
+omit = [
+    "paper2026/**"
+]
 
 [tool.coverage.report]
 # Relaxed coverage requirements
