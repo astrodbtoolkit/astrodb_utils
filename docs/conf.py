@@ -36,7 +36,7 @@ sys.path.insert(0, os.path.abspath("../schema"))
 
 # Get markdown files for the template schema from astrodb-template-db/ repository
 
-template_schema_path = os.path.join("pages", "template_schema", "astrodb-template-db")
+template_schema_path = os.path.join("pages", "getting_started", "template_schema", "astrodb-template-db")
 if os.path.exists(template_schema_path):
     template_repo = Repo(template_schema_path)
     try:

@@ -8,12 +8,10 @@ Ingesting and Modifying Data
 
     ingest_scripts/index
     ingesting_publications
-    spectra/*
-
 
 
 .. note::
-    If you want to add or modify the tables or columns (rather than just add/modify database contents), see :doc:`/pages/modifying/index`.
+    If you want to add or modify the tables or columns (rather than just add/modify database contents), see :doc:`/pages/db_management/modifying/index`.
 
 
 API Documentation

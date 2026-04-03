@@ -1,5 +1,5 @@
-Querying
-========
+Querying the database
+=====================
 
 Create the Database
 ------------------------

@@ -30,6 +30,7 @@ Ingesting publications
 Below is an example script for ingesting the discovery publication for Rojas et al. 2012 into the SIMPLE Archive
 
 .. code-block:: python
+    
     from astrodb_utils.publications import ingest_publication, find_publication
     from astrodb_utils.loaders import read_db_from_file
 
@@ -57,7 +58,7 @@ Below is an example script for ingesting the discovery publication for Rojas et 
 
 .. seealso::
 
-  :doc:`../template_schema/lookup_tables/publications`
+  :doc:`/pages/getting_started/template_schema/lookup_tables/publications`
       Documentation on the Publications table
 
   :py:mod:`find publication <astrodb_utils.publications.find_publication>` function
