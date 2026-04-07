@@ -83,7 +83,7 @@ An individual user may deploy their own copy of any AstroDB database. They may m
 
 As part of the pull request process, automatic tests implemented via GitHub Actions can be run to verify the integrity of the database. This ensures no changes took place that break the functionality of the database and also include verification for the data that has been added.
 
-Finally, when the pull request is accepted, additional automated tasks can be performed to regenerate the database and push it to external users of the database, such as a graphical user interface.
+Finally, when the pull request is accepted, additional automated tasks can be performed to regenerate the database and push it to external users of the database, such as a hosted website.
 
 <!-- Figures can be included like this:
 ![Caption for example figure.\label{fig:example}](figure.png)
