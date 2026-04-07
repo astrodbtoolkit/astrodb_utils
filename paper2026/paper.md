@@ -79,7 +79,7 @@ One of the key design requirements for an AstroDB Toolkit-powered database is su
 
 By exporting a database to a JSON document store, we can use git and GitHub to handle version control for our database as well as curate commits via pull requests.
 
-An individual user may contain their own copy of any database. They may make changes in their local branch and push to their copy on GitHub. By issuing a pull request, they request their changes be adopted into the main branch of the database. Because the database is stored as individual JSON documents, reviewers can see exactly which objects have been updated and can comment on the changes if needed.
+An individual user may deploy their own copy of any AstroDB database. They may make changes in their local branch and push to their copy on GitHub. By issuing a pull request, they request their changes be adopted into the main branch of the database. Because the database is stored as individual JSON documents, reviewers can see exactly which objects have been updated and can comment on the changes if needed.
 
 As part of the pull request process, automatic tests implemented via GitHub Actions can be run to verify the integrity of the database. This ensures no changes took place that break the functionality of the database and also include verification for the data that has been added.
 
