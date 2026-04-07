@@ -34,7 +34,7 @@ We introduce the AstroDB Toolkit to fill a gap in the data management/sharing ec
 ## Statement of need
 
 The purpose of the AstroDB Toolkit is to fill a gap in the data management/sharing ecosystem for astronomers by providing a robust toolkit to empower astronomers to build databases of astronomical sources.
-In the “big data” era of large, long-standing missions such as TESS, Kepler, and JWST, astronomers find themselves managing increasingly large and unwieldy collections of target parameters, both observed and modeled.
+In the “big data” era of large, long-standing missions such as TESS, Kepler, and JWST, astronomers find themselves managing increasingly large and unwieldy collections of astrophysical parameters, both observed and derived.
 Currently, astronomers reinvent the wheel, spending time making technology choices, database design decisions, and web applications as opposed to being able to focus on the analysis and physical interpretation of the actual data.
 The AstroDB Toolkit greatly lowers the technology burden on the astronomers and empowers them to make databases of astronomical sources using a common, interoperable framework.
 
