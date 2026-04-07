@@ -33,8 +33,7 @@ We introduce the AstroDB Toolkit to fill a gap in the data management/sharing ec
 
 ## Statement of need
 
-The purpose of the AstroDB Toolkit is to fill a gap in the data management/sharing ecosystem for astronomers by providing a robust toolkit to empower astronomers to build databases of astronomical sources.
-In the “big data” era of large, long-standing missions such as TESS, Kepler, and JWST, astronomers find themselves managing increasingly large and unwieldy collections of astrophysical parameters, both observed and derived.
+In the “big data” era of large datasets and archive science, astronomers find themselves managing increasingly large and unwieldy collections of astrophysical parameters, both observed and derived.
 Currently, astronomers reinvent the wheel, spending time making technology choices, database design decisions, and web applications as opposed to focusing on the analysis and physical interpretation of actual data.
 The AstroDB Toolkit greatly lowers the technology burden on the astronomers and empowers them to make databases of astronomical sources using a common, interoperable framework.
 
@@ -95,7 +94,8 @@ Figure sizes can be customized by adding an optional second parameter:
 
 ### Spectra and non-tabular data
 
-Spectra, images, and other non-tabular data are stored as pointers to cloud-hosted files. The files are hosted in a variety of places, including institutional repositories. However, we have found the best host to be Amazon Simple Storage Service (Amazon S3). In order to enable the database to fully function without an internet connection and/or to point to files not hosted in the cloud, we allow pointers to local files using an environment variable to indicate a local path.
+Spectra, images, and other non-tabular data are stored as pointers to cloud-hosted files. The files are hosted in a variety of places, including institutional repositories. However, we have found the easiest and most reliable host to be Amazon Simple Storage Service (Amazon S3). Amazon S3 provides individual links to each file and since they are infrequently accessed, the cost is minimal.
+In order to enable the database to fully function without an internet connection and/or to point to files not hosted in the cloud, we allow pointers to local files using an environment variable to indicate a local path.
 AstrodbKit contains logic to understand which columns contain pointers to spectra and translates them into `specutils.Spectrum` objects.
 
 ## Research impact statement
