@@ -64,18 +64,18 @@ As described below, the AstroDB Toolkit meets all of these requirements.
 
 The AstroDB Toolkit consists of:
 
-- a template schema,
-- Python packages (AstrodbKit, astrodb_utils), and
-- documentation and suggested workflows
+- a template schema ([`astrodb-template-db`](https://github.com/astrodbtoolkit/astrodb-template-db)),
+- Python packages ([`AstrodbKit`](https://github.com/astrodbtoolkit/AstrodbKit), [`astrodb_utils`](https://github.com/astrodbtoolkit/astrodb_utils)), and
+- [documentation and suggested workflows](https://astrodb-utils.readthedocs.io/en/stable/)
 
-The AstroDB Toolkit facilitates the creation of intermediate-scale databases focused on typical astronomy use-cases. The Toolkit's template schema relies on an object-model that naturally translates to astronomical sources, that is to say, the core table in the database can represent objects such as brown dwarfs or galaxies, while supporting tables represent properties of that object. Because the AstroDB Toolkit’s core Python package, `AstrodbKit`, is a wrapper around the database package `SQLAlchemy`, it supports a large range of database architectures, including SQLite, PostgreSQL, MySQL, etc, while using language that is familiar to astronomers. `AstrodbKit` also supports cone searches and can output results as `astropy.table` objects.
+The AstroDB Toolkit facilitates the creation of intermediate-scale databases focused on typical astronomy use-cases. The Toolkit's template schema (\autoref{fig:schema}) relies on an object-model that naturally translates to astronomical sources, that is to say, the core table in the database can represent objects such as brown dwarfs or galaxies, while supporting tables represent properties of that object. Because the AstroDB Toolkit’s core Python package, `AstrodbKit`, is a wrapper around the database package `SQLAlchemy`, it supports a large range of database architectures, including SQLite, PostgreSQL, MySQL, etc, while using language that is familiar to astronomers. `AstrodbKit` also supports cone searches and can output results as `astropy.table` objects.
 
 Uses Felis.
+![Template Schema.\label{fig:schema}](schema_erd.png){ width=20% }
 
 ### Collaborative Workflow and Testing with GitHub
 
-One of the key design requirements for an AstroDB Toolkit-powered database is support for collaborative editing of the holdings using a GitHub workflow. As a result, the Toolkit creates databases that are fundamentally a set of plain text JSON files that describe each object. When users make changes to the properties of an object, such as adding a new spectrum or updating a value for a radial velocity, these changes are human-readable as a simple diff between two JSON files and can be reviewed via pull requests. This JSON document store architecture allows for a community to maintain a database, review changes as they come in, and use automated tools to validate the database. The Astrodbkit package has tools to readily transform data between the document store and relational database to facilitate managing local, private data as well as external applications, such as a hosted website.
-
+One of the key design requirements for an AstroDB Toolkit-powered database is support for collaborative editing of the holdings using a GitHub workflow. As a result, the Toolkit creates databases that are fundamentally a set of plain text JSON files that describe each object. When users make changes to the properties of an object, such as adding a new spectrum or updating a value for a radial velocity, these changes are human-readable as a simple diff between two JSON files and can be reviewed via pull requests. This JSON document store architecture allows for a community to maintain a database, review changes as they come in, and use automated tools to validate the database. The `AstrodbKit` package has tools to readily transform data between the document store and relational database to facilitate managing local, private data as well as external applications, such as a hosted website.
 
 An individual user may deploy their own copy of any AstroDB database. They may make changes in their local branch and push to their copy on GitHub. By issuing a pull request, they request their changes be adopted into the main branch of the database. Because the database is stored as individual JSON documents, reviewers can see exactly which objects have been updated and can comment on the changes if needed.
 
