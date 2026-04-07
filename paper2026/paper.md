@@ -29,7 +29,7 @@ bibliography: paper.bib
 ---
 ## Summary
 
-We introduce the AstroDB Toolkit to fill a gap in the data management/sharing ecosystem for astronomers by providing a robust toolkit to empower astronomers to build databases of astronomical sources. The AstroDB Toolkit is an open-source, openly developed tool that greatly lowers the technology burden on the astronomers and empowers them to make databases of astronomical sources using a common, interoperable framework. The Toolkit uses GitHub’s features and its collaborative workflow.
+We introduce the AstroDB Toolkit to fill a gap in the data management/sharing ecosystem for astronomers working on catalogs of astronomical sources. The AstroDB Toolkit is an open-source, openly developed tool that lowers the technology burden on astronomers and empowers them to make databases of astronomical sources using a common, interoperable framework. The Toolkit uses GitHub’s features and its collaborative workflow.
 
 ## Statement of need
 
