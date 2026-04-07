@@ -38,7 +38,7 @@ In the “big data” era of large, long-standing missions such as TESS, Kepler,
 Currently, astronomers reinvent the wheel, spending time making technology choices, database design decisions, and web applications as opposed to focusing on the analysis and physical interpretation of actual data.
 The AstroDB Toolkit greatly lowers the technology burden on the astronomers and empowers them to make databases of astronomical sources using a common, interoperable framework.
 
-The AstroDB Toolkit aims to serve the needs of individual astronomers and small-to-medium sized collaborations who need a data management system for hundreds to thousands of sources. The Toolkit bridges the divide where a shared Google sheet is insufficient, but the dataset is either still living (e.g., follow-up observations are underway, new parameters being derived) or otherwise not appropriate for an institutional archive.
+The AstroDB Toolkit aims to serve the needs of individual astronomers and small-to-medium sized collaborations who need a data management system for hundreds to thousands of sources. The Toolkit bridges the divide where a shared spreadsheet is insufficient, but the dataset is either still living (e.g., follow-up observations are underway, new parameters being derived) or otherwise not appropriate for an institutional archive.
 
 ## State of the field
 
