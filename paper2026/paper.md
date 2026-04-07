@@ -105,7 +105,7 @@ AstrodbKit contains logic to understand which columns contain pointers to spectr
 
 The current poster-child of the AstroDB Toolkit is SIMPLE, the Substellar and IMaged PLanet Explorer Archive of Complex Objects [https://simple-bd-archive.org/](https://simple-bd-archive.org/).
 
-The newest useage of the Toolkit is focused on Dwarf Galaxies. There are tens if not hundreds of galaxies in the Local Group, with a diverse range of applicable science problems. Many of these scientific applications depend on having as complete as possible a list of properties for these galaxies such as: total luminosity, half-light radius, and redshift/systemic velocity.
+The newest useage of the Toolkit is focused on Dwarf Galaxies. There are tens if not hundreds of galaxies in the Local Group, with a diverse range of applicable science problems. Many of these scientific applications depend on having as complete as possible a list of properties for these galaxies including total luminosity, half-light radius, and redshift/systemic velocity.
 
 ## AI usage disclosure
 
