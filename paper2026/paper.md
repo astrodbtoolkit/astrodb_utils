@@ -77,7 +77,6 @@ Uses Felis.
 
 One of the key design requirements for an AstroDB Toolkit-powered database is support for collaborative editing of the holdings using a GitHub workflow. As a result, the Toolkit creates databases that are fundamentally a set of plain text JSON files that describe each object. When users make changes to the properties of an object, such as adding a new spectrum or updating a value for a radial velocity, these changes are human-readable as a simple diff between two JSON files and can be reviewed via pull requests. This JSON document store architecture allows for a community to maintain a database, review changes as they come in, and use automated tools to validate the database. The Astrodbkit package has tools to readily transform data between the document store and relational database to facilitate managing local, private data as well as external applications, such as a hosted website.
 
-By exporting a database to a JSON document store, we can use git and GitHub to handle version control for our database as well as curate commits via pull requests.
 
 An individual user may deploy their own copy of any AstroDB database. They may make changes in their local branch and push to their copy on GitHub. By issuing a pull request, they request their changes be adopted into the main branch of the database. Because the database is stored as individual JSON documents, reviewers can see exactly which objects have been updated and can comment on the changes if needed.
 
