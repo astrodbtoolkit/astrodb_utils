@@ -64,3 +64,57 @@ also be run on its own.
 #. **astrodb-ingest-source** — Generates and runs a script that ingests sources from
    the data table into the new database using ``astrodb_utils.sources.ingest_source``.
    See also :doc:`../db_access/ingesting/getting_started_ingesting`.
+
+Example: building a Local Group galaxy database
+-----------------------------------------------
+The following condensed walkthrough shows the skills used end to end in a real
+Claude Code session that built a database from McConnachie's *Nearby Galaxies*
+catalog (``NearbyGalaxies_Jan2021_PUBLIC.fits`` — 144 Local Group dwarf galaxies).
+
+**Setting up the session.** A few Claude Code slash commands configured the run
+before any work began:
+
+.. code-block:: text
+
+    /effort ultracode    # maximum reasoning effort + dynamic workflow orchestration
+    /model               # Opus 4.8 (1M context)
+    /advisor             # route review checkpoints to a second Opus 4.8 reviewer
+    /plan                # enter plan mode to scope the whole build before any changes
+
+The ``/plan`` prompt was simply *"Review your astro-db skills and create a plan to
+have a fully working database after going through @NearbyGalaxies_Jan2021_PUBLIC.fits"*.
+Plan mode let the agent inspect the FITS file and propose a complete build plan for
+approval *before* touching anything — surfacing up front that the catalog stores
+RA/Dec as sexagesimal strings and hides missing values behind a ``999`` sentinel,
+both of which had to be handled before ingest.
+
+**Running the pipeline.** With the plan approved, the skills ran in sequence, each
+feeding the next:
+
+#. **astrodb-parse-data-table** — parsed all 50 columns (names, units, descriptions).
+#. **astrodb-match-schema** — mapped 50 / 50 columns (0 unmatched) onto ``Sources``,
+   ``RadialVelocities``, ``ProperMotions``, ``Photometry``, ``Morphology``, and
+   ``ModeledParameters``.
+#. **astrodb-generate-schema** / **astrodb-validate-schema-mapping** — produced the
+   Felis ``schema.yaml`` (``felis validate`` passing) and confirmed 0 nullable
+   violations and 0 type mismatches against the real data.
+#. **astrodb-create-db** — created ``LocalGroupDB.sqlite`` and a matching test suite.
+#. **astrodb-ingest-source** — ingested all 144 galaxies as sources, plus their
+   measurements (129 radial velocities, 65 proper motions, 142 V-band magnitudes,
+   137 morphologies, 889 modeled parameters).
+
+Real catalogs need adaptation: the data forced a custom cleaning pass (sexagesimal →
+decimal coordinates, ``999`` → null) and a few ORM inserts where no skill helper
+existed. The skills are the scaffold for the workflow, not a single turnkey button.
+
+**Review checkpoints with the advisor.** Because ``/advisor`` was enabled, a second
+Opus 4.8 model reviewed the work at key points. Its most useful catch: counts and
+coordinates had been verified, but individual measurement *values* had not — a
+swapped error column would still pass every count test. Acting on that, the agent
+spot-checked a galaxy with *asymmetric* errors (Columba I) and confirmed
+``vh+`` → ``rv_error_upper`` and ``vh-`` → ``rv_error_lower`` were not swapped.
+
+**Result.** A populated ``LocalGroupDB.sqlite`` with all 144 sources and their
+measurements, 16 / 16 pytest tests passing, and a clean reload from the saved JSON.
+A second ``/plan`` was used later in the same session to resolve the catalog's
+numbered footnote references against its bibliography file.
