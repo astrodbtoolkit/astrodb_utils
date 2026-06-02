@@ -12,11 +12,11 @@ section (:doc:`make_new_db/index` and :doc:`modifying/index`).
 
 .. note::
 
-   The skills require an AI **skill runner** — an agent that reads a ``skills/``
+   The skills require an AI **skill runner**: an agent that reads a ``skills/``
    directory such as ``.claude/skills/``, ``.cursor/skills/``, or ``.agents/skills/``.
 
    These skills only apply to the local repository you're running the agent from.
-   If you want these skills to be available globally, copy them into ``%USERPROFILE%/.claude/skills/`` or the equivalent for your agent.
+   For skills to be available globally, copy them into ``%USERPROFILE%/.claude/skills/`` or the equivalent for your agent.
 
 Installation
 ------------
@@ -65,7 +65,7 @@ also be run on its own.
    the data table into the new database using ``astrodb_utils.sources.ingest_source``.
    See also :doc:`../db_access/ingesting/getting_started_ingesting`.
 
-Example: building a Local Group galaxy database
+Example: Building From The Local Group Galaxy Database
 -----------------------------------------------
 The following condensed walkthrough shows the skills used end to end in a real
 Claude Code session that built a database from McConnachie's *Nearby Galaxies*
@@ -81,12 +81,11 @@ before any work began:
     /advisor             # route review checkpoints to a second Opus 4.8 reviewer
     /plan                # enter plan mode to scope the whole build before any changes
 
-The ``/plan`` prompt was simply *"Review your astro-db skills and create a plan to
+The ``/plan`` prompt was *"Review your astro-db skills and create a plan to
 have a fully working database after going through @NearbyGalaxies_Jan2021_PUBLIC.fits"*.
 Plan mode let the agent inspect the FITS file and propose a complete build plan for
-approval *before* touching anything — surfacing up front that the catalog stores
-RA/Dec as sexagesimal strings and hides missing values behind a ``999`` sentinel,
-both of which had to be handled before ingest.
+approval before touching anything, finding multiple errors in the data and schema
+that would have caused problems later on if not caught early.
 
 **Running the pipeline.** With the plan approved, the skills ran in sequence, each
 feeding the next:
@@ -103,16 +102,19 @@ feeding the next:
    measurements (129 radial velocities, 65 proper motions, 142 V-band magnitudes,
    137 morphologies, 889 modeled parameters).
 
-Real catalogs need adaptation: the data forced a custom cleaning pass (sexagesimal →
-decimal coordinates, ``999`` → null) and a few ORM inserts where no skill helper
-existed. The skills are the scaffold for the workflow, not a single turnkey button.
+.. note::
+
+   It's also recommended that you give your agent a reference to the `AstroDB template <https://github.com/astrodbtoolkit/astrodb-template-db>`_ 
+   repository, which contains example ``schema.yaml`` files and test suites for all the template tables. 
+   This can help the agent understand how to structure the new database and its tests.
+
+**Catalogs will have problems.** Claude is great at cleaning up data that doesn't
+perfectly match the schema and is far more efficient than a human. Still, you should
+still guide the AI agent along the way if it runs into any issues.
 
 **Review checkpoints with the advisor.** Because ``/advisor`` was enabled, a second
-Opus 4.8 model reviewed the work at key points. Its most useful catch: counts and
-coordinates had been verified, but individual measurement *values* had not — a
-swapped error column would still pass every count test. Acting on that, the agent
-spot-checked a galaxy with *asymmetric* errors (Columba I) and confirmed
-``vh+`` → ``rv_error_upper`` and ``vh-`` → ``rv_error_lower`` were not swapped.
+Opus 4.8 model reviewed the work at key points. This review isn't required but can
+be very helpful for catching issues.
 
 **Result.** A populated ``LocalGroupDB.sqlite`` with all 144 sources and their
 measurements, 16 / 16 pytest tests passing, and a clean reload from the saved JSON.
