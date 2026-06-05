@@ -5,18 +5,18 @@ Creating a Database with AI Agent Skills
 **AI agent skills** that guide an assistant (Claude, Cursor, etc.) through building a
 new database from a raw data table: parsing the table, mapping its columns to the
 :doc:`AstroDB template schema <../getting_started/template_schema/template_schema>`,
-generating a Felis ``schema.yaml``, and creating the SQLite database.
+generating a Felis ``schema.yaml``, and will creating a populated ``DatabaseName.sqlite``.
+**Real catalogs are messy.** inconsistent types, missing values, and column names that
+don't match the schema. Handling that is becomes much easier when you have an AI agent
+which has the skills installed. 
 
-In other words, these skills automate the manual workflow described elsewhere in this
-section (:doc:`make_new_db/index` and :doc:`modifying/index`).
+These skills automate the manual workflow described elsewhere in this section
+(:doc:`make_new_db/index` and :doc:`modifying/index`).
 
 .. note::
 
    The skills require an AI **skill runner**: an agent that reads a ``skills/``
    directory such as ``.claude/skills/``, ``.cursor/skills/``, or ``.agents/skills/``.
-
-   These skills only apply to the local repository you're running the agent from.
-   For skills to be available globally, copy them into ``%USERPROFILE%/.claude/skills/`` or the equivalent for your agent.
 
 Installation
 ------------
@@ -39,84 +39,61 @@ Requirements
 The skills
 ----------
 The skills are designed to run in sequence, each feeding the next, but any of them can
-also be run on its own.
+also be run on its own. Each one links to its full definition in the ``astrodb_bot``
+repository.
 
-#. **astrodb-parse-data-table** — Reads a data table (FITS, CSV, ECSV, HDF5, VOTable,
-   Parquet, Excel, ...) and summarizes every column's name, description, units, and
-   type as a Markdown and HTML report.
+#. `astrodb-parse-data-table <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-parse-data-table/SKILL.md>`_
+   — Reads a data table (FITS, CSV, ECSV, HDF5, VOTable, Parquet, Excel, ...) and
+   summarizes every column's name, description, units, and type as a Markdown and HTML
+   report.
 
-#. **astrodb-match-schema** — Maps each parsed column to a table and field in the
-   AstroDB template schema, assigning a confidence level to every match and flagging
-   anything it cannot place.
+#. `astrodb-match-schema <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-match-schema/SKILL.md>`_
+   — Maps each parsed column to a table and field in the AstroDB template schema,
+   assigning a confidence level to every match and flagging anything it cannot place.
 
-#. **astrodb-validate-schema-mapping** — Checks the proposed mapping against the actual
-   data: null values landing in non-nullable fields, and type mismatches between the
-   data and the schema.
+#. `astrodb-validate-schema-mapping <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-validate-schema-mapping/SKILL.md>`_
+   — Checks the proposed mapping against the actual data: null values landing in
+   non-nullable fields, and type mismatches between the data and the schema.
 
-#. **astrodb-generate-schema** — Turns the validated mapping into a Felis-format
-   ``schema.yaml`` (see :doc:`modifying/yaml`) and runs ``felis validate`` on it.
+#. `astrodb-generate-schema <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-generate-schema/SKILL.md>`_
+   — Turns the validated mapping into a Felis-format ``schema.yaml`` (see
+   :doc:`modifying/yaml`) and runs ``felis validate`` on it.
 
-#. **astrodb-create-db** — Creates an empty SQLite database from the validated
-   ``schema.yaml``, following the
+#. `astrodb-create-db <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-create-db/SKILL.md>`_
+   — Creates an empty SQLite database from the validated ``schema.yaml``, following the
    `astrodb-template-db <https://github.com/astrodbtoolkit/astrodb-template-db>`_ file
    layout, and generates a matching test suite.
 
-#. **astrodb-ingest-source** — Generates and runs a script that ingests sources from
-   the data table into the new database using ``astrodb_utils.sources.ingest_source``.
-   See also :doc:`../db_access/ingesting/getting_started_ingesting`.
+#. `astrodb-ingest-source <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-ingest-source/SKILL.md>`_
+   — Generates and runs a script that ingests sources from the data table into the new
+   database using ``astrodb_utils.sources.ingest_source``. See also
+   :doc:`../db_access/ingesting/getting_started_ingesting`.
 
-Example: Building From The Local Group Galaxy Database
------------------------------------------------
-The following condensed walkthrough shows the skills used end to end in a real
-Claude Code session that built a database from McConnachie's *Nearby Galaxies*
-catalog (``NearbyGalaxies_Jan2021_PUBLIC.fits`` — 144 Local Group dwarf galaxies).
+Intermediate artifacts — the parsed-column report, the schema mapping, the generated
+``schema.yaml``, and the ingest scripts — are written to a ``tmp/`` folder, so they
+don't clutter your project and you can inspect each step.
 
-**Setting up the session.** A few Claude Code slash commands configured the run
-before any work began:
+Example and Prompt Advice
+-------------------------
 
-.. code-block:: text
+**We recommend starting in plan mode (Claude, Cursor, and Codex all have /plan.)** 
+The example prompt given was:
 
-    /effort ultracode    # maximum reasoning effort + dynamic workflow orchestration
-    /model               # Opus 4.8 (1M context)
-    /advisor             # route review checkpoints to a second Opus 4.8 reviewer
-    /plan                # enter plan mode to scope the whole build before any changes
+    *Review your astro-db skills and create a plan to have a fully working database
+    after going through* ``@NearbyGalaxies_Jan2021_PUBLIC.fits``
 
-The ``/plan`` prompt was *"Review your astro-db skills and create a plan to
-have a fully working database after going through @NearbyGalaxies_Jan2021_PUBLIC.fits"*.
-Plan mode let the agent inspect the FITS file and propose a complete build plan for
-approval before touching anything, finding multiple errors in the data and schema
-that would have caused problems later on if not caught early.
+Plan mode tells the agent inspect the input FITS and propose a complete build plan
+using all of the available skills. The output of this prompt was a populated ``LocalGroupDB.sqlite``.
+Alternatively, you can also invoke the skills one at a time.
 
-**Running the pipeline.** With the plan approved, the skills ran in sequence, each
-feeding the next:
 
-#. **astrodb-parse-data-table** — parsed all 50 columns (names, units, descriptions).
-#. **astrodb-match-schema** — mapped 50 / 50 columns (0 unmatched) onto ``Sources``,
-   ``RadialVelocities``, ``ProperMotions``, ``Photometry``, ``Morphology``, and
-   ``ModeledParameters``.
-#. **astrodb-generate-schema** / **astrodb-validate-schema-mapping** — produced the
-   Felis ``schema.yaml`` (``felis validate`` passing) and confirmed 0 nullable
-   violations and 0 type mismatches against the real data.
-#. **astrodb-create-db** — created ``LocalGroupDB.sqlite`` and a matching test suite.
-#. **astrodb-ingest-source** — ingested all 144 galaxies as sources, plus their
-   measurements (129 radial velocities, 65 proper motions, 142 V-band magnitudes,
-   137 morphologies, 889 modeled parameters).
+Advice for working with Claude
+------------------------------
+* **Give the agent the template as a reference.** Point it at the
+  `astrodb-template-db <https://github.com/astrodbtoolkit/astrodb-template-db>`_
+  repository, which contains example ``schema.yaml`` files and test suites for every
+  template table. This helps the agent structure the new database and its tests.
 
-.. note::
-
-   It's also recommended that you give your agent a reference to the `AstroDB template <https://github.com/astrodbtoolkit/astrodb-template-db>`_ 
-   repository, which contains example ``schema.yaml`` files and test suites for all the template tables. 
-   This can help the agent understand how to structure the new database and its tests.
-
-**Catalogs will have problems.** Claude is great at cleaning up data that doesn't
-perfectly match the schema and is far more efficient than a human. Still, you should
-still guide the AI agent along the way if it runs into any issues.
-
-**Review checkpoints with the advisor.** Because ``/advisor`` was enabled, a second
-Opus 4.8 model reviewed the work at key points. This review isn't required but can
-be very helpful for catching issues.
-
-**Result.** A populated ``LocalGroupDB.sqlite`` with all 144 sources and their
-measurements, 16 / 16 pytest tests passing, and a clean reload from the saved JSON.
-A second ``/plan`` was used later in the same session to resolve the catalog's
-numbered footnote references against its bibliography file.
+* **Mind resource and token usage.** The more tokens you use, the more expensive it is.
+  Using a better model, an advisor agent, and higher effort settings will improve the result
+  but also increase the cost.
