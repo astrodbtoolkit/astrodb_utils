@@ -94,6 +94,6 @@ Advice for working with Claude
   repository, which contains example ``schema.yaml`` files and test suites for every
   template table. This helps the agent structure the new database and its tests.
 
-* **Mind resource and token usage.** The more tokens you use, the more expensive it is.
+* **Keep track of token usage.** The more tokens you use, the more expensive it is.
   Using a better model, an advisor agent, and higher effort settings will improve the result
   but also increase the cost.
