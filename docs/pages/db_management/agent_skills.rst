@@ -1,13 +1,13 @@
-Creating a Database with AI Agent Skills
+Creating a Database with AI Skills
 ========================================
 
 `astrodb_bot <https://github.com/astrodbtoolkit/astrodb_bot>`_ provides a set of
-**AI agent skills** that guide an assistant (Claude, Cursor, etc.) through building a
+**AI skills** that guide an assistant (Claude, Cursor, etc.) through building a
 new database from a raw data table: parsing the table, mapping its columns to the
 :doc:`AstroDB template schema <../getting_started/template_schema/template_schema>`,
 generating a Felis ``schema.yaml``, and will creating a populated ``DatabaseName.sqlite``.
 **Real catalogs are messy.** inconsistent types, missing values, and column names that
-don't match the schema. Handling that is becomes much easier when you have an AI agent
+don't match the schema. Handling that is becomes much easier when you have an AI 
 which has the skills installed. 
 
 These skills automate the manual workflow described elsewhere in this section
@@ -15,14 +15,14 @@ These skills automate the manual workflow described elsewhere in this section
 
 .. note::
 
-   The skills require an AI **skill runner**: an agent that reads a ``skills/``
+   The skills require an AI **skill runner**: an AI that reads a ``skills/``
    directory such as ``.claude/skills/``, ``.cursor/skills/``, or ``.agents/skills/``.
 
 Installation
 ------------
 Copy the ``skills/`` directory from the
 `astrodb_bot repository <https://github.com/astrodbtoolkit/astrodb_bot>`_ into the
-location your agent reads skills from. For example, with Claude:
+location your AI reads skills from. For example, with Claude:
 
 .. code-block:: bash
 
@@ -82,18 +82,18 @@ The example prompt given was:
     *Review your astro-db skills and create a plan to have a fully working database
     after going through* ``@NearbyGalaxies_Jan2021_PUBLIC.fits``
 
-Plan mode tells the agent inspect the input FITS and propose a complete build plan
+Plan mode tells the AI inspect the input FITS and propose a complete build plan
 using all of the available skills. The output of this prompt was a populated ``LocalGroupDB.sqlite``.
 Alternatively, you can also invoke the skills one at a time.
 
 
 Advice for working with Claude
 ------------------------------
-* **Give the agent the template as a reference.** Point it at the
+* **Give the AI the template as a reference.** Point it at the
   `astrodb-template-db <https://github.com/astrodbtoolkit/astrodb-template-db>`_
   repository, which contains example ``schema.yaml`` files and test suites for every
-  template table. This helps the agent structure the new database and its tests.
+  template table. This helps the AI structure the new database and its tests.
 
 * **Keep track of token usage.** The more tokens you use, the more expensive it is.
-  Using a better model, an advisor agent, and higher effort settings will improve the result
+  Using a better model, an advisor AI, and higher effort settings will improve the result
   but also increase the cost.
