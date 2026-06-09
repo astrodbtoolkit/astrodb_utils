@@ -42,6 +42,10 @@ The skills are designed to run in sequence, each feeding the next, but any of th
 also be run on its own. Each one links to its full definition in the ``astrodb_bot``
 repository.
 
+#. `astrodb-setup <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-setup/SKILL.md>`_
+   — Sets up the environment for building a new database. Has the user clone the template
+   repository and walks them through naming their database.
+
 #. `astrodb-parse-data-table <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-parse-data-table/SKILL.md>`_
    — Reads a data table (FITS, CSV, ECSV, HDF5, VOTable, Parquet, Excel, ...) and
    summarizes every column's name, description, units, and type as a Markdown and HTML
