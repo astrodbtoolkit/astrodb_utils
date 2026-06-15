@@ -15,7 +15,9 @@ Notes
 .. seealso::
 
     :ref:`ingesting_publications`
-        Documenation on ingesting publications 
+        Documentation on ingesting publications, including the
+        `astrodb-ingest-publication <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-ingest-publication/SKILL.md>`_
+        AI skill that automates this process
 
     :py:mod:`ingest_publication <astrodb_utils.publications.ingest_publication>`
         Function to ingest publication data

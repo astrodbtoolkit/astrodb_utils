@@ -56,11 +56,23 @@ Below is an example script for ingesting the discovery publication for Rojas et 
 
 
 
+Using the AI Skill
+------------------
+
+The `astrodb-ingest-publication <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-ingest-publication/SKILL.md>`_
+skill automates the steps above. It generates and runs a script that adds publications to the
+``Publications`` table using ``ingest_publication``, and can handle a single paper, a batch
+from a data file's reference column, or backfilling existing rows with missing metadata.
+
+See :doc:`/pages/db_management/agent_skills` for installation instructions and an overview of all
+available skills.
+
+
 .. seealso::
 
   :doc:`/pages/getting_started/template_schema/lookup_tables/publications`
       Documentation on the Publications table
 
   :py:mod:`find publication <astrodb_utils.publications.find_publication>` function
-        
+
   :py:mod:`ingest_publication <astrodb_utils.publications.ingest_publication>` function

@@ -101,6 +101,13 @@ The instructions in these skill documents are for your AI tool, not for you.
    following the `astrodb-template-db <https://github.com/astrodbtoolkit/astrodb-template-db>`_ file
    layout, and generates a matching test suite.
 
+#. `astrodb-ingest-publication <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-ingest-publication/SKILL.md>`_
+   — Generates and runs a script that adds publications (references/citations) to the
+   ``Publications`` lookup table using ``astrodb_utils.publications.ingest_publication``.
+   Handles a single paper, a batch from a data file's reference column, or backfilling
+   existing rows with missing metadata. Every reference used elsewhere in the database
+   must exist here first. See also :doc:`../db_access/ingesting/ingesting_publications`.
+
 #. `astrodb-ingest-source <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-ingest-source/SKILL.md>`_
    — Generates and runs a script that ingests sources from the data table
    into the new database using ``astrodb_utils.sources.ingest_source``.
