@@ -1,5 +1,5 @@
 Creating a Database with AI Skills
-========================================
+==================================
 
 `astrodb_bot <https://github.com/astrodbtoolkit/astrodb_bot>`_ provides a set of
 **AI skills** that guide an assistant (Claude, Cursor, etc.) through building a
@@ -19,7 +19,7 @@ in this documentation
    directory such as ``.claude/skills/``, ``.cursor/skills/``, or ``.agents/skills/``.
 
 Requirements
-~~~~~~~~~~~~~
+------------
 Make sure you are in an environment where the latest versions
 of the following packages are installed and available to your AI:
 
@@ -35,28 +35,57 @@ of the following packages are installed and available to your AI:
 
 Installation
 ------------
-Copy the ``skills/`` directory from the
-`astrodb_bot repository <https://github.com/astrodbtoolkit/astrodb_bot>`_ into the
-location your AI reads skills from. For example, with Claude:
+Clone the `astrodb_bot repository <https://github.com/astrodbtoolkit/astrodb_bot>`_
+into a location independent of your database project.
+Then, depending on your AI tool, point your AI to the ``skills/`` directory
+with a symbolic link.
+This is the recommended way to use the skills, because it allows you to pull
+updates to the skills without having to copy them into every project.
+
+Here is the recommended directory structure:
+
+.. parsed-literal::
+
+   **astrodb-bot/**
+   └── skills/
+      ├── astrodb-setup/
+      ├── astrodb-match-schema/
+      ├── astrodb-create-db/
+      └── ... (other skill folders)
+   my_db/
+   └── **.claude/**
+      └── **skills  ──symlink──>  ../../astrodb-bot/skills**
+   ├── data/
+   ├── docs/
+   ├── my_db.sqlite
+   ├── my_db.toml
+   ├── schema.yaml
+   └── ... (other astrodb files and folders)
+
+
+The commands to set this up are, starting in the directory
+above your database project:
 
 .. code-block:: bash
 
+    cd ../
     git clone https://github.com/astrodbtoolkit/astrodb_bot.git
+    cd my_db
     mkdir -p .claude/skills
-    cp -r astrodb_bot/skills/* .claude/skills/
+    ln -s "../../astrodb-bot/skills" .claude/skills
 
 
 Example and Prompt Advice
 -------------------------
 An example prompt is:
 
-    *Use the skills in the astrodb_bot directory and
+    *Use the astrodb skills to
     create a plan to have a fully working database after going through*
     ``@NearbyGalaxies_Jan2021_PUBLIC.fits``
 
 Plan mode tells the AI inspect the input FITS and propose a complete build plan
-using all of the available skills. The output of this prompt was a populated
-``LocalGroupDB.sqlite``.
+using all of the available skills. The output of this prompt should be a
+populated ``LocalGroupDB.sqlite`` database.
 Alternatively, you can also invoke the skills one at a time.
 
 These skills will write intermediate files to a ``tmp/`` folder, and might
@@ -65,6 +94,15 @@ We recommend you allow them to write the files, but this is not the time to
 inspect the files. When the skill is done, it will give you links to the
 rendered files and you can inspect them then and answer any questions the
 AI has about them.
+
+These skills have been built and optimized for Claude,
+but they should work with any AI tool that can read the skill definitions and
+follow the instructions.
+Different AI tools have different strengths and weaknesses, so you might have
+to experiment with the prompts to get the best results. If you have trouble
+getting the skills to work, please open an issue in the
+`astrodb_bot issue tracker <https://github.com/astrodbtoolkit/astrodb_bot/issues>`_.
+
 
 The Skills
 ----------
@@ -102,29 +140,16 @@ The instructions in these skill documents are for your AI tool, not for you.
    layout, and generates a matching test suite.
 
 #. `astrodb-ingest-publication <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-ingest-publication/SKILL.md>`_
-   — Generates and runs a script that adds publications (references/citations) to the
-   ``Publications`` lookup table using ``astrodb_utils.publications.ingest_publication``.
-   Handles a single paper, a batch from a data file's reference column, or backfilling
-   existing rows with missing metadata. Every reference used elsewhere in the database
-   must exist here first. See also :doc:`../db_access/ingesting/ingesting_publications`.
+   — Generates and runs a script that adds publications (references/citations)
+   to the ``Publications`` lookup table using
+   ``astrodb_utils.publications.ingest_publication``.
+   Handles a single paper, a batch from a data file's reference column,
+   or backfilling existing rows with missing metadata.
+   Every reference used elsewhere in the database must exist here first.
+   See also :doc:`../db_access/ingesting/ingesting_publications`.
 
 #. `astrodb-ingest-source <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-ingest-source/SKILL.md>`_
    — Generates and runs a script that ingests sources from the data table
    into the new database using ``astrodb_utils.sources.ingest_source``.
    See also
    :doc:`../db_access/ingesting/getting_started_ingesting`.
-
-Intermediate artifacts — the parsed-column report, the schema mapping,
-the generated ``schema.yaml``, and the ingest scripts — are written
-to a ``tmp/`` folder, so they don't clutter your project and
-you can inspect each step.
-
-
-Advice for working with Claude
-------------------------------
-* **Keep track of token usage.** The more tokens you use,
-  the more expensive it is.
-  Using a better model, an advisor AI, and higher effort settings
-  will improve the result but also increase the cost.
-* **Use plan mode.** This allows the AI to inspect the input data
-  and propose a complete build plan using all of the available skills.
