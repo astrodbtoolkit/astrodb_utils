@@ -2,14 +2,16 @@ Creating a Database with AI Skills
 ==================================
 
 `astrodb_bot <https://github.com/astrodbtoolkit/astrodb_bot>`_ provides a set of
-**AI skills** that guide an assistant (Claude, Cursor, etc.) through building a
+**AI skills** that guide an assistant (Claude Code, Cursor, etc.) through building a
 new database from a raw data table: parsing the table, mapping its
 columns to the :doc:`AstroDB template schema
 <../getting_started/template_schema/template_schema>`,
 generating a Felis ``schema.yaml``,
-and will creating a populated ``DatabaseName.sqlite``.
+and creating a populated ``DatabaseName.sqlite``.
+There is also a skill for setting up a FastAPI web interface for browsing and
+visualizing the database in a browser.
 
-These skills automate the manual workflow described elsewhere
+These skills automate the manual workflows described elsewhere
 in this documentation
 (:doc:`make_new_db/index` and :doc:`modifying/index`).
 
@@ -40,7 +42,7 @@ into a location independent of your database project.
 Then, depending on your AI tool, point your AI to the ``skills/`` directory
 with a symbolic link.
 This is the recommended way to use the skills, because it allows you to pull
-updates to the skills without having to copy them into every project.
+updates to the skills without having to re-copy them.
 
 Here is the recommended directory structure:
 
@@ -63,8 +65,8 @@ Here is the recommended directory structure:
    └── ... (other astrodb files and folders)
 
 
-The commands to set this up are, starting in the directory
-above your database project:
+Starting in the directory
+above your database project, the commands to set this up are:
 
 .. code-block:: bash
 
@@ -83,30 +85,32 @@ An example prompt is:
     create a plan to have a fully working database after going through*
     ``@NearbyGalaxies_Jan2021_PUBLIC.fits``
 
-Plan mode tells the AI inspect the input FITS and propose a complete build plan
+Plan mode tells the AI to inspect the input FITS and propose a complete build plan
 using all of the available skills. The output of this prompt should be a
 populated ``LocalGroupDB.sqlite`` database.
 Alternatively, you can also invoke the skills one at a time.
 
-These skills will write intermediate files to an ``astrodb-build-artifacts/``
-folder,
+These skills will write intermediate files to an ``astrodb-build-artifacts/`` folder
 and might ask you for permission to write the initial drafts of those files.
 We recommend you allow them to write the files, but this is not the time to
-inspect the files. When the skill is done, it will give you links to the
+inspect the files. When the skill is done, it should give you links to the
 rendered files and you can inspect them then and answer any questions the
 AI has about them.
 
-These skills have been built and optimized for Claude,
+These skills have been built and optimized for Claude Code,
 but they should work with any AI tool that can read the skill definitions and
 follow the instructions.
 Different AI tools have different strengths and weaknesses, so you might have
 to experiment with the prompts to get the best results. If you have trouble
-getting the skills to work, please open an issue in the
+getting the skills to work, please post in the `discussion forum
+<https://github.com/orgs/astrodbtoolkit/discussions>`_
+or open an issue in the
 `astrodb_bot issue tracker <https://github.com/astrodbtoolkit/astrodb_bot/issues>`_.
 
 
 The Skills
 ----------
+All of the available skills are listed below.
 Each one links to its full definition in the ``astrodb_bot`` repository.
 The instructions in these skill documents are for your AI tool, not for you.
 
@@ -114,7 +118,6 @@ Build Skills
 ^^^^^^^^^^^^
 These skills build a schema-validated SQLite database based on a data table.
 They are designed to run in sequence, but you can also run them one at a time.
-
 
 #. `astrodb-build-setup <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-build-setup/SKILL.md>`_
    — Sets up the environment for building a new database.
