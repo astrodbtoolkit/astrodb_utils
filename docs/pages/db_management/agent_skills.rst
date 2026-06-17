@@ -112,8 +112,7 @@ The instructions in these skill documents are for your AI tool, not for you.
 
 Build Skills
 ^^^^^^^^^^^^
-These skills build a schema-validated SQLite database
-based on a data table.
+These skills build a schema-validated SQLite database based on a data table.
 They are designed to run in sequence, but you can also run them one at a time.
 
 

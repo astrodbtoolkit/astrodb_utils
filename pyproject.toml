@@ -104,6 +104,9 @@ unfixable = []
 [tool.ruff]
 line-length = 120
 
+[tool.doc8]
+max-line-length = 100
+
 [tool.ruff.lint.mccabe]
 # Flag errors (`C901`) whenever the complexity level exceeds this number.
 # Default is 10
