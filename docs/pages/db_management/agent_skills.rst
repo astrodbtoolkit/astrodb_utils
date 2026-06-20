@@ -1,7 +1,7 @@
 Creating a Database with AI Skills
 ==================================
 
-`astrodb_bot <https://github.com/astrodbtoolkit/astrodb_bot>`_ provides a set of
+`astrodb-bot <https://github.com/astrodbtoolkit/astrodb-bot>`_ provides a set of
 **AI skills** that guide an assistant (Claude Code, Cursor, etc.) through building a
 new database from a raw data table: parsing the table, mapping its
 columns to the :doc:`AstroDB template schema
@@ -37,7 +37,7 @@ of the following packages are installed and available to your AI:
 
 Installation
 ------------
-Clone the `astrodb_bot repository <https://github.com/astrodbtoolkit/astrodb_bot>`_
+Clone the `astrodb-bot repository <https://github.com/astrodbtoolkit/astrodb-bot>`_
 into a location independent of your database project.
 Then, depending on your AI tool, point your AI to the ``skills/`` directory
 with a symbolic link.
@@ -71,7 +71,7 @@ above your database project, the commands to set this up are:
 .. code-block:: bash
 
     cd ../
-    git clone https://github.com/astrodbtoolkit/astrodb_bot.git
+    git clone https://github.com/astrodbtoolkit/astrodb-bot.git
     cd my_db
     mkdir -p .claude/skills
     ln -s "../../astrodb-bot/skills" .claude/skills
@@ -105,75 +105,10 @@ to experiment with the prompts to get the best results. If you have trouble
 getting the skills to work, please post in the `discussion forum
 <https://github.com/orgs/astrodbtoolkit/discussions>`_
 or open an issue in the
-`astrodb_bot issue tracker <https://github.com/astrodbtoolkit/astrodb_bot/issues>`_.
+`astrodb-bot issue tracker <https://github.com/astrodbtoolkit/astrodb-bot/issues>`_.
 
 
 The Skills
 ----------
-All of the available skills are listed below.
-Each one links to its full definition in the ``astrodb_bot`` repository.
-The instructions in these skill documents are for your AI tool, not for you.
-
-Build Skills
-^^^^^^^^^^^^
-These skills build a schema-validated SQLite database based on a data table.
-They are designed to run in sequence, but you can also run them one at a time.
-
-#. `astrodb-build-setup <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-build-setup/SKILL.md>`_
-   — Sets up the environment for building a new database.
-   Has the user clone the template repository and walks them through
-   naming their database.
-
-#. `astrodb-build-parse-table <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-build-parse-table/SKILL.md>`_
-   — Reads a data table (FITS, CSV, ECSV, HDF5, VOTable, Parquet, Excel, ...)
-   and summarizes every column's name, description, units, and type as a
-   Markdown and HTML report.
-
-#. `astrodb-build-schema-match <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-build-schema-match/SKILL.md>`_
-   — Maps each parsed column to a table and field in the AstroDB
-   template schema, assigning a confidence level to every match
-   and flagging anything it cannot place.
-
-#. `astrodb-build-schema-validate <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-build-schema-validate/SKILL.md>`_
-   — Checks the proposed mapping against the actual data: null values landing
-   in non-nullable fields, and type mismatches between the data and the schema.
-
-#. `astrodb-build-schema-generate <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-build-schema-generate/SKILL.md>`_
-   — Turns the validated mapping into a Felis-format ``schema.yaml`` (see
-   :doc:`modifying/yaml`) and runs ``felis validate`` on it.
-
-#. `astrodb-build-create-db <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-build-create-db/SKILL.md>`_
-   — Creates an empty SQLite database from the validated ``schema.yaml``,
-   following the `astrodb-template-db <https://github.com/astrodbtoolkit/astrodb-template-db>`_ file
-   layout, and generates a matching test suite.
-
-Ingest Skills
-^^^^^^^^^^^^^
-These skills populate the database with data from source tables.
-
-#. `astrodb-ingest-publications <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-ingest-publications/SKILL.md>`_
-   — Generates and runs a script that adds publications (references/citations)
-   to the ``Publications`` lookup table using
-   ``astrodb_utils.publications.ingest_publication``.
-   Handles a single paper, a batch from a data file's reference column,
-   or backfilling existing rows with missing metadata.
-   Every reference used elsewhere in the database must exist here first.
-   See also :doc:`../db_access/ingesting/ingesting_publications`.
-
-#. `astrodb-ingest-sources <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-ingest-sources/SKILL.md>`_
-   — Generates and runs a script that ingests sources from the data table
-   into the new database using ``astrodb_utils.sources.ingest_source``.
-   See also
-   :doc:`../db_access/ingesting/getting_started_ingesting`.
-
-Website Skills
-^^^^^^^^^^^^^^
-These skills set up tools for browsing and visualizing the database
-in a browser.
-
-#. `astrodb-website <https://github.com/astrodbtoolkit/astrodb_bot/blob/main/skills/astrodb-website/SKILL.md>`_
-   — Sets up and runs a FastAPI web interface
-   for browsing and visualizing the database in a browser.
-   Guides the user through creating a repo from the template
-   (`astrodb-web <https://github.com/astrodbtoolkit/astrodb-web>`_),
-   configuring the ``.env`` file, and starting the server.
+Specific skill descriptions are in the `astrodb-bot README.md
+<https://github.com/astrodbtoolkit/astrodb-bot/blob/main/README.md>`_
