@@ -1,4 +1,5 @@
 import math
+import re
 
 import astropy.units as u
 import pytest
@@ -12,6 +13,7 @@ from astrodb_utils.sources import (
     ingest_name,
     ingest_source,
     strip_unicode_dashes,
+    simbad_name_resolvable
 )
 
 
@@ -271,3 +273,47 @@ def test_ingest_name(db):
 def test_strip_unicode_dashes(input, expected):
     result = strip_unicode_dashes(input)
     assert result == expected
+
+@pytest.mark.parametrize('input,ra, dec, expected, expected_names', [
+    #2 cases whose names are NOT in the database
+    ("Apple", 144.395292,29.528028, False, 
+     ["2MASSI J0937347+293142", "WISE J093742.35+293220.7"]),
+
+    ("Banana", 3.9888,4.2511, False, 
+     ["HD 1160", "HD 1160B", "HD 1160C", "TYC 5-669-1"]),
+
+    #2 cases whose names are in the database
+    ("2MASS J07222760-0540384",110.6149995,-5.677333, True, 
+     ["2MASS J07222760-0540384", 
+    "[BGM2011b] J072227.56-054034.4",
+    "[BGM2011b] J072227.79-054034.7",
+    "[BGM2011b] J072227.64-054033.0",
+    "WISE J072227.27-054029.9",
+    "[BGM2011b] J072227.02-054039.2",
+    "[BGM2011b] J072227.28-054030.0",
+    "[BGM2011b] J072227.34-054026.8",
+    "[BGM2011b] J072226.97-054029.4",
+    "UCAC3 169-73338",
+    "TYC 4829-156-1"]),
+
+    ("ULAS J000734.90+011247.1", 1.8957, 1.2132, True, 
+     ["ULAS J000734.90+011247.1", 
+      "2MASS J00073939+0113049", 
+      "SDSS J000741.43+011209.4", 
+     "SDSS J000729.23+011346.4", 
+     "2MASS J00073597+0110548"])
+])
+
+def test_simbad_resolvable_names(input,ra,dec,expected, expected_names):
+    result = simbad_name_resolvable(input, ra, dec)
+    
+    #SIMBAD returns actual names with weird white spaces... so remove all white spaces from both lists of names
+    # Remove all spaces from actual names
+    actual_names_list = set([re.sub(r'\s+', '', str(name)) for name in result[1]])
+
+    # Remove all spaces from expected names  
+    expected_names_list = set([re.sub(r'\s+', '', name) for name in expected_names])
+
+    assert result[0] == expected
+    assert actual_names_list == expected_names_list
+
