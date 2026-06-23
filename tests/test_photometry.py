@@ -56,7 +56,7 @@ def test_ingest_photometry(db):
                 "band": "Generic/Cousins.R",
                 "magnitude": 10,
                 "reference": "Rubin80",
-                "telescope": "HST",
+                "telescope": "Fake HST",
             },
             "not found in Telescopes table",
         ),
