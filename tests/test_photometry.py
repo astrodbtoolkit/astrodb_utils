@@ -31,73 +31,43 @@ def test_ingest_photometry(db):
 
 
 @pytest.mark.filterwarnings("ignore::UserWarning")
-def test_ingest_photometry_fails(db):
+@pytest.mark.parametrize(
+    "kwargs, expected_error",
+    [
+        ({"source": "test"}, "are required"),
+        ({"source": "test", "band": "V"}, "are required"),
+        ({"source": "test", "band": "V", "magnitude": 10}, "are required"),
+        (
+            {"source": "test", "band": "V", "magnitude": 10, "reference": "ref"},
+            "No unique source match",
+        ),
+        (
+            {
+                "source": "Crab Nebula",
+                "band": "2MASS/2MASS.J",
+                "magnitude": 10,
+                "reference": "ref",
+            },
+            "not found in Publications table",
+        ),
+        (
+            {
+                "source": "Crab Nebula",
+                "band": "Generic/Cousins.R",
+                "magnitude": 10,
+                "reference": "Rubin80",
+                "telescope": "HST",
+            },
+            "not found in Telescopes table",
+        ),
+    ],
+)
+def test_ingest_photometry_fails(db, kwargs, expected_error):
     with pytest.raises(AstroDBError) as error_message:
-        ingest_photometry(db, source="test")
-    assert "are required" in str(error_message.value)
-    result = ingest_photometry(db, source="test", raise_error=False)
-    assert result["added"] is False
+        ingest_photometry(db, **kwargs)
+    assert expected_error in str(error_message.value)
 
-    with pytest.raises(AstroDBError) as error_message:
-        ingest_photometry(db, source="test", band="V")
-    assert "are required" in str(error_message.value)
-    result = ingest_photometry(db, source="test", band="V", raise_error=False)
-    assert result["added"] is False
-
-    with pytest.raises(AstroDBError) as error_message:
-        ingest_photometry(db, source="test", band="V", magnitude=10)
-    assert "are required" in str(error_message.value)
-    result = ingest_photometry(
-        db, source="test", band="V", magnitude=10, raise_error=False
-    )
-    assert result["added"] is False
-
-    with pytest.raises(AstroDBError) as error_message:
-        ingest_photometry(db, source="test", band="V", magnitude=10, reference="ref")
-    assert "No unique source match" in str(error_message.value)
-    result = ingest_photometry(
-        db, source="test", band="V", magnitude=10, reference="ref", raise_error=False
-    )
-    assert result["added"] is False
-
-    with pytest.raises(AstroDBError) as error_message:
-        ingest_photometry(
-            db,
-            source="Crab Nebula",
-            band="2MASS/2MASS.J",
-            magnitude=10,
-            reference="ref",
-        )
-    assert "not found in Publications table" in str(error_message.value)
-    result = ingest_photometry(
-        db,
-        source="Carb Nebula",
-        band="2MASS/2MASS.J",
-        magnitude=10,
-        reference="ref",
-        raise_error=False,
-    )
-    assert result["added"] is False
-
-    with pytest.raises(AstroDBError) as error_message:
-        ingest_photometry(
-            db,
-            source="Crab Nebula",
-            band="Generic/Cousins.R",
-            magnitude=10,
-            reference="Rubin80",
-            telescope="HST",
-        )
-    assert "not found in Telescopes table" in str(error_message.value)
-    result = ingest_photometry(
-        db,
-        source="Crab Nebula",
-        band="Generic/Cousins.R",
-        magnitude=10,
-        reference="Rubin80",
-        telescope="HST",
-        raise_error=False,
-    )
+    result = ingest_photometry(db, **kwargs, raise_error=False)
     assert result["added"] is False
 
 
