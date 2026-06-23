@@ -173,6 +173,7 @@ cython_debug/
 .cursor/
 
 # AstroDB Toolkit Specific
+astrodb-template-tests
 astrodb-template-db/
 astrodb_utils/version.py
 astrodb-template-db/
