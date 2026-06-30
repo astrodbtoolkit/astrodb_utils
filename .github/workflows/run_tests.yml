@@ -28,10 +28,10 @@ jobs:
 
     steps:
     - name: Checkout utils repo
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
 
     - name: Checkout template database repo
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         repository: astrodbtoolkit/astrodb-template-db
         path: tests/astrodb-template-db
