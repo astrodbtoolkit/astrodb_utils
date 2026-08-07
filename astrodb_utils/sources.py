@@ -282,6 +282,7 @@ def ingest_source(
     dec_col_name: str = "dec_deg",
     epoch_col_name: str = "epoch_year",
     use_simbad: bool = True,
+    ignore_neighbors: bool = False,
 ):
     """
     Parameters
@@ -316,6 +317,9 @@ def ingest_source(
     use_simbad: bool
         True (default): Use Simbad to resolve the source name if it is not found in the database
         False: Do not use Simbad to resolve the source name.
+    ignore_neighbors: bool
+        False (default): Don't ignore neighbors and ingest close sources as the same source.
+        True: Ignore neighbors in order to ingest resolved children or close companions. 
 
     Returns
     -------
@@ -325,6 +329,8 @@ def ingest_source(
     """
 
     logger.debug(f"Trying to ingest source: {source}")
+    if ignore_neighbors:
+        use_simbad= False
 
     # change unicode dashes characters to `-`
     source = strip_unicode_dashes(source)
@@ -370,7 +376,7 @@ def ingest_source(
             msg2 = f"   Already in database as {name_matches[0]}. \n "
 
         # Multiple source matches in the database, unable to ingest source
-        elif len(name_matches) > 1:
+        elif not ignore_neighbors and len(name_matches) > 1:
             msg2 = f"   More than one match for {source}\n {name_matches}\n"
 
         exit_function(msg1 + msg2, raise_error)
