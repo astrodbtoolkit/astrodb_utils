@@ -23,7 +23,7 @@ dependencies = [
     "astroquery>=0.4.9",
     "astropy>7.0",
     "astrodbkit>=2.5",
-    "lsst-felis<=30.2026.2900",
+    "lsst-felis<=30.2026.3300",
     "pandas",
     "tqdm",
     "ads>=0.12.7",
