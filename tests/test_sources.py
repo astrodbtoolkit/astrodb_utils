@@ -1,7 +1,9 @@
 import math
+import os
 
 import astropy.units as u
 import pytest
+from astrodbkit.astrodb import Database, create_database
 
 from astrodb_utils import (
     AstroDBError,
@@ -109,6 +111,26 @@ def test_find_source_in_db(db):
     assert (
         search_result[0] == "LHS 2924"
     )  # This is wrong and a result of fuzzy matching
+
+
+def test_find_source_in_db_empty_sources_table(tmp_path):
+    # Regression test for #265: the spatial fallback search in find_source_in_db
+    # used to crash with a pandas KeyError when the Sources table had zero rows.
+    template_schema_path = os.path.join("tests", "astrodb-template-db")
+    connection_string = f"sqlite:///{tmp_path}/empty_sources.sqlite"
+    create_database(connection_string, felis_schema=os.path.join(template_schema_path, "schema.yaml"))
+    empty_db = Database(connection_string)
+
+    assert empty_db.query(empty_db.Sources).count() == 0
+
+    search_result = find_source_in_db(
+        empty_db,
+        "Test Source",
+        ra=10.0,
+        dec=20.0,
+        use_simbad=False,
+    )
+    assert search_result == []
 
 
 def test_find_source_in_db_with_coords(db):
