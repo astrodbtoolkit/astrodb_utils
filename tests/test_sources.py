@@ -121,16 +121,19 @@ def test_find_source_in_db_empty_sources_table(tmp_path):
     create_database(connection_string, felis_schema=os.path.join(template_schema_path, "schema.yaml"))
     empty_db = Database(connection_string)
 
-    assert empty_db.query(empty_db.Sources).count() == 0
+    try:
+        assert empty_db.query(empty_db.Sources).count() == 0
 
-    search_result = find_source_in_db(
-        empty_db,
-        "Test Source",
-        ra=10.0,
-        dec=20.0,
-        use_simbad=False,
-    )
-    assert search_result == []
+        search_result = find_source_in_db(
+            empty_db,
+            "Test Source",
+            ra=10.0,
+            dec=20.0,
+            use_simbad=False,
+        )
+        assert search_result == []
+    finally:
+        empty_db.engine.dispose()
 
 
 def test_find_source_in_db_with_coords(db):

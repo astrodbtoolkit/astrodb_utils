@@ -71,7 +71,7 @@ def find_source_in_db(
 
     # An empty Sources table has no matches by definition, and Database.query_region
     # raises a KeyError (rather than returning zero rows) when queried against one.
-    if db.query(db.Sources).count() == 0:
+    if db.query(db.Sources).first() is None:
         logger.debug(f"{source}: Sources table is empty, no matches possible.")
         return []
 
