@@ -69,6 +69,12 @@ def find_source_in_db(
 
     source = source.strip()
 
+    # An empty Sources table has no matches by definition, and Database.query_region
+    # raises a KeyError (rather than returning zero rows) when queried against one.
+    if db.query(db.Sources).first() is None:
+        logger.debug(f"{source}: Sources table is empty, no matches possible.")
+        return []
+
     logger.debug(f"{source}: Searching for match in database. Use Simbad: {use_simbad}")
     db_name_matches = db.search_object(
         source,
@@ -129,8 +135,8 @@ def find_source_in_db(
             logger.debug(msg2)
             try:
                 db_name_matches = db.query_region(
-                simbad_skycoord, radius=search_radius, ra_col=ra_col_name, dec_col=dec_col_name
-            )
+                    simbad_skycoord, radius=search_radius, ra_col=ra_col_name, dec_col=dec_col_name
+                )
             except KeyError as e:
                 msg = (
                     f"Error querying database with coordinates from SIMBAD: {e}\n"
