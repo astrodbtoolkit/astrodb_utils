@@ -19,11 +19,6 @@ __all__ = [
 logger = logging.getLogger(__name__)
 
 
-def _empty_sources_table(db):
-    """Return True if the Sources table has zero rows."""
-    return db.query(db.Sources).count() == 0
-
-
 def find_source_in_db(
     db,
     source: str,
@@ -74,6 +69,12 @@ def find_source_in_db(
 
     source = source.strip()
 
+    # An empty Sources table has no matches by definition, and Database.query_region
+    # raises a KeyError (rather than returning zero rows) when queried against one.
+    if db.query(db.Sources).count() == 0:
+        logger.debug(f"{source}: Sources table is empty, no matches possible.")
+        return []
+
     logger.debug(f"{source}: Searching for match in database. Use Simbad: {use_simbad}")
     db_name_matches = db.search_object(
         source,
@@ -118,18 +119,9 @@ def find_source_in_db(
             f"{source}: Trying coord in database search around "
             f"{location.ra.degree}, {location.dec}"
         )
-        try:
-            db_name_matches = db.query_region(
-                location, radius=search_radius, ra_col=ra_col_name, dec_col=dec_col_name
-            )
-        except KeyError:
-            if not _empty_sources_table(db):
-                raise
-            logger.debug(
-                f"{source}: query_region found no columns to search (Sources table is empty); "
-                "treating as no spatial matches."
-            )
-            db_name_matches = db_name_matches[:0]
+        db_name_matches = db.query_region(
+            location, radius=search_radius, ra_col=ra_col_name, dec_col=dec_col_name
+        )
 
     # If still no matches, try to get the coords from SIMBAD using source name
     if len(db_name_matches) == 0 and use_simbad:
@@ -146,21 +138,14 @@ def find_source_in_db(
                     simbad_skycoord, radius=search_radius, ra_col=ra_col_name, dec_col=dec_col_name
                 )
             except KeyError as e:
-                if _empty_sources_table(db):
-                    logger.debug(
-                        f"{source}: query_region found no columns to search (Sources table is empty); "
-                        "treating as no spatial matches."
-                    )
-                    db_name_matches = db_name_matches[:0]
-                else:
-                    msg = (
-                        f"Error querying database with coordinates from SIMBAD: {e}\n"
-                        f"Using skycoord: {simbad_skycoord} and ra_col_name: {ra_col_name}, dec_col_name: {dec_col_name}.\n"
-                        "Try setting `ra_col_name` and `dec_col_name` arguments to the "
-                        "column names used in the Sources table.\n"
-                    )
-                    logger.error(msg)
-                    raise AstroDBError(msg)
+                msg = (
+                    f"Error querying database with coordinates from SIMBAD: {e}\n"
+                    f"Using skycoord: {simbad_skycoord} and ra_col_name: {ra_col_name}, dec_col_name: {dec_col_name}.\n"
+                    "Try setting `ra_col_name` and `dec_col_name` arguments to the "
+                    "column names used in the Sources table.\n"
+                )
+                logger.error(msg)
+                raise AstroDBError(msg)
 
     if len(db_name_matches) == 1:
         db_names = db_name_matches["source"].tolist()
