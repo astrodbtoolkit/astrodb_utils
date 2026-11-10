@@ -8,7 +8,7 @@ from astroquery.simbad import Simbad
 
 from astrodb_utils import AstroDBError, exit_function
 from astrodb_utils.publications import find_publication
-from astrodb_utils.utils import internet_connection
+from astrodb_utils.utils import simbad_available
 
 __all__ = [
     "find_source_in_db",
@@ -69,6 +69,11 @@ def find_source_in_db(
 
     source = source.strip()
 
+    # If no SIMBAD mirror can be reached, do not use SIMBAD
+    if use_simbad and not simbad_available():
+        logger.warning(f"{source}: SIMBAD is not reachable, not using SIMBAD to resolve source name.")
+        use_simbad = False
+
     logger.debug(f"{source}: Searching for match in database. Use Simbad: {use_simbad}")
     db_name_matches = db.search_object(
         source,
@@ -89,13 +94,6 @@ def find_source_in_db(
             verbose=False,
             resolve_simbad=use_simbad,
         )
-
-    # If no internet, then do not use Simbad
-    if use_simbad and not internet_connection():
-        logger.warning(
-            f"{source}: No internet connection, not using Simbad to resolve source name."
-        )
-        use_simbad = False
 
     # If still no matches, try to resolve the name with Simbad
     if len(db_name_matches) == 0 and use_simbad:
@@ -377,6 +375,10 @@ def ingest_source(
         return
 
     # Try to get coordinates from SIMBAD if they were not provided
+    if (ra is None or dec is None) and use_simbad and not simbad_available():
+        logger.warning(f"{source}: SIMBAD is not reachable, cannot retrieve coordinates from SIMBAD.")
+        use_simbad = False
+
     if (ra is None or dec is None) and use_simbad:
         # Try to get coordinates from SIMBAD
         simbad_skycoord = coords_from_simbad(source)
@@ -450,6 +452,10 @@ def find_survey_name_in_simbad(sources, desig_prefix, source_id_index=None):
     -------
     Astropy table
     """
+
+    if not simbad_available():
+        # This function only works with SIMBAD, so there is no fallback: raise a clear error
+        raise AstroDBError("SIMBAD is not reachable (tried all known mirrors). Cannot search for survey names.")
 
     n_sources = len(sources)
 
