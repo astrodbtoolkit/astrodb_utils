@@ -10,7 +10,6 @@ from astrodb_utils.photometry import (
 )
 
 
-@pytest.mark.simbad
 def test_ingest_photometry(db):
     ingest_photometry(
         db,
@@ -38,12 +37,11 @@ def test_ingest_photometry(db):
         ({"source": "test"}, "are required"),
         ({"source": "test", "band": "V"}, "are required"),
         ({"source": "test", "band": "V", "magnitude": 10}, "are required"),
-        pytest.param(
+        (
             {"source": "test", "band": "V", "magnitude": 10, "reference": "ref"},
             "No unique source match",
-            marks=pytest.mark.simbad,
         ),
-        pytest.param(
+        (
             {
                 "source": "Crab Nebula",
                 "band": "2MASS/2MASS.J",
@@ -51,9 +49,8 @@ def test_ingest_photometry(db):
                 "reference": "ref",
             },
             "not found in Publications table",
-            marks=pytest.mark.simbad,
         ),
-        pytest.param(
+        (
             {
                 "source": "Crab Nebula",
                 "band": "Generic/Cousins.R",
@@ -62,7 +59,6 @@ def test_ingest_photometry(db):
                 "telescope": "Fake HST",
             },
             "not found in Telescopes table",
-            marks=pytest.mark.simbad,
         ),
     ],
 )
