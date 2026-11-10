@@ -42,6 +42,7 @@ def fake_get(up_hosts, not_ok_hosts=()):
 
 
 def test_select_mirror_prefers_first(monkeypatch):
+    set_simbad_mirror("simbad.cds.unistra.fr")  # start from the default mirror
     monkeypatch.setattr(utils.requests, "get", fake_get(["simbad.cds.unistra.fr", "simbad.harvard.edu"]))
     assert select_simbad_mirror() == "simbad.cds.unistra.fr"
     assert utils.Simbad.server == "simbad.cds.unistra.fr"
@@ -108,3 +109,25 @@ def test_find_survey_name_raises_when_simbad_down(monkeypatch):
     monkeypatch.setattr(sources, "simbad_available", lambda: False)
     with pytest.raises(AstroDBError, match="SIMBAD is not reachable"):
         find_survey_name_in_simbad({"source": ["Gl 229"]}, "Gaia DR2")
+
+
+def test_select_mirror_keeps_current_choice_while_it_works(monkeypatch):
+    set_simbad_mirror("simbad.harvard.edu")
+    monkeypatch.setattr(utils.requests, "get", fake_get(["simbad.cds.unistra.fr", "simbad.harvard.edu"]))
+    assert select_simbad_mirror() == "simbad.harvard.edu"  # not switched back to Strasbourg
+
+
+def test_ingest_source_without_coords_refuses_when_simbad_down(db, monkeypatch):
+    monkeypatch.setattr(sources, "simbad_available", lambda: False)
+    with pytest.raises(AstroDBError, match="SIMBAD is not reachable"):
+        sources.ingest_source(db, "Needs Coords Star", reference="Refr20")
+    assert sources.ingest_source(db, "Needs Coords Star", reference="Refr20", raise_error=False) is None
+    assert len(db.search_object("Needs Coords Star", output_table="Sources", resolve_simbad=False)) == 0
+
+
+def test_ingest_source_no_coords_from_simbad_returns_none(db, monkeypatch):
+    # SIMBAD is up but does not know the object: with raise_error=False this should return cleanly
+    monkeypatch.setattr(sources, "simbad_available", lambda: True)
+    monkeypatch.setattr(sources, "coords_from_simbad", lambda source: None)
+    monkeypatch.setattr(sources, "find_source_in_db", lambda *args, **kwargs: [])
+    assert sources.ingest_source(db, "Unknown To SIMBAD Star", reference="Refr20", raise_error=False) is None

@@ -376,8 +376,12 @@ def ingest_source(
 
     # Try to get coordinates from SIMBAD if they were not provided
     if (ra is None or dec is None) and use_simbad and not simbad_available():
-        logger.warning(f"{source}: SIMBAD is not reachable, cannot retrieve coordinates from SIMBAD.")
-        use_simbad = False
+        # Do not silently ingest a source without coordinates just because SIMBAD is down
+        msg = (
+            f"Not ingesting {source}. Coordinates are needed and SIMBAD is not reachable. \n"
+            "Provide ra and dec, or try again when SIMBAD is available."
+        )
+        return exit_function(msg, raise_error)
 
     if (ra is None or dec is None) and use_simbad:
         # Try to get coordinates from SIMBAD
@@ -385,7 +389,7 @@ def ingest_source(
 
         if simbad_skycoord is None:
             msg = f"Not ingesting {source}. Coordinates are needed and could not be retrieved from SIMBAD. \n"
-            exit_function(msg, raise_error)
+            return exit_function(msg, raise_error)
 
         # Using those coordinates for source.
         ra = simbad_skycoord.to_string(style="decimal").split()[0]

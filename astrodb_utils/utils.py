@@ -63,14 +63,16 @@ _simbad_status = None
 SIMBAD_RECHECK_SECONDS = 60
 
 
-def select_simbad_mirror(mirrors=SIMBAD_MIRRORS, timeout: float = 5):
+def select_simbad_mirror(mirrors=None, timeout: float = 5):
     """
     Use the first SIMBAD mirror that responds, trying them in order.
 
     Parameters
     ----------
-    mirrors : sequence of str
-        Host names to try, in order of preference. Default: Strasbourg (CDS), then Harvard (CfA), then IDIA (South Africa).
+    mirrors : sequence of str, optional
+        Host names to try, in order of preference. Default: the mirror currently in use (so a mirror
+        you chose with `set_simbad_mirror` is kept while it works), then Strasbourg (CDS),
+        Harvard (CfA) and IDIA (South Africa).
     timeout : float
         Seconds to wait for each mirror.
 
@@ -80,6 +82,9 @@ def select_simbad_mirror(mirrors=SIMBAD_MIRRORS, timeout: float = 5):
         The mirror now in use, or None if none responded (the current setting is left unchanged).
     """
     global _simbad_status
+    if mirrors is None:
+        mirrors = dict.fromkeys((Simbad.server, *SIMBAD_MIRRORS))  # current first, no duplicates
+    logger.info("Checking which SIMBAD mirror is available...")
     for server in mirrors:
         try:
             ok = requests.get(f"https://{server}/simbad/sim-tap/capabilities", timeout=timeout).ok
