@@ -1,6 +1,6 @@
 -e .
 tqdm
-markupsafe==3.0.3
+markupsafe==3.0.4
 nbsphinx
 pydata-sphinx-theme
 mock
