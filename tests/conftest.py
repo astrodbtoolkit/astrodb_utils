@@ -16,15 +16,11 @@ template_schema_path = os.path.join("tests", "astrodb-template-db")
 
 
 def pytest_collection_modifyitems(config, items):
-    """Pick a working SIMBAD mirror (Strasbourg, then Harvard); skip `simbad` tests if neither responds."""
-    if not any(item.get_closest_marker("simbad") for item in items):
-        return
-    if select_simbad_mirror() is not None:
-        return
-    skip = pytest.mark.skip(reason="No SIMBAD mirror is reachable")
-    for item in items:
-        if item.get_closest_marker("simbad"):
-            item.add_marker(skip)
+    """Pick a working SIMBAD mirror (Strasbourg, Harvard, IDIA); skip `simbad` tests if none respond."""
+    simbad_items = [item for item in items if item.get_closest_marker("simbad")]
+    if simbad_items and select_simbad_mirror() is None:  # pragma: no cover (only when all mirrors are down)
+        for item in simbad_items:
+            item.add_marker(pytest.mark.skip(reason="No SIMBAD mirror is reachable"))
 
 
 # load the template database for use by the tests
