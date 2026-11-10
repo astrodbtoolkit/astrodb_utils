@@ -22,7 +22,7 @@ uv run ruff check .  # lint (line length 120); CI runs lint non-blocking (--exit
 uv run ruff format . # format
 uv run pre-commit install  # installs ruff + ruff-format hooks
 
-uv run sphinx-build docs docs/_build/html   # build docs (needs --extra docs + pandoc installed)
+uv run --extra docs sphinx-build docs docs/_build/html   # build docs (needs pandoc installed)
 ```
 
 - Use `uv` for all environment management (no `pip`/`conda`). `uv.lock` is committed; do not edit it by hand.
