@@ -11,6 +11,8 @@ from .utils import (  # noqa: F401
     exit_function,
     internet_connection,
     load_astrodb,
+    select_simbad_mirror,
+    set_simbad_mirror,
 )
 from .version import version as __version__
 

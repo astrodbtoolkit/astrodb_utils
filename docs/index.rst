@@ -35,3 +35,6 @@ The source code is made available under the terms of the BSD 3-Clause license.
 
 If you make use of this package, please be sure to reference
 this repository in your work.
+
+This work is supported by a NASA High Priority Open Source Software grant,
+award number 80NSSC25K7547.

@@ -17,6 +17,7 @@ from astrodb_utils.sources import (
 )
 
 
+@pytest.mark.simbad
 @pytest.mark.parametrize(
     "source_data",
     [
@@ -83,6 +84,7 @@ def test_ingest_sources(db, source_data):
     assert len(in_database) == 1
 
 
+@pytest.mark.simbad
 def test_find_source_in_db(db):
     search_result = find_source_in_db(
         db,
@@ -135,7 +137,8 @@ def test_find_source_in_db_empty_sources_table(tmp_path):
     finally:
         empty_db.engine.dispose()
 
-
+        
+@pytest.mark.simbad
 def test_find_source_in_db_with_coords(db):
     ingest_source(
         db,
@@ -173,6 +176,7 @@ def test_find_source_in_db_with_coords(db):
     assert len(search_result) == 1  # coords are within 83 arcsec
 
 
+@pytest.mark.simbad
 def test_find_source_in_db_errors(db):
     with pytest.raises(KeyError) as error_message:
         find_source_in_db(
@@ -195,6 +199,7 @@ def test_find_source_in_db_errors(db):
     assert "column names used in the Sources table" in str(error_message)
 
 
+@pytest.mark.simbad
 @pytest.mark.filterwarnings(
     "ignore::UserWarning"
 )  # suppress astroquery SIMBAD warnings
@@ -267,6 +272,7 @@ def test_ingest_source_errors(db):
         assert "already exists" in str(error_message.value)
 
 
+@pytest.mark.simbad
 def test_coords_from_simbad():
     coords = coords_from_simbad("Barnard Star")
     assert math.isclose(coords.ra.deg, 269.452, abs_tol=0.001)
