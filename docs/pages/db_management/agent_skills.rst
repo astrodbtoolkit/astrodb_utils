@@ -13,6 +13,9 @@ and creating an empty ``DatabaseName.sqlite``.
 Other skills ingest publications, sources, and photometry into the database,
 and set up a FastAPI web interface for browsing and
 visualizing the database in a browser.
+The set of skills is under active development; see the
+`astrodb-bot repository <https://github.com/astrodbtoolkit/astrodb-bot>`_
+for the current list.
 
 These skills automate the manual workflows described elsewhere
 in this documentation
@@ -52,7 +55,7 @@ Requirements
 
 #. **GitHub Account**
 
-   You will also need a GitHub account. 
+   You will also need a GitHub account.
    The AstroDB Toolkit was designed to use a GitHub workflow for hosting and collaboration.
 
    The first skill (astrodb-build-01-setup) asks you to create a new
@@ -85,7 +88,7 @@ Here is the recommended directory structure:
    my_workspace/
    ├── **.claude/**
    │   └── **skills  ──symlink──>  ../../astrodb-bot/skills**
-   ├── my_table.fits
+   ├── my_datatable.csv
    └── my_db/   (created by the astrodb-build-01-setup skill)
        ├── data/
        ├── docs/
@@ -114,13 +117,13 @@ the ``astrodb-build-01-setup`` skill will create the ``my_db`` folder inside it.
 
 Example and Expected Output
 ---------------------------
-Work through the build one skill at a time rather than asking for everything
-in a single prompt. Each step produces files you should review before moving on.
+Expect to work through the build one skill at a time rather than getting a complete database
+from a single prompt. Each step produces files and questions that you should review before moving on.
 An example prompt to get started, using
-``my_data.fits`` as the input table, is:
+``my_datatable.csv`` as the input table, is:
 
     *Use the astrodb-bot skills to start a new database called my_db using the data in*
-    ``@my_data.fits``
+    ``@my_datatable.csv``
 
 If the skills are installed correctly, the AI assistant should start with
 the ``astrodb-build-01-setup`` skill and step you through the several steps of
@@ -128,15 +131,15 @@ creating a new database project from the template.
 After each step, read what the AI reports, answer its questions, and ask for
 changes before asking it to continue.
 
-If you have already have a directions file (see below), add it to the prompt:
-*"...and my directions are in* ``@my_directions.md``\ *"*.
+If you already have a directions file (see below), add it to the prompt, for example:
+*"...and my directions are in* ``@my_directions.md`` *"*.
 
 These skills will write intermediate files to an ``astrodb-build-artifacts/`` folder
 and might ask you for permission to write the initial drafts of those files.
 We recommend you allow them to write the files, but this is not the time to
 inspect the files. When the skill is done, it should give you links to the
 rendered files and you can inspect them then and answer any questions the
-AI has about them.
+AI assistant has about them.
 
 The end result of this sequence is a ``my_db`` database project with its schema
 and an empty SQLite database. The ingest skills then fill it with your data
@@ -157,11 +160,12 @@ The Directions File
 -------------------
 The ``directions.md`` file is an optional markdown file where you write down what you
 already know about your data and the decisions you have made, *before* the AI
-starts asking questions. 
-If this file does not exist, the skills will ask you questions about your data and record your
+starts asking questions.
+If you don't provide one, the ``astrodb-build-01-setup`` skill creates it, and the
+skills ask you questions about your data and record your
 decisions in ``astrodb-build-artifacts/directions.md`` as you go.
 
-Every skill reads it, so anything you record there is
+Every build skill reads it, so anything you record there is
 something you do not have to answer again, and the AI is less likely to guess.
 
 You can provide it in either of two ways:
@@ -231,7 +235,8 @@ To make this easy:
   records what was decided and why.
 
 Once you are satisfied with a version, you can drop the suffix for the
-final, published database.
+final, published database. If you do, rename the GitHub repository and the folder, and
+update ``db_name`` in ``database.toml`` so that the ``.sqlite`` file gets the new name too.
 
 
 What You'll Have at the End
@@ -251,18 +256,3 @@ After working through the build skills, your database project contains:
 
 All of this lives in the git repository you created from the template,
 so you can commit it and share it.
-
-
-The Skills
-----------
-The skills are grouped by stage:
-
-* **Build**: set up the database project, parse the input table, match and
-  validate its columns against the template schema, generate ``schema.yaml``,
-  create the database, and draw an entity relationship diagram.
-* **Ingest**: add publications, sources, and photometry to the database.
-* **Website**: set up a web interface for browsing and visualizing the database.
-
-The set of skills is still changing. To see what is currently available, look in
-the ``skills/`` folder of your ``astrodb-bot`` clone or ask your AI which AstroDB
-skills it can use.
