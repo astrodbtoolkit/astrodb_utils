@@ -38,8 +38,9 @@ test = [
     "ruff>0.3.7",
     "pre-commit",
     "pytest-dependency",
-    "gitpython"
-    ]
+    "gitpython",
+    "pytest-cov>=7.1.0",
+]
 docs = [
     "sphinx",
     "sphinx-autobuild",
