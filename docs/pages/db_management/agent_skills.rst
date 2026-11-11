@@ -119,13 +119,17 @@ in a single prompt. Each step produces files you should review before moving on.
 An example prompt to get started, using
 ``my_data.fits`` as the input table, is:
 
- *Use the astrodb-bot skills to start a new database called my_db using the data in ``@my_data.fits``
+    *Use the astrodb-bot skills to start a new database called my_db using the data in*
+    ``@my_data.fits``
 
-If the skills are installed correctly, the AI assistant should start with 
+If the skills are installed correctly, the AI assistant should start with
 the ``astrodb-build-01-setup`` skill and step you through the several steps of
 creating a new database project from the template.
 After each step, read what the AI reports, answer its questions, and ask for
 changes before asking it to continue.
+
+If you have already have a directions file (see below), add it to the prompt:
+*"...and my directions are in* ``@my_directions.md``\ *"*.
 
 These skills will write intermediate files to an ``astrodb-build-artifacts/`` folder
 and might ask you for permission to write the initial drafts of those files.
@@ -147,6 +151,87 @@ getting the skills to work, please post in the `discussion forum
 <https://github.com/orgs/astrodbtoolkit/discussions>`_
 or open an issue in the
 `astrodb-bot issue tracker <https://github.com/astrodbtoolkit/astrodb-bot/issues>`_.
+
+
+The Directions File
+-------------------
+The ``directions.md`` file is an optional markdown file where you write down what you
+already know about your data and the decisions you have made, *before* the AI
+starts asking questions. 
+If this file does not exist, the skills will ask you questions about your data and record your
+decisions in ``astrodb-build-artifacts/directions.md`` as you go.
+
+Every skill reads it, so anything you record there is
+something you do not have to answer again, and the AI is less likely to guess.
+
+You can provide it in either of two ways:
+
+* **Give the AI a path** when you start, as in the example above. The
+  ``astrodb-build-01-setup`` skill copies it to
+  ``my_db/astrodb-build-artifacts/directions.md``, where all later skills look for it.
+* **Write it as you go.** If you don't provide one, the setup skill shows you an
+  example and offers to help you write one. You can also create or edit
+  ``astrodb-build-artifacts/directions.md`` yourself at any point, and
+  the skills will pick up your changes.
+
+A directions file can contain, for example:
+
+* **Database**: the name (which becomes ``db_name`` in ``database.toml`` and names
+  the ``.sqlite`` file) and a description used in the README.
+* **License**: the license and copyright holder(s) for the database.
+* **Data overview**: what each row of your table represents and which file holds what.
+* **Column handling**: which columns go into which tables, and which to ignore.
+* **Source matching**: how to match your objects to existing sources.
+* **Schema notes, known issues, and open questions.**
+
+Include only what you know. For anything you leave out, the skills ask you.
+Skills tell you which values they took from the file, so you can check them.
+Here is a short example:
+
+.. code-block:: markdown
+
+   # Directions
+
+   ## Database
+   - **Name**: `StreamDB`
+   - **Description**: A catalog of stellar stream members with metallicities
+     and membership probabilities.
+
+   ## License
+   - **License**: BSD 3-Clause
+   - **Copyright holder(s)**: Jane Astronomer, 2026
+
+   ## Column Handling
+   - `Feh` and `AFe`: ingest into the `ModeledParameters` table
+   - Ignore `x`, `y`, `z` in the main source table
+
+The skills also add to this file as decisions are made, so treat it as a record that
+you keep up to date. The bot repository has a longer example at
+`directions_example.md
+<https://github.com/astrodbtoolkit/astrodb-bot/blob/main/skills/astrodb-build-01-setup/references/directions_example.md>`_.
+
+
+Expect to Build More Than Once
+------------------------------
+You will most likely build your database more than once. Your first pass will
+turn up columns that were mapped to the wrong place, schema choices you want to
+change, or questions you didn't know to answer. That is normal and is part of the process.
+
+To make this easy:
+
+* **Add a version suffix to the database name**, such as ``my_db_v1``,
+  ``my_db_v2``, and so on. Each attempt then gets its own GitHub repository
+  (the setup skill suggests giving the repository the same name as the database) and
+  its own folder, so you can compare versions and never overwrite one you want
+  to keep.
+* **Keep your directions file.** Copy the ``directions.md`` from
+  your previous attempt and give its path when you start the next one. The
+  decisions you recorded carry over, and what you learned about the data is not lost.
+* **Keep the artifacts.** The ``astrodb-build-artifacts/`` folder in each version
+  records what was decided and why.
+
+Once you are satisfied with a version, you can drop the suffix for the
+final, published database.
 
 
 What You'll Have at the End
