@@ -8,7 +8,7 @@ from astroquery.simbad import Simbad
 
 from astrodb_utils import AstroDBError, exit_function
 from astrodb_utils.publications import find_publication
-from astrodb_utils.utils import internet_connection
+from astrodb_utils.utils import simbad_available
 
 __all__ = [
     "find_source_in_db",
@@ -69,6 +69,17 @@ def find_source_in_db(
 
     source = source.strip()
 
+    # An empty Sources table has no matches by definition, and Database.query_region
+    # raises a KeyError (rather than returning zero rows) when queried against one.
+    if db.query(db.Sources).first() is None:
+        logger.debug(f"{source}: Sources table is empty, no matches possible.")
+        return []
+
+    # If no SIMBAD mirror can be reached, do not use SIMBAD
+    if use_simbad and not simbad_available():
+        logger.warning(f"{source}: SIMBAD is not reachable, not using SIMBAD to resolve source name.")
+        use_simbad = False
+
     logger.debug(f"{source}: Searching for match in database. Use Simbad: {use_simbad}")
     db_name_matches = db.search_object(
         source,
@@ -89,13 +100,6 @@ def find_source_in_db(
             verbose=False,
             resolve_simbad=use_simbad,
         )
-
-    # If no internet, then do not use Simbad
-    if use_simbad and not internet_connection():
-        logger.warning(
-            f"{source}: No internet connection, not using Simbad to resolve source name."
-        )
-        use_simbad = False
 
     # If still no matches, try to resolve the name with Simbad
     if len(db_name_matches) == 0 and use_simbad:
@@ -129,8 +133,8 @@ def find_source_in_db(
             logger.debug(msg2)
             try:
                 db_name_matches = db.query_region(
-                simbad_skycoord, radius=search_radius, ra_col=ra_col_name, dec_col=dec_col_name
-            )
+                    simbad_skycoord, radius=search_radius, ra_col=ra_col_name, dec_col=dec_col_name
+                )
             except KeyError as e:
                 msg = (
                     f"Error querying database with coordinates from SIMBAD: {e}\n"
@@ -377,13 +381,21 @@ def ingest_source(
         return
 
     # Try to get coordinates from SIMBAD if they were not provided
+    if (ra is None or dec is None) and use_simbad and not simbad_available():
+        # Do not silently ingest a source without coordinates just because SIMBAD is down
+        msg = (
+            f"Not ingesting {source}. Coordinates are needed and SIMBAD is not reachable. \n"
+            "Provide ra and dec, or try again when SIMBAD is available."
+        )
+        return exit_function(msg, raise_error)
+
     if (ra is None or dec is None) and use_simbad:
         # Try to get coordinates from SIMBAD
         simbad_skycoord = coords_from_simbad(source)
 
         if simbad_skycoord is None:
             msg = f"Not ingesting {source}. Coordinates are needed and could not be retrieved from SIMBAD. \n"
-            exit_function(msg, raise_error)
+            return exit_function(msg, raise_error)
 
         # Using those coordinates for source.
         ra = simbad_skycoord.to_string(style="decimal").split()[0]
@@ -450,6 +462,10 @@ def find_survey_name_in_simbad(sources, desig_prefix, source_id_index=None):
     -------
     Astropy table
     """
+
+    if not simbad_available():
+        # This function only works with SIMBAD, so there is no fallback: raise a clear error
+        raise AstroDBError("SIMBAD is not reachable (tried all known mirrors). Cannot search for survey names.")
 
     n_sources = len(sources)
 

@@ -1,7 +1,9 @@
 import math
+import os
 
 import astropy.units as u
 import pytest
+from astrodbkit.astrodb import Database, create_database
 
 from astrodb_utils import (
     AstroDBError,
@@ -60,8 +62,7 @@ from astrodb_utils.sources import (
                 "dec": None,
                 "reference": "Prob83",
                 "raise_error": False,
-            }
-            
+            } 
     ],
 )
 @pytest.mark.filterwarnings(
@@ -111,6 +112,30 @@ def test_find_source_in_db(db):
     )  # This is wrong and a result of fuzzy matching
 
 
+def test_find_source_in_db_empty_sources_table(tmp_path):
+    # Regression test for #265: the spatial fallback search in find_source_in_db
+    # used to crash with a pandas KeyError when the Sources table had zero rows.
+    template_schema_path = os.path.join("tests", "astrodb-template-db")
+    connection_string = f"sqlite:///{tmp_path}/empty_sources.sqlite"
+    create_database(connection_string, felis_schema=os.path.join(template_schema_path, "schema.yaml"))
+    empty_db = Database(connection_string)
+
+    try:
+        assert empty_db.query(empty_db.Sources).count() == 0
+
+        search_result = find_source_in_db(
+            empty_db,
+            "Test Source",
+            ra=10.0,
+            dec=20.0,
+            use_simbad=False,
+        )
+        assert search_result == []
+    finally:
+        empty_db.engine.dispose()
+
+        
+@pytest.mark.simbad
 def test_find_source_in_db_with_coords(db):
     ingest_source(
         db,
@@ -148,6 +173,7 @@ def test_find_source_in_db_with_coords(db):
     assert len(search_result) == 1  # coords are within 83 arcsec
 
 
+@pytest.mark.simbad
 def test_find_source_in_db_errors(db):
     with pytest.raises(KeyError) as error_message:
         find_source_in_db(
@@ -170,6 +196,7 @@ def test_find_source_in_db_errors(db):
     assert "column names used in the Sources table" in str(error_message)
 
 
+@pytest.mark.simbad
 @pytest.mark.filterwarnings(
     "ignore::UserWarning"
 )  # suppress astroquery SIMBAD warnings
@@ -242,6 +269,7 @@ def test_ingest_source_errors(db):
         assert "already exists" in str(error_message.value)
 
 
+@pytest.mark.simbad
 def test_coords_from_simbad():
     coords = coords_from_simbad("Barnard Star")
     assert math.isclose(coords.ra.deg, 269.452, abs_tol=0.001)
