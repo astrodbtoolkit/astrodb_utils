@@ -35,24 +35,30 @@ in this documentation
 
 Requirements
 ------------
-Make sure you are in an environment where the latest versions
-of the following packages are installed and available to your AI:
 
-* Python 3.13 or greater
-* ``pip`` to install Python packages
-* ``git``
-* ``astropy``, ``pandas``, ``lsst-felis``, ``astrodbkit``,
-  ``astrodb_utils``, and ``pytest``
+#. **Packages**
 
-.. code-block:: bash
+   Make sure you are in an environment where the latest versions
+   of the following applications and packages are installed and available to your AI:
 
-    pip install --upgrade astropy pandas lsst-felis astrodbkit astrodb_utils pytest
+   * Python 3.13 or greater
+   * ``pip`` to install Python packages
+   * ``git``
+   * ``astropy``, ``pandas``, ``lsst-felis``, ``astrodbkit``, ``astrodb_utils``, and ``pytest``
 
-You will also need a GitHub account. The first skill asks you to create a new
-repository for your database from the
-`astrodb-template-db <https://github.com/astrodbtoolkit/astrodb-template-db>`_
-template ("Use this template" button), and it takes care of cloning it for you.
-You do **not** need to clone the template yourself.
+   .. code-block:: bash
+
+      pip install --upgrade astropy pandas lsst-felis astrodbkit astrodb_utils pytest
+
+#. **GitHub Account**
+
+   You will also need a GitHub account. 
+   The AstroDB Toolkit was designed to use a GitHub workflow for hosting and collaboration.
+
+   The first skill (astrodb-build-01-setup) asks you to create a new
+   repository for your database from the
+   `astrodb-template-db <https://github.com/astrodbtoolkit/astrodb-template-db>`_
+   template ("Use this template" button), and it takes care of cloning it for you.
 
 
 Installation
@@ -103,30 +109,21 @@ the commands to set this up are:
 Then start your AI tool from inside ``my_workspace`` and keep working from there:
 the ``astrodb-build-01-setup`` skill will create the ``my_db`` folder inside it.
 
-.. note::
-
-   Use ``mkdir .claude`` rather than ``mkdir -p .claude/skills``. The ``ln -s``
-   command creates the ``skills`` link itself; if a ``skills`` folder already exists,
-   the link would end up inside it and not work.
-
 
 .. _agent-skills-example:
 
 Example and Expected Output
 ---------------------------
 Work through the build one skill at a time rather than asking for everything
-in a single prompt. Each step produces files you can review before moving on.
-An example sequence of prompts, using
-``NearbyGalaxies_Jan2021_PUBLIC.fits`` as the input table, is:
+in a single prompt. Each step produces files you should review before moving on.
+An example prompt to get started, using
+``my_data.fits`` as the input table, is:
 
-1. *Use the astrodb-build-01-setup skill to start a new database called LocalGroupDB.*
-2. *Use the astrodb-build-02-parse-table skill to summarize*
-   ``@NearbyGalaxies_Jan2021_PUBLIC.fits``
-3. *Use the astrodb-build-03-schema-match skill to map the columns of this table
-   to the AstroDB template schema.*
-4. *Continue with the next skill* (repeat until the database is created).
+ *Use the astrodb-bot skills to start a new database called my_db using the data in ``@my_data.fits``
 
-The end result of this sequence is a populated ``LocalGroupDB`` database project.
+If the skills are installed correctly, the AI assistant should start with 
+the ``astrodb-build-01-setup`` skill and step you through the several steps of
+creating a new database project from the template.
 After each step, read what the AI reports, answer its questions, and ask for
 changes before asking it to continue.
 
@@ -136,6 +133,10 @@ We recommend you allow them to write the files, but this is not the time to
 inspect the files. When the skill is done, it should give you links to the
 rendered files and you can inspect them then and answer any questions the
 AI has about them.
+
+The end result of this sequence is a ``my_db`` database project with its schema
+and an empty SQLite database. The ingest skills then fill it with your data
+(for example, "ingest the publications", then "ingest the sources").
 
 These skills have been built and optimized for Claude Code,
 but they should work with any AI tool that can read the skill definitions and
@@ -155,7 +156,8 @@ After working through the build skills, your database project contains:
 * ``schema.yaml``: the Felis description of your database schema.
 * ``database.toml``: the settings file for your database.
 * ``data/``: the JSON files that hold your data. These are the source of truth.
-* ``LocalGroupDB.sqlite``: the SQLite database built from the schema and data.
+* ``my_db.sqlite``: the SQLite database built from the schema (and your data,
+  once you have run the ingest skills).
   This file can be rebuilt at any time and does not need to be tracked in git.
 * ``docs/``: documentation of your schema, including an entity relationship diagram.
 * ``astrodb-build-artifacts/``: the intermediate files written by the skills
