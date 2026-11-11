@@ -17,7 +17,6 @@ from astrodb_utils.sources import (
 )
 
 
-@pytest.mark.simbad
 @pytest.mark.parametrize(
     "source_data",
     [
@@ -63,8 +62,7 @@ from astrodb_utils.sources import (
                 "dec": None,
                 "reference": "Prob83",
                 "raise_error": False,
-            }
-            
+            } 
     ],
 )
 @pytest.mark.filterwarnings(
@@ -84,7 +82,6 @@ def test_ingest_sources(db, source_data):
     assert len(in_database) == 1
 
 
-@pytest.mark.simbad
 def test_find_source_in_db(db):
     search_result = find_source_in_db(
         db,
