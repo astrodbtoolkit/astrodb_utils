@@ -161,9 +161,9 @@ The Directions File
 The ``directions.md`` file is an optional markdown file where you write down what you
 already know about your data and the decisions you have made, *before* the AI
 starts asking questions.
-If you don't provide one, the ``astrodb-build-01-setup`` skill creates it, and the
-skills ask you questions about your data and record your
-decisions in ``astrodb-build-artifacts/directions.md`` as you go.
+If you don't provide one, the ``astrodb-build-01-setup`` skill offers to help
+create it. If you skip that offer, no ``directions.md`` is created; the skills
+still ask questions and log decisions in ``astrodb-build-artifacts/build-workflow.md``.
 
 Every build skill reads it, so anything you record there is
 something you do not have to answer again, and the AI is less likely to guess.
