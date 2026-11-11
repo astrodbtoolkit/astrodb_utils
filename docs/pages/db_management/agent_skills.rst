@@ -3,12 +3,15 @@ Creating a Database with AI Skills
 
 `astrodb-bot <https://github.com/astrodbtoolkit/astrodb-bot>`_ provides a set of
 **AI skills** that guide an assistant (Claude Code, Cursor, etc.) through building a
-new database from a raw data table: parsing the table, mapping its
+new database from a raw data table: setting up a new database project from the
+`AstroDB template <https://github.com/astrodbtoolkit/astrodb-template-db>`_,
+parsing the table, mapping its
 columns to the :doc:`AstroDB template schema
 <../getting_started/template_schema/template_schema>`,
 generating a Felis ``schema.yaml``,
-and creating a populated ``DatabaseName.sqlite``.
-There is also a skill for setting up a FastAPI web interface for browsing and
+and creating an empty ``DatabaseName.sqlite``.
+Other skills ingest publications, sources, and photometry into the database,
+and set up a FastAPI web interface for browsing and
 visualizing the database in a browser.
 
 These skills automate the manual workflows described elsewhere
@@ -20,26 +23,45 @@ in this documentation
    The skills require an AI **skill runner**: an AI tool that reads a ``skills/``
    directory such as ``.claude/skills/``, ``.cursor/skills/``, or ``.agents/skills/``.
 
+.. admonition:: Recommended settings
+
+   * **Mode:** Use *Manual* (ask before each action) or *Auto*. Do **not** use
+     *Plan* mode: the skills already walk through a plan-like sequence of steps
+     and ask you to review the results along the way.
+   * **Effort:** Use *Low* effort. This makes the AI ask you more questions and
+     make fewer assumptions about your data.
+   * **Work one step at a time.** Run one skill, review its output, and then move
+     on to the next (see :ref:`agent-skills-example`).
+
 Requirements
 ------------
 Make sure you are in an environment where the latest versions
 of the following packages are installed and available to your AI:
 
-* Python 3.11 or greater
-* ``uv`` or ``pip`` to install Python packages
+* Python 3.13 or greater
+* ``pip`` to install Python packages
+* ``git``
 * ``astropy``, ``pandas``, ``lsst-felis``, ``astrodbkit``,
-  and ``astrodb_utils``
+  ``astrodb_utils``, and ``pytest``
 
 .. code-block:: bash
 
-    pip install --upgrade astropy pandas lsst-felis astrodbkit astrodb_utils
+    pip install --upgrade astropy pandas lsst-felis astrodbkit astrodb_utils pytest
+
+You will also need a GitHub account. The first skill asks you to create a new
+repository for your database from the
+`astrodb-template-db <https://github.com/astrodbtoolkit/astrodb-template-db>`_
+template ("Use this template" button), and it takes care of cloning it for you.
+You do **not** need to clone the template yourself.
 
 
 Installation
 ------------
+Because the first skill creates your database project, set up the skills in a
+**workspace folder** that is separate from (and above) your database project.
 Clone the `astrodb-bot repository <https://github.com/astrodbtoolkit/astrodb-bot>`_
-into a location independent of your database project.
-Then, depending on your AI tool, point your AI to the ``skills/`` directory
+next to that workspace folder,
+and then, depending on your AI tool, point your AI to the ``skills/`` directory
 with a symbolic link.
 This is the recommended way to use the skills, because it allows you to pull
 updates to the skills without having to re-copy them.
@@ -50,45 +72,63 @@ Here is the recommended directory structure:
 
    **astrodb-bot/**
    └── skills/
-      ├── astrodb-build-setup/
-      ├── astrodb-build-schema-match/
-      ├── astrodb-build-create-db/
+      ├── astrodb-build-01-setup/
+      ├── astrodb-build-02-parse-table/
+      ├── astrodb-build-03-schema-match/
       └── ... (other skill folders)
-   my_db/
-   └── **.claude/**
-      └── **skills  ──symlink──>  ../../astrodb-bot/skills**
-   ├── data/
-   ├── docs/
-   ├── my_db.sqlite
-   ├── my_db.toml
-   ├── schema.yaml
-   └── ... (other astrodb files and folders)
+   my_workspace/
+   ├── **.claude/**
+   │   └── **skills  ──symlink──>  ../../astrodb-bot/skills**
+   ├── my_table.fits
+   └── my_db/   (created by the astrodb-build-01-setup skill)
+       ├── data/
+       ├── docs/
+       ├── database.toml
+       ├── schema.yaml
+       ├── astrodb-build-artifacts/
+       └── ... (other astrodb files and folders)
 
 
-Starting in the directory
-above your database project, the commands to set this up are:
+Starting in the folder that contains your workspace folder,
+the commands to set this up are:
 
 .. code-block:: bash
 
-    cd ../
     git clone https://github.com/astrodbtoolkit/astrodb-bot.git
-    cd my_db
-    mkdir -p .claude/skills
-    ln -s "../../astrodb-bot/skills" .claude/skills
+    mkdir my_workspace
+    cd my_workspace
+    mkdir .claude
+    ln -s ../../astrodb-bot/skills .claude/skills
 
+Then start your AI tool from inside ``my_workspace`` and keep working from there:
+the ``astrodb-build-01-setup`` skill will create the ``my_db`` folder inside it.
+
+.. note::
+
+   Use ``mkdir .claude`` rather than ``mkdir -p .claude/skills``. The ``ln -s``
+   command creates the ``skills`` link itself; if a ``skills`` folder already exists,
+   the link would end up inside it and not work.
+
+
+.. _agent-skills-example:
 
 Example and Expected Output
 ---------------------------
-An example prompt is:
+Work through the build one skill at a time rather than asking for everything
+in a single prompt. Each step produces files you can review before moving on.
+An example sequence of prompts, using
+``NearbyGalaxies_Jan2021_PUBLIC.fits`` as the input table, is:
 
-    *Use the astrodb skills to
-    create a plan to have a fully working database after going through*
-    ``@NearbyGalaxies_Jan2021_PUBLIC.fits``
+1. *Use the astrodb-build-01-setup skill to start a new database called LocalGroupDB.*
+2. *Use the astrodb-build-02-parse-table skill to summarize*
+   ``@NearbyGalaxies_Jan2021_PUBLIC.fits``
+3. *Use the astrodb-build-03-schema-match skill to map the columns of this table
+   to the AstroDB template schema.*
+4. *Continue with the next skill* (repeat until the database is created).
 
-Plan mode tells the AI to inspect the input FITS and propose a complete build plan
-using all of the available skills. The output of this prompt should be a
-populated ``LocalGroupDB.sqlite`` database.
-Alternatively, you can also invoke the skills one at a time.
+The end result of this sequence is a populated ``LocalGroupDB`` database project.
+After each step, read what the AI reports, answer its questions, and ask for
+changes before asking it to continue.
 
 These skills will write intermediate files to an ``astrodb-build-artifacts/`` folder
 and might ask you for permission to write the initial drafts of those files.
@@ -108,7 +148,34 @@ or open an issue in the
 `astrodb-bot issue tracker <https://github.com/astrodbtoolkit/astrodb-bot/issues>`_.
 
 
+What You'll Have at the End
+---------------------------
+After working through the build skills, your database project contains:
+
+* ``schema.yaml``: the Felis description of your database schema.
+* ``database.toml``: the settings file for your database.
+* ``data/``: the JSON files that hold your data. These are the source of truth.
+* ``LocalGroupDB.sqlite``: the SQLite database built from the schema and data.
+  This file can be rebuilt at any time and does not need to be tracked in git.
+* ``docs/``: documentation of your schema, including an entity relationship diagram.
+* ``astrodb-build-artifacts/``: the intermediate files written by the skills
+  (table summaries, column mappings, validation notes). Keep these as a record
+  of the decisions made while building your database.
+
+All of this lives in the git repository you created from the template,
+so you can commit it and share it.
+
+
 The Skills
 ----------
-Specific skill descriptions are in the `astrodb-bot README.md
-<https://github.com/astrodbtoolkit/astrodb-bot/blob/main/README.md>`_
+The skills are grouped by stage:
+
+* **Build**: set up the database project, parse the input table, match and
+  validate its columns against the template schema, generate ``schema.yaml``,
+  create the database, and draw an entity relationship diagram.
+* **Ingest**: add publications, sources, and photometry to the database.
+* **Website**: set up a web interface for browsing and visualizing the database.
+
+The set of skills is still changing. To see what is currently available, look in
+the ``skills/`` folder of your ``astrodb-bot`` clone or ask your AI which AstroDB
+skills it can use.
