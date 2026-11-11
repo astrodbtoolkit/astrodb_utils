@@ -91,7 +91,7 @@ def test_check_spectrum_plottable(spectrum_path, result):
             },
             "Reference is required",
         ),
-        pytest.param(
+        (
             {
                 "source": "Gl 229b",
                 "regime": "nir",
@@ -100,9 +100,8 @@ def test_check_spectrum_plottable(spectrum_path, result):
                 "reference": "Burg06"
             },
             "Instrument is required",
-            marks=pytest.mark.simbad,
         ),
-        pytest.param(
+        (
             {
                 "source": "Gl 229b",
                 "telescope": "IRTF",
@@ -113,7 +112,6 @@ def test_check_spectrum_plottable(spectrum_path, result):
                 "reference": "Burg06"
             },
             "Regime not found in database",
-            marks=pytest.mark.simbad,
         ),
         (
             {
@@ -136,7 +134,7 @@ def test_check_spectrum_plottable(spectrum_path, result):
                 "reference": "Burg06"
             },
             "Observation date is not valid",),
-        pytest.param(
+        (
             {
                 "source": "NotaRealSource",
                 "telescope": "IRTF",
@@ -147,7 +145,6 @@ def test_check_spectrum_plottable(spectrum_path, result):
                 "reference": "Burg06",
             },
             "Invalid source name",
-            marks=pytest.mark.simbad,
         ),
         (
             {
@@ -160,7 +157,7 @@ def test_check_spectrum_plottable(spectrum_path, result):
             },
             "Observation date is not valid",
         ),
-        pytest.param(
+        (
             {
                 "source": "Gl 229b",
                 "telescope": "IRTF",
@@ -171,7 +168,6 @@ def test_check_spectrum_plottable(spectrum_path, result):
                 "reference": "Burg06",
             },
             "Regime not found",
-            marks=pytest.mark.simbad,
         ),
     ],
 )
@@ -194,7 +190,6 @@ def test_ingest_spectrum_errors(db, test_input, message):
     assert message in result["message"]
 
 
-@pytest.mark.simbad
 def test_ingest_spectrum_works(db):
     spectrum = "https://bdnyc.s3.amazonaws.com/IRS/2MASS+J03552337%2B1133437.fits"
     result = ingest_spectrum(
@@ -210,7 +205,6 @@ def test_ingest_spectrum_works(db):
     )
     assert result["added"] is True
 
-@pytest.mark.simbad
 def test_ingest_spectrum_duplicate_regime(db):
     """
     To test two spectra with same fields except for the regime can be ingested without error.
@@ -261,7 +255,6 @@ def test_ingest_spectrum_duplicate_regime(db):
     # Check that if error is raised
     assert "Integrity Error" in str(error_message.value) 
 
-@pytest.mark.simbad
 def test_find_spectra_regime(db):
     """
     Test that find_spectra can find spectra based on the regime field.

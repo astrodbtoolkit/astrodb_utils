@@ -4,6 +4,7 @@ import datetime
 import logging
 import os
 import socket
+import time
 from pathlib import Path
 
 import requests
@@ -18,6 +19,7 @@ __all__ = [
     "exit_function",
     "set_simbad_mirror",
     "select_simbad_mirror",
+    "simbad_available",
     "get_db_regime",
     "check_obs_date",
 ]
@@ -55,15 +57,22 @@ def set_simbad_mirror(server: str):
 
 SIMBAD_MIRRORS = ("simbad.cds.unistra.fr", "simbad.harvard.edu", "simbad.idia.ac.za")
 
+# Result of the last mirror check: (a mirror host name or None, time.monotonic() of the check)
+_simbad_status = None
+# After a failed check, wait this many seconds before probing the mirrors again
+SIMBAD_RECHECK_SECONDS = 60
 
-def select_simbad_mirror(mirrors=SIMBAD_MIRRORS, timeout: float = 5):
+
+def select_simbad_mirror(mirrors=None, timeout: float = 5):
     """
     Use the first SIMBAD mirror that responds, trying them in order.
 
     Parameters
     ----------
-    mirrors : sequence of str
-        Host names to try, in order of preference. Default: Strasbourg (CDS), then Harvard (CfA), then IDIA (South Africa).
+    mirrors : sequence of str, optional
+        Host names to try, in order of preference. Default: the mirror currently in use (so a mirror
+        you chose with `set_simbad_mirror` is kept while it works), then Strasbourg (CDS),
+        Harvard (CfA) and IDIA (South Africa).
     timeout : float
         Seconds to wait for each mirror.
 
@@ -72,6 +81,10 @@ def select_simbad_mirror(mirrors=SIMBAD_MIRRORS, timeout: float = 5):
     str or None
         The mirror now in use, or None if none responded (the current setting is left unchanged).
     """
+    global _simbad_status
+    if mirrors is None:
+        mirrors = dict.fromkeys((Simbad.server, *SIMBAD_MIRRORS))  # current first, no duplicates
+    logger.info("Checking which SIMBAD mirror is available...")
     for server in mirrors:
         try:
             ok = requests.get(f"https://{server}/simbad/sim-tap/capabilities", timeout=timeout).ok
@@ -79,10 +92,33 @@ def select_simbad_mirror(mirrors=SIMBAD_MIRRORS, timeout: float = 5):
             ok = False
         if ok:
             set_simbad_mirror(server)
+            _simbad_status = (server, time.monotonic())
             return server
         logger.warning(f"SIMBAD mirror {server} is not responding")
     logger.warning("No SIMBAD mirror responded")
+    _simbad_status = (None, time.monotonic())
     return None
+
+
+def simbad_available() -> bool:
+    """
+    Check (lazily) whether SIMBAD can be used, switching to a working mirror if needed.
+
+    The first call probes the mirrors with `select_simbad_mirror`. After a success the answer is
+    remembered for the rest of the session. After a failure it is remembered for
+    `SIMBAD_RECHECK_SECONDS`, so a long session notices when SIMBAD comes back without
+    probing on every call.
+
+    Returns
+    -------
+    bool
+        True if a SIMBAD mirror is reachable.
+    """
+    if _simbad_status is not None:
+        mirror, checked = _simbad_status
+        if mirror is not None or time.monotonic() - checked < SIMBAD_RECHECK_SECONDS:
+            return mirror is not None
+    return select_simbad_mirror() is not None
 
 
 def load_astrodb(  # noqa: PLR0913

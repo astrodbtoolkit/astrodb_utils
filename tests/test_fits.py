@@ -66,7 +66,6 @@ def test_add_obs_date_fails(input_date, obs_date):
     assert "Date could not be parsed by dateparser.parse" in str(error_message.value)
 
 
-@pytest.mark.simbad
 def test_check_header():
     header = add_missing_keywords()
     assert check_header(header) is False

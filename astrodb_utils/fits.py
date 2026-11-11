@@ -8,6 +8,7 @@ from astropy.io import fits
 from astroquery.simbad import Simbad
 
 from astrodb_utils.photometry import assign_ucd
+from astrodb_utils.utils import simbad_available
 
 __all__ = [
     "add_missing_keywords",
@@ -217,6 +218,10 @@ def check_header(header=None, format="ivoa-spectrum-dm-1.2", ignore_simbad=False
         print("Coordinates are required")
         result = False
         logger.debug(f"Coords: {coord}, result: {result}")
+
+    if ignore_simbad is False and not simbad_available():
+        logger.warning("SIMBAD is not reachable, skipping the SIMBAD name check.")
+        ignore_simbad = True
 
     if ignore_simbad is False:
         name_check = check_simbad_name(header)
