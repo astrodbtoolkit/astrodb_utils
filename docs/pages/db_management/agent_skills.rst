@@ -228,11 +228,9 @@ To make this easy:
   (the setup skill suggests giving the repository the same name as the database) and
   its own folder, so you can compare versions and never overwrite one you want
   to keep.
-* **Keep your directions file.** Copy the ``directions.md`` from
+* **Reuse the directions file.** Copy the ``directions.md`` from
   your previous attempt and give its path when you start the next one. The
   decisions you recorded carry over, and what you learned about the data is not lost.
-* **Keep the artifacts.** The ``astrodb-build-artifacts/`` folder in each version
-  records what was decided and why.
 
 Once you are satisfied with a version, you can drop the suffix for the
 final, published database. If you do, rename the GitHub repository and the folder, and
