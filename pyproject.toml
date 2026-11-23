@@ -24,7 +24,7 @@ dependencies = [
     "pyvo>=1.9",  # pyvo<1.9 imports astropy.samp, which is deprecated in astropy 8.0
     "astropy>7.0",
     "astrodbkit>=2.5",
-    "lsst-felis<=30.2026.2900",
+    "lsst-felis<=30.2026.4700",
     "pandas",
     "tqdm",
     "ads>=0.12.7",
